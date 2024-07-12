@@ -1,5 +1,5 @@
 ---
-title: "daianna_blog"
+title: "Daianna Gonzalez-Padilla"
 ---
 
 This is a Quarto website.

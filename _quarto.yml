@@ -2,12 +2,30 @@ project:
   type: website
 
 website:
-  title: "daianna_blog"
+  title: "Daianna Gonzalez-Padilla"
+  description: "Daianna's personal scientific blog"
+  favicon: "images/logo.png"
   navbar:
-    left:
-      - href: index.qmd
-        text: Home
-      - about.qmd
+    right:
+      - text: "About me"
+        file: index.qmd
+      - text: "Blog"
+        file: blog.qmd
+      - text: "My publications"
+        file: publications.qmd
+      - text: "Other materials"
+        file: materials.qmd
+      - icon: github
+        href: https://daianna21.github.io
+      - icon: linkedin
+        href: http://www.linkedin.com/in/daianna-glez
+      - icon: twitter
+        href: https://x.com/daianna_glez/
+      - icon: envelope-at
+        href: mailto:glezdaianna@gmail.com
+      - icon: rss
+        href: blog.xml
+
 
 format:
   html:

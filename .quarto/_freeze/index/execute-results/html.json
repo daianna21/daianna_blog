@@ -1,8 +1,8 @@
 {
-  "hash": "28935c752c6ef5e26914f39b843af4e3",
+  "hash": "10ff8aa8438029cb0389cd4b22252ba3",
   "result": {
     "engine": "knitr",
-    "markdown": "---\ntitle: \"Daianna Gonzalez-Padilla\"\n---\n\n\nThis is a Quarto website.bb\n\nTo learn more about Quarto websites visit <https://quarto.org/docs/websites>.\n\n\n::: {.cell}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n[1] 2\n```\n\n\n:::\n:::\n",
+    "markdown": "---\ntitle: \"Daianna Gonzalez-Padilla\"\nimage: images/Headshot_photo_DGP.jpg\nabout: \n  template: trestles\n  links: \n    - icon: github\n      text: Github\n      href: https://daianna21.github.io\n    - icon: linkedin\n      text: LinkedIn\n      href: http://www.linkedin.com/in/daianna-glez\n    - icon: twitter\n      text: Twitter\n      href: https://x.com/daianna_glez/\n    - icon: envelope-at\n      text: Email\n      href: mailto:glezdaianna@gmail.com\n      \ncomments: false\n---\n\n\nThis is a Quarto website.bb\n\nTo learn more about Quarto websites visit <https://quarto.org/docs/websites>.\n\n\n::: {.cell}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n[1] 2\n```\n\n\n:::\n:::\n",
     "supporting": [],
     "filters": [
       "rmarkdown/pagebreak.lua"

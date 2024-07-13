@@ -1,0 +1,17 @@
+---
+title: "Fisher's exact test"
+description: |
+ A detailed and interpretable explanation of the Fisher's exact test.
+author:
+  - name: Daianna Gonzalez-Padilla
+date: 2024-07-12
+categories:
+  - "overrepresentation"
+  - "enrichment"
+  - "GO"
+  - "KEGG"
+image: "images/logo.png"
+bibliography: references.bib
+---
+
+# Introduction

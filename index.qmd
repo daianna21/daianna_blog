@@ -1,11 +1,82 @@
 ---
 title: "Daianna Gonzalez-Padilla"
+about: 
+  template: marquee
+  links: 
+    - icon: github
+      text: Github
+      href: https://daianna21.github.io
+    - icon: linkedin
+      text: LinkedIn
+      href: http://www.linkedin.com/in/daianna-glez
+    - icon: twitter
+      text: Twitter
+      href: https://x.com/daianna_glez/
+    - icon: envelope-at
+      text: Email
+      href: mailto:glezdaianna@gmail.com
 ---
 
-This is a Quarto website.bb
+![](images/Headshot_photo_DGP-modified.png){fig-align="center" width="307"}
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+## **A little about me**
 
-```{r}
-1 + 1
-```
+::: {style="text-align: justify"}
+Hey! Daianna here. I graduated from the undergraduate program of Genomic Sciences 🧬 at the National Autonomous University of Mexico 🇲🇽 [LCG-UNAM](https://www.lcg.unam.mx/#general) in Cuernavaca, Morelos, Mexico in 2024. Currently I work at the [Sanger Institute](https://www.sanger.ac.uk/group/trynka-group/) in Cambridge, U.K. analyzing single-cell data from iPSC-derived microglia to unveil the genetic architecture of neurodegenerative diseases.
+
+During the last few years I've been involved in multiple omics projects. At the [Lieber Institute for Brain Development (LIBD)](https://www.libd.org) I analyzed transcriptomic data to explore brain develpment and function 🧠, and at the [Karolinska Institutet (KI)](https://ki.se/en) I've studied genetic variability in genes influencing drug response and toxicity 💊. Along the way, with my undergrad courses and projects, analyzing and dealing with my own data, and attending courses, conferences, and meetings, I realized I’ve learning so much about statistical analyses and bioinformatic tools that I wanted to share all this knowledge with the scientific community 👥, particularly with other students like me that may not have the same opportunities or academic background but also want to analyze datasets to answer biologically-relevant questions. 
+:::
+
+## **Motivation for this website**
+
+::: {style="text-align: justify"}
+Doing scientific research, collaborating with my classmates and peers, and assisting in bioinformatics courses I’ve noticed the existence of two common problems while analyzing data:
+
+1.  In these interconnected times, with praiseworthy collaborative efforts such as the [Bioconductor](https://www.bioconductor.org) project we can easily develop, share, and use other people’s code, data, methods, and even complete packages for our own analyses. That represents an incredible opportunity for all of us to leverage, contribute, and improve popular and new-emerging computational tools for the reproducible analysis of biological data, no doubts! However, for students and early career researchers, and people coming from areas other than biostatistics, computational biology, or bioinformatics, some analyses may represent obscure –if not completely unknown– territories. People developing these algorithms often assume they have a specialized audience and tend to trivialize underlying statistical concepts and methods when describing their computational functions and packages, not to mention the poor or even missing documentation and support some of the authors offer, (with notable exceptions such as *limma* and *variancePartition*, among others). 
+
+2.  Second, nowadays it is incredibly simple to just run a complete pipeline with a single function. That’s efficient and increases productivity but it also has diluted the needed understanding behind their use. I have found many people, including myself, deludedly thinking we master an analysis just because we have run software programs without errors and have received outputs: we may dominate the practice but that doesn’t imply nor guarantees we understand the theory. 
+
+> It seems to me we are a generation of trained students that know how to run an analysis and obtain results, but don’t understand the analyses themselves; in some occasions, not even the reasons why we execute them. But this is not limited to undergrad or master students: you would be surprised by the number of PhD students, postdocs, and researchers that relate to this!
+
+❗️❗️❗️ More alarming than the aforementioned I’d say, is not to be aware of why it is important to really understand the aims and foundations of the methods we implement. It is not until we do that, that we can make accurate and informed method selections based on the features of our data, detect unexpected and error-announcing results and interpret them correctly, map potential limitations of our analyses and draw rigorous meaningful conclusions from them. 
+:::
+
+## **Objectives**
+
+::: {style="text-align: justify"}
+The purposes of the posted blogs here are the following:
+
+-   To diminish those ◼️**📦** that many of these single-function methods represent, clearly showing how they operate mathematically and statistically.
+
+-   To exemplify how to run these R/Bioconductor/Bash programs on real data, explaining their inputs and outputs, arguments and parameters. 
+
+-   To present analyses you can implement with your own datasets to inspire you to explore further your data and outputs. 
+
+-   To show how to interpret the results.
+
+In summary, this is a little of what I would like to have read to feel more confident when applying a tool and explaining results derived from it. 
+:::
+
+## **Take-home messages**
+
+::: {style="text-align: justify"}
+Finally, I want to share some very important lessons I have learned so far:  
+
+-   There’s no better source to understand a method than going to its original publication 📑 (yes, some of the last century!) 
+
+-   Documentation sites won’t answer many of your theoretical questions. Tutorials, if available, are more detailed materials with usage examples and explanations.
+
+-   The motivations I mentioned before should give us humility lessons once we become aware of how ignorant we are, something we only learn, paradoxically, as we acquire more knowledge by studying and investigating.
+:::
+
+## **Feedback**
+
+::: {style="text-align: justify"}
+💬 I hope you find these materials useful. Feel free to contact me for personal doubts, inquiries, or further discussion in any of my media shown below 👇🏼. I’d also appreciate your feedback and contributions to improving these contents. Good luck with your analyses!
+:::
+
+\
+
+::: {style="color:gray"}
+The website was created using [Quarto](https://quarto.org/).
+:::

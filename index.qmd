@@ -29,6 +29,8 @@ During the last few years I've been involved in multiple omics projects. At the 
 
 ## **Motivation for this website**
 
+![](images/logo.png){fig-align="center" width="190"}
+
 ::: {style="text-align: justify"}
 Doing scientific research, collaborating with my classmates and peers, and assisting in bioinformatics courses I’ve noticed the existence of two common problems while analyzing data:
 

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>Daianna Gonzalez-Padilla</title>
+<link>https://daianna21.github.io/daianna_blog/blog.html</link>
+<atom:link href="https://daianna21.github.io/daianna_blog/blog.xml" rel="self" type="application/rss+xml"/>
+<description>Daianna&#39;s personal scientific blog</description>
+<generator>quarto-1.4.555</generator>
+<lastBuildDate>Fri, 12 Jul 2024 06:00:00 GMT</lastBuildDate>
+<item>
+  <title>Fisher’s exact test</title>
+  <dc:creator>Daianna Gonzalez-Padilla</dc:creator>
+  <link>https://daianna21.github.io/daianna_blog/posts/2024-07-24-Fisher_test/</link>
+  <description><![CDATA[ 
+
+
+
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>le</p>
+
+
+</section>
+
+ ]]></description>
+  <category>overrepresentation</category>
+  <category>enrichment</category>
+  <category>GO</category>
+  <category>KEGG</category>
+  <guid>https://daianna21.github.io/daianna_blog/posts/2024-07-24-Fisher_test/</guid>
+  <pubDate>Fri, 12 Jul 2024 06:00:00 GMT</pubDate>
+  <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-07-24-Fisher_test/images/logo.png" medium="image" type="image/png" height="146" width="144"/>
+</item>
+</channel>
+</rss>

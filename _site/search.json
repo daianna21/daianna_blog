@@ -1,17 +1,17 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Daianna Gonzalez-Padilla",
+    "objectID": "blog.html",
+    "href": "blog.html",
+    "title": "My Blog",
     "section": "",
-    "text": "![](images/Headshot_photo_DGP.jpg){width=\"80%\" fig-align=\"right\"}"
+    "text": "Fisher’s exact test\n\n\n\n\n\n\noverrepresentation\n\n\nenrichment\n\n\nGO\n\n\nKEGG\n\n\n\nA detailed and interpretable explanation of the Fisher’s exact test. \n\n\n\n\n\nJul 12, 2024\n\n\nDaianna Gonzalez-Padilla\n\n\n\n\n\n\nNo matching items"
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
+    "objectID": "posts/2024-07-24-Fisher_test/index.html",
+    "href": "posts/2024-07-24-Fisher_test/index.html",
+    "title": "Fisher’s exact test",
     "section": "",
-    "text": "About this site\n\n1 + 1\n\n[1] 2"
+    "text": "Introduction\nle"
   },
   {
     "objectID": "index.html#a-little-about-me",
@@ -47,19 +47,5 @@
     "title": "Daianna Gonzalez-Padilla",
     "section": "Feedback",
     "text": "Feedback\n\n💬 I hope you find these materials useful. Feel free to contact me for personal doubts, inquiries, or further discussion in any of my media shown below 👇🏼. I’d also appreciate your feedback and contributions to improving these contents. Good luck with your analyses!\n\n\n\n\nThe website was created using Quarto."
-  },
-  {
-    "objectID": "blog.html",
-    "href": "blog.html",
-    "title": "My Blog",
-    "section": "",
-    "text": "Fisher’s exact test\n\n\n\n\n\n\noverrepresentation\n\n\nenrichment\n\n\nGO\n\n\nKEGG\n\n\n\nA detailed and interpretable explanation of the Fisher’s exact test. \n\n\n\n\n\nJul 12, 2024\n\n\nDaianna Gonzalez-Padilla\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "posts/2024-07-24-Fisher_test/index.html",
-    "href": "posts/2024-07-24-Fisher_test/index.html",
-    "title": "Fisher’s exact test",
-    "section": "",
-    "text": "Introduction\nle"
   }
 ]

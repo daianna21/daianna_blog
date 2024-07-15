@@ -1,1 +1,1 @@
-Sitemap: https://daianna21.github.io/daianna_blog/_site/sitemap.xml
+Sitemap: https://daianna21.github.io/daianna_blog/sitemap.xml

@@ -1,19 +1,5 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Daianna Gonzalez-Padilla",
-    "section": "",
-    "text": "![](images/Headshot_photo_DGP.jpg){width=\"80%\" fig-align=\"right\"}"
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "About this site\n\n1 + 1\n\n[1] 2"
-  },
-  {
     "objectID": "index.html#a-little-about-me",
     "href": "index.html#a-little-about-me",
     "title": "Daianna Gonzalez-Padilla",
@@ -25,7 +11,7 @@
     "href": "index.html#motivation-for-this-website",
     "title": "Daianna Gonzalez-Padilla",
     "section": "Motivation for this website",
-    "text": "Motivation for this website\n\nDoing scientific research, collaborating with my classmates and peers, and assisting in bioinformatics courses I’ve noticed the existence of two common problems while analyzing data:\n\nIn these interconnected times, with praiseworthy collaborative efforts such as the Bioconductor project we can easily develop, share, and use other people’s code, data, methods, and even complete packages for our own analyses. That represents an incredible opportunity for all of us to leverage, contribute, and improve popular and new-emerging computational tools for the reproducible analysis of biological data, no doubts! However, for students and early career researchers, and people coming from areas other than biostatistics, computational biology, or bioinformatics, some analyses may represent obscure –if not completely unknown– territories. People developing these algorithms often assume they have a specialized audience and tend to trivialize underlying statistical concepts and methods when describing their computational functions and packages, not to mention the poor or even missing documentation and support some of the authors offer, (with notable exceptions such as limma and variancePartition, among others). \nSecond, nowadays it is incredibly simple to just run a complete pipeline with a single function. That’s efficient and increases productivity but it also has diluted the needed understanding behind their use. I have found many people, including myself, deludedly thinking we master an analysis just because we have run software programs without errors and have received outputs: we may dominate the practice but that doesn’t imply nor guarantees we understand the theory. \n\n\nIt seems to me we are a generation of trained students that know how to run an analysis and obtain results, but don’t understand the analyses themselves; in some occasions, not even the reasons why we execute them. But this is not limited to undergrad or master students: you would be surprised by the number of PhD students, postdocs, and researchers that relate to this!\n\n❗️❗️❗️ More alarming than the aforementioned I’d say, is not to be aware of why it is important to really understand the aims and foundations of the methods we implement. It is not until we do that, that we can make accurate and informed method selections based on the features of our data, detect unexpected and error-announcing results and interpret them correctly, map potential limitations of our analyses and draw rigorous meaningful conclusions from them."
+    "text": "Motivation for this website\n\n\n\n\n\n\nDoing scientific research, collaborating with my classmates and peers, and assisting in bioinformatics courses I’ve noticed the existence of two common problems while analyzing data:\n\nIn these interconnected times, with praiseworthy collaborative efforts such as the Bioconductor project we can easily develop, share, and use other people’s code, data, methods, and even complete packages for our own analyses. That represents an incredible opportunity for all of us to leverage, contribute, and improve popular and new-emerging computational tools for the reproducible analysis of biological data, no doubts! However, for students and early career researchers, and people coming from areas other than biostatistics, computational biology, or bioinformatics, some analyses may represent obscure –if not completely unknown– territories. People developing these algorithms often assume they have a specialized audience and tend to trivialize underlying statistical concepts and methods when describing their computational functions and packages, not to mention the poor or even missing documentation and support some of the authors offer, (with notable exceptions such as limma and variancePartition, among others). \nSecond, nowadays it is incredibly simple to just run a complete pipeline with a single function. That’s efficient and increases productivity but it also has diluted the needed understanding behind their use. I have found many people, including myself, deludedly thinking we master an analysis just because we have run software programs without errors and have received outputs: we may dominate the practice but that doesn’t imply nor guarantees we understand the theory. \n\n\nIt seems to me we are a generation of trained students that know how to run an analysis and obtain results, but don’t understand the analyses themselves; in some occasions, not even the reasons why we execute them. But this is not limited to undergrad or master students: you would be surprised by the number of PhD students, postdocs, and researchers that relate to this!\n\n❗️❗️❗️ More alarming than the aforementioned I’d say, is not to be aware of why it is important to really understand the aims and foundations of the methods we implement. It is not until we do that, that we can make accurate and informed method selections based on the features of our data, detect unexpected and error-announcing results and interpret them correctly, map potential limitations of our analyses and draw rigorous meaningful conclusions from them."
   },
   {
     "objectID": "index.html#objectives",
@@ -47,19 +33,5 @@
     "title": "Daianna Gonzalez-Padilla",
     "section": "Feedback",
     "text": "Feedback\n\n💬 I hope you find these materials useful. Feel free to contact me for personal doubts, inquiries, or further discussion in any of my media shown below 👇🏼. I’d also appreciate your feedback and contributions to improving these contents. Good luck with your analyses!\n\n\n\n\nThe website was created using Quarto."
-  },
-  {
-    "objectID": "blog.html",
-    "href": "blog.html",
-    "title": "My Blog",
-    "section": "",
-    "text": "Fisher’s exact test\n\n\n\n\n\n\noverrepresentation\n\n\nenrichment\n\n\nGO\n\n\nKEGG\n\n\n\nA detailed and interpretable explanation of the Fisher’s exact test. \n\n\n\n\n\nJul 12, 2024\n\n\nDaianna Gonzalez-Padilla\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "posts/2024-07-24-Fisher_test/index.html",
-    "href": "posts/2024-07-24-Fisher_test/index.html",
-    "title": "Fisher’s exact test",
-    "section": "",
-    "text": "Introduction\nle"
   }
 ]

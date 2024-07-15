@@ -3,9 +3,9 @@ project:
 
 website:
   title: "Daianna Gonzalez-Padilla"
-  site-url: https://daianna21.github.io/daianna_blog/
+  site-url: https://daianna21.github.io/daianna_blog/_site/
   description: "Daianna's personal scientific blog"
-  favicon: "images/logo.png"
+  favicon: "images/logo-removebg.png"
   navbar:
     right:
       - text: "About me"

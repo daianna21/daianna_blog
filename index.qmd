@@ -66,7 +66,7 @@ Finally, I want to share some very important lessons I have learned so far:  
 
 -   There’s no better source to understand a method than going to its original publication 📑 (yes, some of the last century!) 
 
--   Documentation sites won’t answer many of your theoretical questions. Tutorials, if available, are more detailed materials with usage examples and explanations.
+-   Documentation sites won’t answer many of your theoretical questions. Tutorials, if available, are more detailed materials with usage examples and practical explanations, but again, for theory and methods check the original articles.
 
 -   The motivations I mentioned before should give us humility lessons once we become aware of how ignorant we are, something we only learn, paradoxically, as we acquire more knowledge by studying and investigating.
 :::

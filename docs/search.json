@@ -4,7 +4,7 @@
     "href": "index.html#a-little-about-me",
     "title": "Daianna Gonzalez-Padilla",
     "section": "A little about me",
-    "text": "A little about me\n\nHey! Daianna here. I graduated from the undergraduate program of Genomic Sciences 🧬 at the National Autonomous University of Mexico 🇲🇽 LCG-UNAM in Cuernavaca, Morelos, Mexico in 2024. Currently I work at the Sanger Institute in Cambridge, U.K. analyzing single-cell data from iPSC-derived microglia to unveil the genetic architecture of neurodegenerative diseases.\nDuring the last few years I’ve been involved in multiple omics projects. At the Lieber Institute for Brain Development (LIBD) I analyzed transcriptomic data to explore brain develpment and function 🧠, and at the Karolinska Institutet (KI) I’ve studied genetic variability in genes influencing drug response and toxicity 💊. Along the way, with my undergrad courses and projects, analyzing and dealing with my own data, and attending courses, conferences, and meetings, I realized I’ve learning so much about statistical analyses and bioinformatic tools that I wanted to share all this knowledge with the scientific community 👥, particularly with other students like me that may not have the same opportunities or academic background but also want to analyze datasets to answer biologically-relevant questions."
+    "text": "A little about me\n\nHey! Daianna here. I graduated from the undergraduate program of Genomic Sciences 🧬 at the National Autonomous University of Mexico 🇲🇽 LCG-UNAM in Cuernavaca, Morelos, Mexico in 2024. Currently I work at the Sanger Institute in Cambridge, U.K. analyzing single-cell data from iPSC-derived microglia to unveil the genetic architecture of neurodegenerative diseases.\nDuring the last few years I’ve been involved in multiple omics projects. At the Lieber Institute for Brain Development (LIBD) I analyzed transcriptomic data to explore brain develpment and function 🧠, and at the Karolinska Institutet (KI) I’ve studied genetic variability in genes influencing drug response and toxicity 💊. Along the way, with my undergrad courses and projects, analyzing and dealing with my own data, and attending courses, conferences, and meetings, I’ve learned about statistical analyses and bioinformatic tools and I wanted to share all this knowledge with the scientific community 👥, particularly with other students like me that may not have the same opportunities or academic background but also want to analyze datasets to answer biologically-relevant questions."
   },
   {
     "objectID": "index.html#motivation-for-this-website",
@@ -33,5 +33,19 @@
     "title": "Daianna Gonzalez-Padilla",
     "section": "Feedback",
     "text": "Feedback\n\n💬 I hope you find these materials useful. Feel free to contact me for personal doubts, inquiries, or further discussion in any of my media shown below 👇🏼. I’d also appreciate your feedback and contributions to keep improving these contents. Good luck with your analyses!\n\n\n\n\nThe website was created using Quarto."
+  },
+  {
+    "objectID": "blog.html",
+    "href": "blog.html",
+    "title": "My Blog",
+    "section": "",
+    "text": "Fisher’s exact test\n\n\n\n\n\n\noverrepresentation\n\n\nenrichment\n\n\nGO\n\n\nKEGG\n\n\n\nA detailed and interpretable explanation of the Fisher’s exact test in the context of gene set enrichment analysis. \n\n\n\n\n\nJul 12, 2024\n\n\nDaianna Gonzalez-Padilla\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "posts/2024-07-13-Fisher_test/index.html",
+    "href": "posts/2024-07-13-Fisher_test/index.html",
+    "title": "Fisher’s exact test",
+    "section": "",
+    "text": "Introduction\nle"
   }
 ]

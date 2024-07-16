@@ -1,7 +1,7 @@
 ---
 title: "Fisher's exact test"
 description: |
- A detailed and interpretable explanation of the Fisher's exact test.
+ A detailed and interpretable explanation of the Fisher's exact test in the context of gene set enrichment analysis.
 author:
   - name: Daianna Gonzalez-Padilla
 date: 2024-07-12

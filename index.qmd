@@ -34,7 +34,7 @@ During the last few years I've been involved in multiple omics projects. At the 
 ::: {style="text-align: justify"}
 Doing scientific research, collaborating with my classmates and peers, and assisting in bioinformatics courses I’ve noticed the existence of two common problems while analyzing data:
 
-1.  In these interconnected times, with praiseworthy collaborative efforts such as the [Bioconductor](https://www.bioconductor.org) project we can easily develop, share, and use other people’s code, data, methods, and even complete packages for our own analyses. That represents an incredible opportunity for all of us to leverage, contribute, and improve popular and new-emerging computational tools for the reproducible analysis of biological data, no doubts! However, for students and early career researchers, and people coming from areas other than biostatistics, computational biology, or bioinformatics, some analyses may represent obscure –if not completely unknown– territories. People developing these algorithms often assume they have a specialized audience and tend to trivialize underlying statistical concepts and methods when describing their computational functions and packages, not to mention the poor or even missing documentation and support some of the authors offer, (with notable exceptions such as *limma* and *variancePartition*, among others). 
+1.  In these interconnected times, with praiseworthy collaborative efforts such as the [Bioconductor](https://www.bioconductor.org) project we can easily develop, share, and use other people’s code, data, methods, and even complete packages for our own analyses. That represents an incredible opportunity for all of us to leverage, contribute, and improve popular and new-emerging computational tools for the reproducible analysis of biological data, no doubts! However, for students and early career researchers, and people coming from areas other than biostatistics, computational biology, or bioinformatics, some analyses may represent obscure –if not completely unknown– territories. People developing these algorithms often assume they have a specialized audience and tend to trivialize underlying statistical concepts and methods when describing their computational functions and packages, not to mention the poor or even missing documentation and support some of the authors offer (with notable exceptions such as *limma* and *variancePartition*, among others). 
 
 2.  Second, nowadays it is incredibly simple to just run a complete pipeline with a single function. That’s efficient and increases productivity but it also has diluted the needed understanding behind their use. I have found many people, including myself, deludedly thinking we master an analysis just because we have run software programs without errors and have received outputs: we may dominate the practice but that doesn’t imply nor guarantees we understand the theory. 
 
@@ -46,17 +46,17 @@ Doing scientific research, collaborating with my classmates and peers, and assis
 ## **Objectives**
 
 ::: {style="text-align: justify"}
-The purposes of the posted blogs here are the following:
+The purposes of the blog posts are the following:
 
--   To diminish those ◼️**📦** that many of these single-function methods represent, clearly showing how they operate mathematically and statistically.
+-   To diminish those ◼️**📦**'s that many of these single-function methods represent, clearly showing how they operate mathematically and statistically.
 
 -   To exemplify how to run these R/Bioconductor/Bash programs on real data, explaining their inputs and outputs, arguments and parameters. 
 
--   To present analyses you can implement with your own datasets to inspire you to explore further your data and outputs. 
+-   To present the type of analyses you can implement with your own datasets to inspire you to explore further your data and outputs. 
 
 -   To show how to interpret the results.
 
-In summary, this is a little of what I would like to have read to feel more confident when applying a tool and explaining results derived from it. 
+In summary, this is a little of what I would have liked to read to feel more confident when applying a tool and explaining results derived from it. 
 :::
 
 ## **Take-home messages**
@@ -68,13 +68,13 @@ Finally, I want to share some very important lessons I have learned so far:  
 
 -   Documentation sites won’t answer many of your theoretical questions. Tutorials, if available, are more detailed materials with usage examples and practical explanations, but again, for theory and methods check the original articles.
 
--   The motivations I mentioned before should give us humility lessons once we become aware of how ignorant we are, something we only learn, paradoxically, as we acquire more knowledge by studying and investigating.
+-   Stay humble. If I have become aware of something these years, it is how ignorant we are, something we only learn, paradoxically, as we acquire more knowledge by studying and investigating 📚. Taking an arrogant attitude will only stop you from nourishing yourself with more learnings and ideas, and it will close doors for you. We never stop learning!
 :::
 
 ## **Feedback**
 
 ::: {style="text-align: justify"}
-💬 I hope you find these materials useful. Feel free to contact me for personal doubts, inquiries, or further discussion in any of my media shown below 👇🏼. I’d also appreciate your feedback and contributions to improving these contents. Good luck with your analyses!
+💬 I hope you find these materials useful. Feel free to contact me for personal doubts, inquiries, or further discussion in any of my media shown below 👇🏼. I’d also appreciate your feedback and contributions to keep improving these contents. Good luck with your analyses!
 :::
 
 \

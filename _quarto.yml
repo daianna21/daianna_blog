@@ -13,8 +13,6 @@ website:
         file: index.qmd
       - text: "Blog"
         file: blog.qmd
-      - text: "My publications"
-        file: publications.qmd
       - text: "Other materials"
         file: materials.qmd
       - icon: github

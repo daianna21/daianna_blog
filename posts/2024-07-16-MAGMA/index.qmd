@@ -42,7 +42,7 @@ Two alternatives for gene analysis are offered by MAGMA:
 
 If the input data is **raw genotype data**, MAGMA fits a multiple linear PC regression model to the individuals' phenotypes. Here, for one gene $g$ at a time, the SNP matrix that contains the information of the SNPs for that gene across all the $N$ individuals studied, is projected onto its Principal Components (PCs). These PCs capture genotypic differences between individuals for the given gene and the first $K$ most explanatory ones (comprising 99.9% of the variance) are used as predictors of the phenotype ($Y$) in the linear model.
 
-![](images/MAGMA_PC_model.png)
+![](images/MAGMA_PC_model.png){width="2419"}
 
 Phenotype is modeled as:
 

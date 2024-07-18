@@ -258,7 +258,7 @@ window.Quarto = {
 <section id="multiple-linear-pc-regression-model" class="level3">
 <h3 class="anchored" data-anchor-id="multiple-linear-pc-regression-model"><strong>Multiple linear PC regression model</strong></h3>
 <p>If the input data is <strong>raw genotype data</strong>, MAGMA fits a multiple linear PC regression model to the individuals’ phenotypes. Here, for one gene <span class="math inline">\(g\)</span> at a time, the SNP matrix that contains the information of the SNPs for that gene across all the <span class="math inline">\(N\)</span> individuals studied, is projected onto its Principal Components (PCs). These PCs capture genotypic differences between individuals for the given gene and the first <span class="math inline">\(K\)</span> most explanatory ones (comprising 99.9% of the variance) are used as predictors of the phenotype (<span class="math inline">\(Y\)</span>) in the linear model.</p>
-<p><img src="images/MAGMA_PC_model.png" class="img-fluid"></p>
+<p><img src="images/MAGMA_PC_model.png" class="img-fluid" width="2419"></p>
 <p>Phenotype is modeled as:</p>
 <p><span class="math display">\[
 Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g

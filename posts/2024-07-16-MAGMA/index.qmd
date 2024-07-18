@@ -38,11 +38,11 @@ Genetic markers are aggregated to the level of whole individual genes and those 
 
 Two alternatives for gene analysis are offered by MAGMA:
 
-### **Multiple linear PC regression model**
+### [**Multiple linear PC regression model**]{style="color:#FF7256"}
 
 If the input data is **raw genotype data**, MAGMA fits a multiple linear PC regression model to the individuals' phenotypes. Here, for one gene $g$ at a time, the SNP matrix that contains the information of the SNPs for that gene across all the $N$ individuals studied, is projected onto its Principal Components (PCs). These PCs capture genotypic differences between individuals for the given gene and the first $K$ most explanatory ones (comprising 99.9% of the variance) are used as predictors of the phenotype ($Y$) in the linear model.
 
-![](images/MAGMA_PC_model.png){width="2419"}
+![](images/MAGMA_PC_model.png){width="2000"}
 
 Phenotype is modeled as:
 
@@ -62,6 +62,10 @@ Then an F-test is used to assess if genotypes for gene $g$ have an effect on the
 ::: {style="background-color:#F2F2F2; padding: 15px"}
 ✔️ The advantage of using PCs instead of variables for individual SNPs is that 1) the number of variables included in the linear model is reduced and 2) they allow to account for redundancy and collinearity between SNPs. Also this model offers flexibility to accommodate additional covariates to model the phenotype.
 :::
+
+### [**SNP-wise gene analysis**]{style="color:#7AC5CD"}
+
+If no raw genotype data is available, MAGMA also accepts [**SNP *p*-values**]{.underline} from a GWAS as input. In this case, such SNP *p*-values are first transformed into [**Z or** $\chi^2$ **statistics**]{.underline} and aggregated at the gene level[\*]{style="color:#FF00FF"} to obtain [**one test-statistic per gene**]{.underline} which is then used to compute the [**gene *p*-value**]{.underline}, either by an approximation of the sampling distribution ([**mean SNP statistic**]{style="background-color: #F0FFF0"} method) or by phenotype permutation ([**top SNP statistic**]{style="background-color:#FFF0F5"} method).
 
 ## Gene-set analysis
 

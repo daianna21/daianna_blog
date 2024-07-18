@@ -178,7 +178,7 @@ window.Quarto = {
   <li><a href="#what-youll-learn-here" id="toc-what-youll-learn-here" class="nav-link" data-scroll-target="#what-youll-learn-here">What you’ll learn here</a></li>
   <li><a href="#how-does-it-work" id="toc-how-does-it-work" class="nav-link" data-scroll-target="#how-does-it-work">How does it work?</a>
   <ul class="collapse">
-  <li><a href="#gene-analysis" id="toc-gene-analysis" class="nav-link" data-scroll-target="#gene-analysis">Gene analysis</a>
+  <li><a href="#gene-analysis" id="toc-gene-analysis" class="nav-link" data-scroll-target="#gene-analysis"><strong>Gene analysis</strong></a>
   <ul class="collapse">
   <li><a href="#multiple-linear-pc-regression-model" id="toc-multiple-linear-pc-regression-model" class="nav-link" data-scroll-target="#multiple-linear-pc-regression-model"><span style="color:#FF7256"><strong>Multiple linear PC regression model</strong></span></a></li>
   <li><a href="#snp-wise-gene-analysis" id="toc-snp-wise-gene-analysis" class="nav-link" data-scroll-target="#snp-wise-gene-analysis"><span style="color:#7AC5CD"><strong>SNP-wise gene analysis</strong></span></a></li>
@@ -253,13 +253,13 @@ window.Quarto = {
 <h1>How does it work?</h1>
 <p>MAGMA allows to first perform a gene analysis and subsequently a gene-set analysis based on gene-level results. Note, however, that the gene-set analysis comes as a separate layer and it is an additional optional step, though it is frequently performed and quite useful.</p>
 <section id="gene-analysis" class="level2">
-<h2 class="anchored" data-anchor-id="gene-analysis">Gene analysis</h2>
+<h2 class="anchored" data-anchor-id="gene-analysis"><strong>Gene analysis</strong></h2>
 <p>Genetic markers are aggregated to the level of whole individual genes and those in a given gene are jointly tested for their association with the phenotype, defining in such way the association of the gene itself. This definitely allows to detect significant associations of multiple small-effect markers in a gene that individually would be missed, i.e., associations that depend on multiple markers. This also reduces the number of required tests and makes the results more interpretable by summarizing at the gene level.</p>
 <p>Two alternatives for gene analysis are offered by MAGMA:</p>
 <section id="multiple-linear-pc-regression-model" class="level3">
 <h3 class="anchored" data-anchor-id="multiple-linear-pc-regression-model"><span style="color:#FF7256"><strong>Multiple linear PC regression model</strong></span></h3>
 <p>If the input data is <strong>raw genotype data</strong>, MAGMA fits a multiple linear PC regression model to the individuals’ phenotypes. Here, for one gene <span class="math inline">\(g\)</span> at a time, the SNP matrix that contains the information of the SNPs for that gene across all the <span class="math inline">\(N\)</span> individuals studied, is projected onto its Principal Components (PCs). These PCs capture genotypic differences between individuals for the given gene and the first <span class="math inline">\(K\)</span> most explanatory ones (comprising 99.9% of the variance) are used as predictors of the phenotype (<span class="math inline">\(Y\)</span>) in the linear model.</p>
-<p><img src="images/MAGMA_PC_model.png" class="img-fluid" width="2000"></p>
+<p><img src="images/MAGMA_PC_model.png" class="img-fluid" width="1500"></p>
 <p>Phenotype is modeled as:</p>
 <p><span class="math display">\[
 Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g
@@ -276,7 +276,16 @@ Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g
 </section>
 <section id="snp-wise-gene-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="snp-wise-gene-analysis"><span style="color:#7AC5CD"><strong>SNP-wise gene analysis</strong></span></h3>
-<p>If no raw genotype data is available, MAGMA also accepts <u><strong>SNP <em>p</em>-values</strong></u> from a GWAS as input. In this case, such SNP <em>p</em>-values are first transformed into <u><strong>Z or</strong> <span class="math inline">\(\chi^2\)</span> <strong>statistics</strong></u> and aggregated at the gene level<span style="color:#FF00FF">*</span> to obtain <u><strong>one test-statistic per gene</strong></u> which is then used to compute the <u><strong>gene <em>p</em>-value</strong></u>, either by an approximation of the sampling distribution (<span style="background-color: #F0FFF0"><strong>mean SNP statistic</strong></span> method) or by phenotype permutation (<span style="background-color:#FFF0F5"><strong>top SNP statistic</strong></span> method).</p>
+<p>If no raw genotype data is available, MAGMA also accepts <u><strong>SNP <em>p</em>-values</strong></u> from a GWAS as input. In this case, such SNP <em>p</em>-values are first transformed into <u><strong>Z or</strong> <span class="math inline">\(\chi^2\)</span> <strong>statistics</strong></u> and aggregated at the gene level (by the <span style="background-color: #F0FFF0"><strong>mean SNP statistic</strong></span> or <span style="background-color:#FFF0F5"><strong>top SNP statistic</strong></span> method) to obtain <u><strong>one test-statistic per gene</strong></u> which is then used to compute the <u><strong>gene <em>p</em>-value</strong></u>, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (top SNP statistic method).</p>
+<div>
+<p>Summary: SNP <em>p</em>-values → SNP statistics →* gene tets-statistic → gene <em>p</em>-value → gene <em>z</em>-score (<span class="math inline">\(z_g\)</span>)</p>
+</div>
+<p>***** Gene test-statistics can be constructed from the SNP statistics (or <em>p</em>-values) applying one of two (main) implemented methods in MAGMA:</p>
+<ul>
+<li><p><strong>Mean SNP statistic</strong>: the mean (weighted sum) of SNP Z/$\chi^2$ statistics is used as the statistic of the gene. *****The&nbsp;<em>p</em>-value of the gene is obtained based on a known&nbsp;<strong>approximation of the sampling distribution</strong>. The ****reference data is only used to estimate the&nbsp;<strong>SNP statistic correlation matrix</strong>. When using SNP Z-stats the mean of them is used, but for the mean $\chi^2$ method the sum of the -log(<em>p</em>-values) of the SNPs of the gene are used as the gene stats that follow a $\sim c\chi^2_{(f)}$.</p></li>
+<li><p><strong>Top SNP statistic</strong>: the lowest SNP&nbsp;<em>p</em>-value for the gene (of the most associated SNP) or the sum of the -log(<em>p</em>-values) for the top most associated SNP is used as the gene statistic. A permutation procedure is applied assigning random phenotypes to the reference data and an empirical&nbsp;<em>p</em>-value for the gene is computed&nbsp;<strong>as the proportion of these resulting permuted top gene statistics that are higher than the observed top gene stats</strong>*: an&nbsp;<strong>empirical sampling distribution</strong>&nbsp;of the gene test-statistics is generated and the gene&nbsp;<em>p</em>-value computed based on these reference data.&nbsp;<a href="https://emojipedia.org/thinking-face">**🤔</a>**&nbsp;<em>How are permuted gene statistics computed from reference data (with only SNP IDs)?</em></p></li>
+<li><p>Weighted mean of the top SNP statistics</p></li>
+</ul>
 </section>
 </section>
 <section id="gene-set-analysis" class="level2">

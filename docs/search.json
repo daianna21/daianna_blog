@@ -39,7 +39,7 @@
     "href": "blog.html",
     "title": "My Blog",
     "section": "",
-    "text": "Fisher’s exact test\n\n\n\n\n\n\noverrepresentation\n\n\nenrichment\n\n\nGO\n\n\nKEGG\n\n\n\nA detailed and interpretable explanation of the Fisher’s exact test in the context of gene set enrichment analysis. \n\n\n\n\n\nJul 12, 2024\n\n\nDaianna Gonzalez-Padilla\n\n\n\n\n\n\nNo matching items"
+    "text": "MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?\n\n\n\n\n\n\nGWAS\n\n\nGene analysis\n\n\nGene Set Enrichment\n\n\nSNP summary statistics\n\n\n\nGlobal overview of MAGMA Gene and Gene-Set analysis and \n\n\n\n\n\nJul 16, 2024\n\n\nDaianna Gonzalez-Padilla\n\n\n\n\n\n\n\n\n\n\n\n\nFisher’s exact test\n\n\n\n\n\n\noverrepresentation\n\n\nenrichment\n\n\nGO\n\n\nKEGG\n\n\n\nA detailed and interpretable explanation of the Fisher’s exact test in the context of gene set enrichment analysis. \n\n\n\n\n\nJul 12, 2024\n\n\nDaianna Gonzalez-Padilla\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "posts/2024-07-13-Fisher_test/index.html",
@@ -47,5 +47,40 @@
     "title": "Fisher’s exact test",
     "section": "",
     "text": "Introduction\nle"
+  },
+  {
+    "objectID": "posts/2024-07-16-MAGMA/index.html",
+    "href": "posts/2024-07-16-MAGMA/index.html",
+    "title": "MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?",
+    "section": "",
+    "text": "MAGMA stands for Multi-marker Analysis of GenoMic Annotation and is a computational tool for the analysis of the joint effect of multiple genetic markers on a phenotype based on Genome-Wide Association Study (GWAS) data. MAGMA constitutes a flexible and generalizable approach to assess the association of individual genes or gene-sets with a phenotype based on the associations that the SNPs of the genes have with the same phenotype.\nThis is a commonly used method that you’ll likely find implemented while reading about GWASes or that you’ll need to run if working with genetic variant associations and gene-set enrichment analysis, so let’s see how it works."
+  },
+  {
+    "objectID": "posts/2024-07-16-MAGMA/index.html#step-1",
+    "href": "posts/2024-07-16-MAGMA/index.html#step-1",
+    "title": "MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?",
+    "section": "Step 1:",
+    "text": "Step 1:"
+  },
+  {
+    "objectID": "posts/2024-07-16-MAGMA/index.html#original-publication-of-magma",
+    "href": "posts/2024-07-16-MAGMA/index.html#original-publication-of-magma",
+    "title": "MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?",
+    "section": "",
+    "text": "de Leeuw, C. A., Mooij, J. M., Heskes, T., & Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data. PLoS computational biology, 11(4), e1004219. https://doi.org/10.1371/journal.pcbi.1004219"
+  },
+  {
+    "objectID": "posts/2024-07-16-MAGMA/index.html#gene-analysis",
+    "href": "posts/2024-07-16-MAGMA/index.html#gene-analysis",
+    "title": "MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?",
+    "section": "Gene analysis",
+    "text": "Gene analysis\nGenetic markers are aggregated to the level of whole individual genes and those in a given gene are jointly tested for their association with the phenotype, defining in such way the association of the gene itself. This definitely allows to detect significant associations of multiple small-effect markers in a gene that individually would be missed, i.e., associations that depend on multiple markers. This also reduces the number of required tests and makes the results more interpretable by summarizing at the gene level.\nTwo alternatives for gene analysis are offered by MAGMA:\n\nMultiple linear PC regression model\nIf the input data is raw genotype data, MAGMA fits a multiple linear PC regression model to the individuals’ phenotypes. Here, for one gene \\(g\\) at a time, the SNP matrix that contains the information of the SNPs for that gene across all the \\(N\\) individuals studied, is projected onto its Principal Components (PCs). These PCs capture genotypic differences between individuals for the given gene and the first \\(K\\) most explanatory ones (comprising 99.9% of the variance) are used as predictors of the phenotype (\\(Y\\)) in the linear model.\n\nPhenotype is modeled as:\n\\[\nY = \\alpha_{0g}+X^*_{g}\\alpha_g+W\\beta_g+\\epsilon_g\n\\]\n\\[\n{\\begin{bmatrix}Y_1 \\\\ ... \\\\ Y_{N-1} \\\\ Y_N\\end{bmatrix}} = {\\begin{bmatrix}\\alpha_{0g} \\\\ ... \\\\ \\alpha_{0g} \\\\ \\alpha_{0g}\\end{bmatrix}} + \\stackrel{PC1 \\ \\  \\ \\  \\ \\ PC2 \\ \\  \\ \\  \\ \\ ...  \\ \\ \\ \\ \\ \\ PC_K} {\\begin{bmatrix}  x_{11} \\ \\ x_{12} \\ \\ ... \\ \\ x_{1K}  \\\\  ... \\\\ x_{(N-1)1} \\ \\ x_{(N-1)2} \\ \\ ... \\ \\ x_{(N-1)K} \\\\  x_{N1} \\ \\ x_{N2} \\ \\ ... \\ \\ x_{NK} \\end{bmatrix}} {\\begin{bmatrix}\\alpha_{g1} \\\\  \\alpha_{g2} \\\\ ... \\\\ \\alpha_{gK}\\end{bmatrix}} + \\stackrel{Cov1 \\ \\  \\ \\  \\ \\ Cov2 \\ \\  \\ \\  \\ \\ ...  \\ \\ \\ \\ \\ \\ CovL}{\\begin{bmatrix}  w_{11} \\ \\ w_{12} \\ \\ ... \\ \\ w_{1L}  \\\\  ... \\\\ w_{(N-1)1} \\ \\ w_{(N-1)2} \\ \\ ... \\ \\ w_{(N-1)L} \\\\  w_{N1} \\ \\ w_{N2} \\ \\ ... \\ \\ w_{NL} \\end{bmatrix}}{\\begin{bmatrix}\\beta_{g1} \\\\  \\beta_{g2} \\\\ ... \\\\ \\beta_{gL}\\end{bmatrix}} +\n{\\begin{bmatrix}\\epsilon_{g1} \\\\ ... \\\\ \\epsilon_{g(N-1)} \\\\  \\epsilon_{gN}\\end{bmatrix}}\n\\]\nWith \\(X_{g}^*\\) the matrix of the first \\(K\\) PCs for gene \\(g\\) and \\(W\\) a matrix of additional covariates for the individuals that can be included in the model. \\(\\alpha_g\\)’s and \\(\\beta_g\\)’s are the coefficients of the PCs and covariates for the gene \\(g\\), respectively. \\(\\epsilon_g\\) is the vector of residuals and \\(\\alpha_{0g}\\) the intercept. The \\(\\alpha_g\\)’s represent the effect of the genotype for gene \\(g\\) on the phenotype (the genetic effect).\nThen an F-test is used to assess if genotypes for gene \\(g\\) have an effect on the phenotype under the null hypothesis that the genetic effect of \\(g\\) on the phenotype is 0 across all PCs (\\(H_0:\\alpha_g=\\overrightarrow 0\\)). This leads to a p-value for the association of gene \\(g\\) with the phenotype \\(Y\\) based on its genetic markers.\n\n✔️ The advantage of using PCs instead of variables for individual SNPs is that 1) the number of variables included in the linear model is reduced and 2) they allow to account for redundancy and collinearity between SNPs. Also this model offers flexibility to accommodate additional covariates to model the phenotype."
+  },
+  {
+    "objectID": "posts/2024-07-16-MAGMA/index.html#gene-set-analysis",
+    "href": "posts/2024-07-16-MAGMA/index.html#gene-set-analysis",
+    "title": "MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?",
+    "section": "Gene-set analysis",
+    "text": "Gene-set analysis\nBy aggregating genes in groups of genes that share cellular or functional properties and evaluating their association with a phenotype, we can gain insights into the potential molecules, pathways, and tissues implicated in the phenotype’s etiology.\nTwo gene-level regression models are implemented:"
   }
 ]

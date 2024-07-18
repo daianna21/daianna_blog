@@ -6,8 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Daianna Gonzalez-Padilla">
+<meta name="dcterms.date" content="2024-07-16">
+<meta name="description" content="Global overview of MAGMA Gene and Gene-Set analysis and">
 
-<title>Daianna Gonzalez-Padilla - My Blog</title>
+<title>Daianna Gonzalez-Padilla - MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,25 +26,23 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<link href="./images/logo-removebg.png" rel="icon" type="image/png">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../images/logo-removebg.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -69,35 +70,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -129,17 +101,17 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="styles.css">
-<link rel="alternate" type="application/rss+xml" title="Daianna Gonzalez-Padilla" href="blog.xml" data-external="1"></head>
+<link rel="stylesheet" href="../../styles.css">
+</head>
 
 <body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+  <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Daianna Gonzalez-Padilla</span>
     </a>
   </div>
@@ -150,15 +122,15 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
+    <a class="nav-link" href="../../index.html"> 
 <span class="menu-text">About me</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./blog.html" aria-current="page"> 
+    <a class="nav-link" href="../../blog.html"> 
 <span class="menu-text">Blog</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./materials.qmd"> 
+    <a class="nav-link" href="../../materials.qmd"> 
 <span class="menu-text">Other materials</span></a>
   </li>  
   <li class="nav-item compact">
@@ -182,7 +154,7 @@ window.Quarto = {
 <span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="./blog.xml"> <i class="bi bi-rss" role="img">
+    <a class="nav-link" href="../../blog.xml"> <i class="bi bi-rss" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -194,130 +166,138 @@ window.Quarto = {
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">My Blog</h1>
-                      </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta column-page-left">
-
-      
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(2)</span></div><div class="category" data-category="GO">GO <span class="quarto-category-count">(1)</span></div><div class="category" data-category="GWAS">GWAS <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Gene Set Enrichment">Gene Set Enrichment <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Gene analysis">Gene analysis <span class="quarto-category-count">(1)</span></div><div class="category" data-category="KEGG">KEGG <span class="quarto-category-count">(1)</span></div><div class="category" data-category="SNP summary statistics">SNP summary statistics <span class="quarto-category-count">(1)</span></div><div class="category" data-category="enrichment">enrichment <span class="quarto-category-count">(1)</span></div><div class="category" data-category="overrepresentation">overrepresentation <span class="quarto-category-count">(1)</span></div></div></div>
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#what-youll-learn-here" id="toc-what-youll-learn-here" class="nav-link" data-scroll-target="#what-youll-learn-here">What you’ll learn here</a></li>
+  <li><a href="#how-does-it-work" id="toc-how-does-it-work" class="nav-link" data-scroll-target="#how-does-it-work">How does it work?</a>
+  <ul class="collapse">
+  <li><a href="#gene-analysis" id="toc-gene-analysis" class="nav-link" data-scroll-target="#gene-analysis">Gene analysis</a>
+  <ul class="collapse">
+  <li><a href="#multiple-linear-pc-regression-model" id="toc-multiple-linear-pc-regression-model" class="nav-link" data-scroll-target="#multiple-linear-pc-regression-model"><strong>Multiple linear PC regression model</strong></a></li>
+  </ul></li>
+  <li><a href="#gene-set-analysis" id="toc-gene-set-analysis" class="nav-link" data-scroll-target="#gene-set-analysis">Gene-set analysis</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#relevant-links" id="toc-relevant-links" class="nav-link" data-scroll-target="#relevant-links">Relevant links</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">GWAS</div>
+    <div class="quarto-category">Gene analysis</div>
+    <div class="quarto-category">Gene Set Enrichment</div>
+    <div class="quarto-category">SNP summary statistics</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>Global overview of MAGMA Gene and Gene-Set analysis and</p>
+  </div>
+</div>
 
 
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daianna Gonzalez-Padilla </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 16, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
 
 
+</header>
 
 
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>MAGMA&nbsp;stands for&nbsp;<strong>Multi-marker Analysis of GenoMic Annotation</strong>&nbsp;and is a computational tool for the analysis of the joint effect of multiple genetic markers on a phenotype based on Genome-Wide Association Study (GWAS) data. MAGMA constitutes a flexible and generalizable approach to assess the&nbsp;<strong>association</strong>&nbsp;of&nbsp;<u><strong>individual genes</strong></u>&nbsp;or&nbsp;<u><strong>gene-sets</strong></u>&nbsp;with a&nbsp;<strong>phenotype</strong>&nbsp;based on the associations that the&nbsp;<u><strong>SNPs</strong></u>&nbsp;of the genes have with the same phenotype.</p>
+<p>This is a commonly used method that you’ll likely find implemented while reading about GWASes or that you’ll need to run if working with genetic variant associations and gene-set enrichment analysis, so let’s see how it works.</p>
+</section>
+<section id="what-youll-learn-here" class="level1">
+<h1>What you’ll learn here</h1>
+<ol type="1">
+<li><p>Global description of the analyses MAGMA allows to run at gene and gene-set levels.</p></li>
+<li><p>A more detailed demonstration of the SNP-wise gene analysis implemented in MAGMA: inputs, commands and outputs ….</p></li>
+<li><p>TODO</p></li>
+</ol>
+</section>
+<section id="how-does-it-work" class="level1">
+<h1>How does it work?</h1>
+<p>MAGMA allows to first perform a gene analysis and subsequently a gene-set analysis based on gene-level results. Note, however, that the gene-set analysis comes as a separate layer and it is an additional optional step, though it is frequently performed and quite useful.</p>
+<section id="gene-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="gene-analysis">Gene analysis</h2>
+<p>Genetic markers are aggregated to the level of whole individual genes and those in a given gene are jointly tested for their association with the phenotype, defining in such way the association of the gene itself. This definitely allows to detect significant associations of multiple small-effect markers in a gene that individually would be missed, i.e., associations that depend on multiple markers. This also reduces the number of required tests and makes the results more interpretable by summarizing at the gene level.</p>
+<p>Two alternatives for gene analysis are offered by MAGMA:</p>
+<section id="multiple-linear-pc-regression-model" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-linear-pc-regression-model"><strong>Multiple linear PC regression model</strong></h3>
+<p>If the input data is <strong>raw genotype data</strong>, MAGMA fits a multiple linear PC regression model to the individuals’ phenotypes. Here, for one gene <span class="math inline">\(g\)</span> at a time, the SNP matrix that contains the information of the SNPs for that gene across all the <span class="math inline">\(N\)</span> individuals studied, is projected onto its Principal Components (PCs). These PCs capture genotypic differences between individuals for the given gene and the first <span class="math inline">\(K\)</span> most explanatory ones (comprising 99.9% of the variance) are used as predictors of the phenotype (<span class="math inline">\(Y\)</span>) in the linear model.</p>
+<p><img src="images/MAGMA_PC_model.png" class="img-fluid"></p>
+<p>Phenotype is modeled as:</p>
+<p><span class="math display">\[
+Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g
+\]</span></p>
+<p><span class="math display">\[
+{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} + \stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
+{\begin{bmatrix}\epsilon_{g1} \\ ... \\ \epsilon_{g(N-1)} \\  \epsilon_{gN}\end{bmatrix}}
+\]</span></p>
+<p>With <span class="math inline">\(X_{g}^*\)</span> the matrix of the first <span class="math inline">\(K\)</span> PCs for gene <span class="math inline">\(g\)</span> and <span class="math inline">\(W\)</span> a matrix of additional covariates for the individuals that can be included in the model. <span class="math inline">\(\alpha_g\)</span>’s and <span class="math inline">\(\beta_g\)</span>’s are the coefficients of the PCs and covariates for the gene <span class="math inline">\(g\)</span>, respectively. <span class="math inline">\(\epsilon_g\)</span> is the vector of residuals and <span class="math inline">\(\alpha_{0g}\)</span> the intercept. The <span class="math inline">\(\alpha_g\)</span>’s represent the effect of the genotype for gene <span class="math inline">\(g\)</span> on the phenotype (the <strong>genetic effect</strong>).</p>
+<p>Then an F-test is used to assess if genotypes for gene <span class="math inline">\(g\)</span> have an effect on the phenotype under the null hypothesis that the genetic effect of <span class="math inline">\(g\)</span> on the phenotype is 0 across all PCs (<span class="math inline">\(H_0:\alpha_g=\overrightarrow 0\)</span>). This leads to a <em>p</em>-value for the association of gene <span class="math inline">\(g\)</span> with the phenotype <span class="math inline">\(Y\)</span> based on its genetic markers.</p>
+<div style="background-color:#F2F2F2; padding: 15px">
+<p>✔️ The advantage of using PCs instead of variables for individual SNPs is that 1) the number of variables included in the linear model is reduced and 2) they allow to account for redundancy and collinearity between SNPs. Also this model offers flexibility to accommodate additional covariates to model the phenotype.</p>
+</div>
+</section>
+</section>
+<section id="gene-set-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="gene-set-analysis">Gene-set analysis</h2>
+<p>By aggregating genes in groups of genes that share cellular or functional properties and evaluating their association with a phenotype, we can gain insights into the potential molecules, pathways, and tissues implicated in the phenotype’s etiology.</p>
+<p>Two gene-level regression models are implemented:</p>
+</section>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+</section>
+<section id="relevant-links" class="level1">
+<h1>Relevant links</h1>
+<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3">
+<div class="line-block">📑 <strong>Original publication for MAGMA:</strong><br>
+de Leeuw, C. A., Mooij, J. M., Heskes, T., &amp; Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data.&nbsp;<em>PLoS computational biology</em>,&nbsp;<em>11</em>(4), e1004219. <a href="https://doi.org/10.1371/journal.pcbi.1004219https://doi.org/10.1371/journal.pcbi.1004219">https://doi.org/10.1371/journal.pcbi.1004219</a></div>
+</div>
+<p>&nbsp;</p>
+</section>
+<section id="references" class="level1">
+<h1>References</h1>
 
 
+</section>
 
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="GWAS,Gene analysis,Gene Set Enrichment,SNP summary statistics" data-listing-date-sort="1721109600000" data-listing-file-modified-sort="1721279979493" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="806">
-<div class="thumbnail">
-<p><a href="./posts/2024-07-16-MAGMA/index.html" class="no-external"></a></p><a href="./posts/2024-07-16-MAGMA/index.html" class="no-external">
-<p><img src="./posts/2024-07-16-MAGMA/images/logo.png" class="thumbnail-image"></p>
-</a><p><a href="./posts/2024-07-16-MAGMA/index.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/2024-07-16-MAGMA/index.html" class="no-external">MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/2024-07-16-MAGMA/index.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('GWAS'); return false;">
-GWAS
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('Gene analysis'); return false;">
-Gene analysis
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('Gene Set Enrichment'); return false;">
-Gene Set Enrichment
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('SNP summary statistics'); return false;">
-SNP summary statistics
-</div>
-</div>
-<div class="listing-description">
-<a href="./posts/2024-07-16-MAGMA/index.html" class="no-external">Global overview of MAGMA Gene and Gene-Set analysis and </a>
-</div>
-</div>
-<div class="metadata">
-<a href="./posts/2024-07-16-MAGMA/index.html" class="no-external">
-<div class="listing-date">
-Jul 16, 2024
-</div>
-<div class="listing-author">
-Daianna Gonzalez-Padilla
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="overrepresentation,enrichment,GO,KEGG" data-listing-date-sort="1720764000000" data-listing-file-modified-sort="1721111756436" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
-<div class="thumbnail">
-<p><a href="./posts/2024-07-13-Fisher_test/index.html" class="no-external"></a></p><a href="./posts/2024-07-13-Fisher_test/index.html" class="no-external">
-<p><img src="./posts/2024-07-13-Fisher_test/images/logo.png" class="thumbnail-image"></p>
-</a><p><a href="./posts/2024-07-13-Fisher_test/index.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/2024-07-13-Fisher_test/index.html" class="no-external">Fisher’s exact test</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/2024-07-13-Fisher_test/index.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('overrepresentation'); return false;">
-overrepresentation
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('enrichment'); return false;">
-enrichment
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('GO'); return false;">
-GO
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('KEGG'); return false;">
-KEGG
-</div>
-</div>
-<div class="listing-description">
-<a href="./posts/2024-07-13-Fisher_test/index.html" class="no-external">A detailed and interpretable explanation of the Fisher’s exact test in the context of gene set enrichment analysis. </a>
-</div>
-</div>
-<div class="metadata">
-<a href="./posts/2024-07-13-Fisher_test/index.html" class="no-external">
-<div class="listing-date">
-Jul 12, 2024
-</div>
-<div class="listing-author">
-Daianna Gonzalez-Padilla
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

@@ -42,7 +42,7 @@ Two alternatives for gene analysis are offered by MAGMA:
 
 If the input data is **raw genotype data**, MAGMA fits a multiple linear PC regression model to the individuals' phenotypes. Here, for one gene $g$ at a time, the SNP matrix that contains the information of the SNPs for that gene across all the $N$ individuals studied, is projected onto its Principal Components (PCs). These PCs capture genotypic differences between individuals for the given gene and the first $K$ most explanatory ones (comprising 99.9% of the variance) are used as predictors of the phenotype ($Y$) in the linear model.
 
-![](images/MAGMA_PC_model.png){fig-align="center" width="650"}
+![](images/MAGMA_PC_model.png){fig-align="center" width="700"}
 
 Phenotype is modeled as:
 
@@ -51,7 +51,7 @@ Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g
 $$
 
 $$
-{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} +  \stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
+{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} +  \\ \stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
 {\begin{bmatrix}\epsilon_{g1} \\ ... \\ \epsilon_{g(N-1)} \\  \epsilon_{gN}\end{bmatrix}}
 $$
 
@@ -91,7 +91,7 @@ Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gen
 The SNP-wise gene analysis of MAGMA can also be run with raw genotype data, in which case SNP *p*-values are computed internally and the raw genotype data takes place of the reference data.
 :::
 
-After running the gene analysis, either by PC regression or SNP-wise analysis, the resulting gene *p*-values are subsequently transformed to z-scores ($z_g$) to be introduced in the gene-set analysis. These z-scores capture the association of the genes with the phenotype. (HEREEEEE)
+After running the gene analysis, either by PC regression or SNP-wise analysis, the resulting gene *p*-values are subsequently transformed to z-scores ($z_g$) to be introduced in the gene-set analysis. These z-scores capture the association of the genes with the phenotype. (**HEREEEEE**)
 
 ## Gene-set analysis
 

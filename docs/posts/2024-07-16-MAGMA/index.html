@@ -320,7 +320,7 @@ window.Quarto = {
 <p>If the input data is <strong>raw genotype data</strong>, MAGMA fits a multiple linear PC regression model to the individuals’ phenotypes. Here, for one gene <span class="math inline">\(g\)</span> at a time, the SNP matrix that contains the information of the SNPs for that gene across all the <span class="math inline">\(N\)</span> individuals studied, is projected onto its Principal Components (PCs). These PCs capture genotypic differences between individuals for the given gene and the first <span class="math inline">\(K\)</span> most explanatory ones (comprising 99.9% of the variance) are used as predictors of the phenotype (<span class="math inline">\(Y\)</span>) in the linear model.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/MAGMA_PC_model.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="650"></p>
+<p><img src="images/MAGMA_PC_model.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="700"></p>
 </figure>
 </div>
 <p>Phenotype is modeled as:</p>
@@ -328,7 +328,7 @@ window.Quarto = {
 Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g
 \]</span></p>
 <p><span class="math display">\[
-{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} +  \stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
+{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} +  \\ \stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
 {\begin{bmatrix}\epsilon_{g1} \\ ... \\ \epsilon_{g(N-1)} \\  \epsilon_{gN}\end{bmatrix}}
 \]</span></p>
 <p>With <span class="math inline">\(X_{g}^*\)</span> the matrix of the first <span class="math inline">\(K\)</span> PCs for gene <span class="math inline">\(g\)</span> and <span class="math inline">\(W\)</span> a matrix of additional covariates for the individuals that can be included in the model. <span class="math inline">\(\alpha_g\)</span>’s and <span class="math inline">\(\beta_g\)</span>’s are the coefficients of the PCs and covariates for the gene <span class="math inline">\(g\)</span>, respectively. <span class="math inline">\(\epsilon_g\)</span> is the vector of residuals and <span class="math inline">\(\alpha_{0g}\)</span> the intercept. The <span class="math inline">\(\alpha_g\)</span>’s represent the effect of the genotype for gene <span class="math inline">\(g\)</span> on the phenotype (the <strong>genetic effect</strong>).</p>
@@ -368,7 +368,7 @@ Note
 <p>The SNP-wise gene analysis of MAGMA can also be run with raw genotype data, in which case SNP <em>p</em>-values are computed internally and the raw genotype data takes place of the reference data.</p>
 </div>
 </div>
-<p>After running the gene analysis, either by PC regression or SNP-wise analysis, the resulting gene <em>p</em>-values are subsequently transformed to z-scores (<span class="math inline">\(z_g\)</span>) to be introduced in the gene-set analysis. These z-scores capture the association of the genes with the phenotype. (HEREEEEE)</p>
+<p>After running the gene analysis, either by PC regression or SNP-wise analysis, the resulting gene <em>p</em>-values are subsequently transformed to z-scores (<span class="math inline">\(z_g\)</span>) to be introduced in the gene-set analysis. These z-scores capture the association of the genes with the phenotype. (<strong>HEREEEEE</strong>)</p>
 </section>
 </section>
 <section id="gene-set-analysis" class="level2">

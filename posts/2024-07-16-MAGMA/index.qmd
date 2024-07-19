@@ -1,7 +1,7 @@
 ---
-title: "MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?"
+title: "MAGMA: How does the Gene and the Gene-Set analysis operate?"
 description: |
-  Global overview of MAGMA Gene and Gene-Set analysis and 
+  Global overview of MAGMA Gene and Gene-Set analyses and detailed practical demonstration of the SNP-wise gene analysis and the competitive gene-set analysis.
 author:
   - name: Daianna Gonzalez-Padilla
 date: 2024-07-16
@@ -51,7 +51,7 @@ Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g
 $$
 
 $$
-{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} + \stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
+{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} +  \stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
 {\begin{bmatrix}\epsilon_{g1} \\ ... \\ \epsilon_{g(N-1)} \\  \epsilon_{gN}\end{bmatrix}}
 $$
 
@@ -88,18 +88,148 @@ Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gen
     [**\***]{style="color: #00CD00"}To compute the gene *p*-value a **phenotype permutation** procedure is the only option available. Here random phenotypes are assigned to the reference data and a top gene test-statistic is computed in each permutation. The empirical gene *p*-value is computed as the proportion of these permuted gene test-statistics that are higher than the observed one.
 
 ::: callout-note
-Note that the SNP-wise gene analysis of MAGMA can also be run with raw genotype data, in which case SNP *p*-values are computed internally and the raw genotype data takes place of the reference data.
+The SNP-wise gene analysis of MAGMA can also be run with raw genotype data, in which case SNP *p*-values are computed internally and the raw genotype data takes place of the reference data.
 :::
+
+After running the gene analysis, either by PC regression or SNP-wise analysis, the resulting gene *p*-values are subsequently transformed to z-scores ($z_g$) to be introduced in the gene-set analysis. These z-scores capture the association of the genes with the phenotype.
 
 ## Gene-set analysis
 
-Gene-set analysis operates in the same way for gene analysis results based on the PC linear regression
+Before entering into what is a gene-set analysis and what inforamation it can provide, we must clarify that the gene-set analysis operates in the same way using gene analysis results based on the PC linear regression model or the SNP-wise analysis. All that's necessary to run the gene-set analysis are the gene *p*-values obtained from the gene analysis.
 
 By aggregating genes in groups of genes that share cellular or functional properties and evaluating their association with a phenotype, we can gain insights into the potential molecules, pathways, and tissues implicated in the phenotype's etiology.
 
 Two gene-level regression models are implemented:
 
 Genes of our particular interest are in turn aggregated into gene sets depending on their biological functions or other shared characteristics/involvements (such as being up/down DEGs). Analyzing gene sets evidently reduces the number of output tests but the gene analysis still has to be performed.
+
+# Example of SNP-wise gene analysis and competitive gene-set analysis
+
+By default the SNP-wise gene analysis method implemented is the mean Z gene test-statistic, and the default gene-set analysis is the competitive one. Let's exemplify how to run these analyses. The following are the three main steps implemented by MAGMA.
+
+## Step 1: Annotation of SNPs onto genes
+
+The first step is to map all SNPs from your GWAS data onto the genes of a reference genome.
+
+-   **Input**: we need SNP and gene positions based on the same human genome reference build; we provide this in the `.snploc` and in the `.gene.loc` files, respectively.
+
+    ``` {.Bash style="padding: 14px"}
+    ## .snploc file example
+    ## Columns: SNP ID, Chr, Position:
+
+           SNP CHR         BP 
+    rs62513865   8  101592213 
+    rs79643588   8  106973048 
+    rs17396518   8  108690829 
+    rs983166     8  108681675 
+    rs28842593   8  103044620 
+    rs7014597    8  104152280 
+    rs3134156    8  100479917 
+    rs6980591    8  103144592 
+    rs72670434   8  108166508
+    ```
+
+    ``` {.Bash style="padding: 14px"}
+    ## .gene.loc file example
+    ## Required columns: GeneID, Chr, Start site, Stop site:
+
+    ENSG00000243485 1 29554 31109 + MIR1302-2HG 
+    ENSG00000186092 1 65419 71585 + OR4F5 
+    ENSG00000238009 1 89295 133723 - AL627309.1 
+    ENSG00000239906 1 139790 140339 - AL627309.2 
+    ENSG00000236601 5 180881343 180888537 - AL732372.1 
+    ENSG00000235146 1 523009 530148 + AC114498.1 
+    ENSG00000229905 1 696291 697369 + AL669831.2 
+    ENSG00000237491 1 714150 745440 + AL669831.5
+    ```
+
+    ::: callout-important
+    SNPs in sexual chromosomes are usually excluded from the analysis as their inclusion brings additional analytical, statistical, and bioinformatic challenges for their analysis [@sun2023]. MAGMA only supports X chromosome analysis.
+    :::
+
+-   **Commands**: the following are the flags and inputs used to map the SNPs onto genes.
+
+    ``` {.Bash style="padding:14px"}
+    ## Run SNP annotation: 
+    ## --annotate: flag to run annotation 
+    ## --snp-loc: indicate file with SNP positions
+    ## --gene-loc: indicate file with gene positions
+    ## --out: prefix for output files
+
+    magma --annotate \ 
+          --snp-loc [.snploc file]\ 
+          --gene-loc [gene.loc file]\ 
+          --out [output_prefix]
+    ```
+
+-   **Output**: this step returns the `.genes.annot` file as output, containing all SNPs that were assigned to a gene.
+
+    ``` {.Bash style="padding:14px"}
+    ## .genes.annot file example
+    ## GeneID Chr:Start:Stop and corresponding SNP rsIDs:
+
+    window_up = 0 
+    window_down = 0 
+    ENSG00000237491 1:714150:745440 rs186002080 rs12184267 rs142557973 rs149887893 
+    ENSG00000177757 1:752751:755217 rs3115859 rs3131968 rs3131967 rs3115860 
+    ENSG00000225880 1:761586:762902 rs2286139 rs377377186 rs374493323 
+    ENSG00000230368 1:803451:812283 rs11240779 rs28410559 rs72631880 rs58686784 
+    ```
+
+## Step 2: SNP-wise gene analysis
+
+-   **Input**: we need to provide the SNP *p*-values in the `.pval` file and the gene-wise SNPs in the `.genes.annot` file obtained in the previous step. A reference dataset must be provided as well.
+
+    The total sample size (N) of the GWAS from which the SNP *p*-values were derived must be indicated as well using the *N* modifier of `--pval`. Alternatively, if different sample sizes were used per SNP, these can be contained in a separate column of the `.pval` file which specified in the *ncol* modifier of `--pval`.
+
+    ``` {.Bash style="padding:14px"}
+    ## .pval file example
+    ## Columns: SNP ID, SNP p-value, and optionally SNP sample size 
+
+           SNP      P      N 
+    rs62513865 0.4847 130644 
+    rs79643588 0.5605 130644 
+    rs17396518 0.8145 130644 
+    rs983166   0.5704 130644 
+    rs28842593 0.7488 130644 
+    rs7014597  0.5034 130644 
+    rs3134156  0.2225 130644
+    ```
+
+    The next is a `head` of the 1000 Genomes European panel data used as the reference dataset.
+
+    ``` {.Bash style="padding:14px"}
+    ## g1000_eur reference data example
+    ## Columns: Chr, SNP ID, Genetic distance, Position, Allele1, Allele2
+
+    1 rs537182016 0 10539 A C 
+    1 rs575272151 0 11008 G C 
+    1 rs544419019 0 11012 G C 
+    1 rs540538026 0 13110 A G 
+    1 rs62635286  0 13116 G T 
+    1 rs200579949 0 13118 G A 
+    ```
+
+-   **Commands**: these are the flags used to run the SNP-wise mean Z stats method.
+
+    \## Reference data used was the 1000 Genomes European data
+
+    ``` {.Bash style="padding:14px"}
+    ## Run gene analysis based on SNP p-values
+    ## --bfile
+    ## --pval
+    ## --gene-annot
+    ## --out
+
+    magma 
+    --bfile g1000_eur\ 
+    ## SNP p-values as input; 
+    ## indicate colname for sample size of the study (N) 
+    --pval $ANNOT_PREFIX.pval ncol=N\ 
+    ## Provide output file from step 1 with gene SNPs 
+    --gene-annot $OUTPUT_PREFIX.genes.annot\ 
+    --out $OUTPUT_PREFIX
+    ```
 
 # Conclusion
 

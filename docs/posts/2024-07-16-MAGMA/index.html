@@ -8,9 +8,9 @@
 
 <meta name="author" content="Daianna Gonzalez-Padilla">
 <meta name="dcterms.date" content="2024-07-16">
-<meta name="description" content="Global overview of MAGMA Gene and Gene-Set analysis and">
+<meta name="description" content="Global overview of MAGMA Gene and Gene-Set analyses and detailed practical demonstration of the SNP-wise gene analysis and the competitive gene-set analysis.">
 
-<title>Daianna Gonzalez-Padilla - MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?</title>
+<title>Daianna Gonzalez-Padilla - MAGMA: How does the Gene and the Gene-Set analysis operate?</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,7 +23,61 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -185,6 +239,11 @@ window.Quarto = {
   </ul></li>
   <li><a href="#gene-set-analysis" id="toc-gene-set-analysis" class="nav-link" data-scroll-target="#gene-set-analysis">Gene-set analysis</a></li>
   </ul></li>
+  <li><a href="#example-of-snp-wise-gene-analysis-and-competitive-gene-set-analysis" id="toc-example-of-snp-wise-gene-analysis-and-competitive-gene-set-analysis" class="nav-link" data-scroll-target="#example-of-snp-wise-gene-analysis-and-competitive-gene-set-analysis">Example of SNP-wise gene analysis and competitive gene-set analysis</a>
+  <ul class="collapse">
+  <li><a href="#step-1-annotation-of-snps-onto-genes" id="toc-step-1-annotation-of-snps-onto-genes" class="nav-link" data-scroll-target="#step-1-annotation-of-snps-onto-genes">Step 1: Annotation of SNPs onto genes</a></li>
+  <li><a href="#step-2-snp-wise-gene-analysis" id="toc-step-2-snp-wise-gene-analysis" class="nav-link" data-scroll-target="#step-2-snp-wise-gene-analysis">Step 2: SNP-wise gene analysis</a></li>
+  </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   <li><a href="#relevant-links" id="toc-relevant-links" class="nav-link" data-scroll-target="#relevant-links">Relevant links</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -196,7 +255,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">MAGMA: How does the SNP-wise Gene and the Gene-Set analysis operate?</h1>
+<h1 class="title">MAGMA: How does the Gene and the Gene-Set analysis operate?</h1>
   <div class="quarto-categories">
     <div class="quarto-category">GWAS</div>
     <div class="quarto-category">Gene analysis</div>
@@ -207,7 +266,7 @@ window.Quarto = {
 
 <div>
   <div class="description">
-    <p>Global overview of MAGMA Gene and Gene-Set analysis and</p>
+    <p>Global overview of MAGMA Gene and Gene-Set analyses and detailed practical demonstration of the SNP-wise gene analysis and the competitive gene-set analysis.</p>
   </div>
 </div>
 
@@ -269,7 +328,7 @@ window.Quarto = {
 Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g
 \]</span></p>
 <p><span class="math display">\[
-{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} + \stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
+{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} +  \stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
 {\begin{bmatrix}\epsilon_{g1} \\ ... \\ \epsilon_{g(N-1)} \\  \epsilon_{gN}\end{bmatrix}}
 \]</span></p>
 <p>With <span class="math inline">\(X_{g}^*\)</span> the matrix of the first <span class="math inline">\(K\)</span> PCs for gene <span class="math inline">\(g\)</span> and <span class="math inline">\(W\)</span> a matrix of additional covariates for the individuals that can be included in the model. <span class="math inline">\(\alpha_g\)</span>’s and <span class="math inline">\(\beta_g\)</span>’s are the coefficients of the PCs and covariates for the gene <span class="math inline">\(g\)</span>, respectively. <span class="math inline">\(\epsilon_g\)</span> is the vector of residuals and <span class="math inline">\(\alpha_{0g}\)</span> the intercept. The <span class="math inline">\(\alpha_g\)</span>’s represent the effect of the genotype for gene <span class="math inline">\(g\)</span> on the phenotype (the <strong>genetic effect</strong>).</p>
@@ -306,17 +365,131 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Note that the SNP-wise gene analysis of MAGMA can also be run with raw genotype data, in which case SNP <em>p</em>-values are computed internally and the raw genotype data takes place of the reference data.</p>
+<p>The SNP-wise gene analysis of MAGMA can also be run with raw genotype data, in which case SNP <em>p</em>-values are computed internally and the raw genotype data takes place of the reference data.</p>
 </div>
 </div>
+<p>After running the gene analysis, either by PC regression or SNP-wise analysis, the resulting gene <em>p</em>-values are subsequently transformed to z-scores (<span class="math inline">\(z_g\)</span>) to be introduced in the gene-set analysis. These z-scores capture the association of the genes with the phenotype.</p>
 </section>
 </section>
 <section id="gene-set-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="gene-set-analysis">Gene-set analysis</h2>
-<p>Gene-set analysis operates in the same way for gene analysis results based on the PC linear regression</p>
+<p>Before entering into what is a gene-set analysis and what inforamation it can provide, we must clarify that the gene-set analysis operates in the same way using gene analysis results based on the PC linear regression model or the SNP-wise analysis. All that’s necessary to run the gene-set analysis are the gene <em>p</em>-values obtained from the gene analysis.</p>
 <p>By aggregating genes in groups of genes that share cellular or functional properties and evaluating their association with a phenotype, we can gain insights into the potential molecules, pathways, and tissues implicated in the phenotype’s etiology.</p>
 <p>Two gene-level regression models are implemented:</p>
 <p>Genes of our particular interest are in turn aggregated into gene sets depending on their biological functions or other shared characteristics/involvements (such as being up/down DEGs). Analyzing gene sets evidently reduces the number of output tests but the gene analysis still has to be performed.</p>
+</section>
+</section>
+<section id="example-of-snp-wise-gene-analysis-and-competitive-gene-set-analysis" class="level1">
+<h1>Example of SNP-wise gene analysis and competitive gene-set analysis</h1>
+<p>By default the SNP-wise gene analysis method implemented is the mean Z gene test-statistic, and the default gene-set analysis is the competitive one. Let’s exemplify how to run these analyses. The following are the three main steps implemented by MAGMA.</p>
+<section id="step-1-annotation-of-snps-onto-genes" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-annotation-of-snps-onto-genes">Step 1: Annotation of SNPs onto genes</h2>
+<p>The first step is to map all SNPs from your GWAS data onto the genes of a reference genome.</p>
+<ul>
+<li><p><strong>Input</strong>: we need SNP and gene positions based on the same human genome reference build; we provide this in the&nbsp;<code>.snploc</code>&nbsp;and in the&nbsp;<code>.gene.loc</code>&nbsp;files, respectively.</p>
+<div class="sourceCode" id="cb1" style="padding: 14px"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">## .snploc file example</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">## Columns: SNP ID, Chr, Position:</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>       <span class="ex">SNP</span> CHR         BP </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">rs62513865</span>   8  101592213 </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">rs79643588</span>   8  106973048 </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">rs17396518</span>   8  108690829 </span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">rs983166</span>     8  108681675 </span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">rs28842593</span>   8  103044620 </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">rs7014597</span>    8  104152280 </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">rs3134156</span>    8  100479917 </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">rs6980591</span>    8  103144592 </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">rs72670434</span>   8  108166508</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2" style="padding: 14px"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">## .gene.loc file example</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">## Required columns: GeneID, Chr, Start site, Stop site:</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000243485</span> 1 29554 31109 + MIR1302-2HG </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000186092</span> 1 65419 71585 + OR4F5 </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000238009</span> 1 89295 133723 <span class="at">-</span> AL627309.1 </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000239906</span> 1 139790 140339 <span class="at">-</span> AL627309.2 </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000236601</span> 5 180881343 180888537 <span class="at">-</span> AL732372.1 </span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000235146</span> 1 523009 530148 + AC114498.1 </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000229905</span> 1 696291 697369 + AL669831.2 </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000237491</span> 1 714150 745440 + AL669831.5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>SNPs in sexual chromosomes are usually excluded from the analysis as their inclusion brings additional analytical, statistical, and bioinformatic challenges for their analysis <span class="citation" data-cites="sun2023">(<a href="#ref-sun2023" role="doc-biblioref">Sun et al. 2023</a>)</span>. MAGMA only supports X chromosome analysis.</p>
+</div>
+</div></li>
+<li><p><strong>Commands</strong>: the following are the flags and inputs used to map the SNPs onto genes.</p>
+<div class="sourceCode" id="cb3" style="padding:14px"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Run SNP annotation: </span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">## --annotate: flag to run annotation </span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">## --snp-loc: indicate file with SNP positions</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">## --gene-loc: indicate file with gene positions</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">## --out: prefix for output files</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">magma</span> <span class="at">--annotate</span> <span class="dt">\ </span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>      <span class="ex">--snp-loc</span> [.snploc file]<span class="dt">\ </span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      <span class="ex">--gene-loc</span> [gene.loc file]<span class="dt">\ </span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      <span class="ex">--out</span> <span class="pp">[</span><span class="ss">output_prefix</span><span class="pp">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Output</strong>: this step returns the <code>.genes.annot</code> file as output, containing all SNPs that were assigned to a gene.</p>
+<div class="sourceCode" id="cb4" style="padding:14px"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">## .genes.annot file example</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">## GeneID Chr:Start:Stop and corresponding SNP rsIDs:</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">window_up</span> = 0 </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">window_down</span> = 0 </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000237491</span> 1:714150:745440 rs186002080 rs12184267 rs142557973 rs149887893 </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000177757</span> 1:752751:755217 rs3115859 rs3131968 rs3131967 rs3115860 </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000225880</span> 1:761586:762902 rs2286139 rs377377186 rs374493323 </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000230368</span> 1:803451:812283 rs11240779 rs28410559 rs72631880 rs58686784 </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+</section>
+<section id="step-2-snp-wise-gene-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-snp-wise-gene-analysis">Step 2: SNP-wise gene analysis</h2>
+<ul>
+<li><p><strong>Input</strong>: we need to provide the SNP <em>p</em>-values in the <code>.pval</code> file and the gene-wise SNPs in the <code>.genes.annot</code> file obtained in the previous step. A reference dataset must be provided as well.</p>
+<p>The total sample size (N) of the GWAS from which the SNP <em>p</em>-values were derived must be indicated as well using the <em>N</em> modifier of <code>--pval</code>. Alternatively, if different sample sizes were used per SNP, these can be contained in a separate column of the <code>.pval</code> file which specified in the <em>ncol</em> modifier of <code>--pval</code>.</p>
+<div class="sourceCode" id="cb5" style="padding:14px"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">## .pval file example</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">## Columns: SNP ID, SNP p-value, and optionally SNP sample size </span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>       <span class="ex">SNP</span>      P      N </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">rs62513865</span> 0.4847 130644 </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ex">rs79643588</span> 0.5605 130644 </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ex">rs17396518</span> 0.8145 130644 </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ex">rs983166</span>   0.5704 130644 </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="ex">rs28842593</span> 0.7488 130644 </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="ex">rs7014597</span>  0.5034 130644 </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="ex">rs3134156</span>  0.2225 130644</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The next is a <code>head</code> of the 1000 Genomes European panel data used as the reference dataset.</p>
+<div class="sourceCode" id="cb6" style="padding:14px"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">## g1000_eur reference data example</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">## Columns: Chr, SNP ID, Genetic distance, Position, Allele1, Allele2</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> rs537182016 0 10539 A C </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> rs575272151 0 11008 G C </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> rs544419019 0 11012 G C </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> rs540538026 0 13110 A G </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> rs62635286  0 13116 G T </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> rs200579949 0 13118 G A </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Commands</strong>: these are the flags used to run the SNP-wise mean Z stats method.</p>
+<p>## Reference data used was the 1000 Genomes European data</p>
+<div class="sourceCode" id="cb7" style="padding:14px"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Run gene analysis based on SNP p-values</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">## --bfile</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">## --pval</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">## --gene-annot</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">## --out</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="ex">magma</span> </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ex">--bfile</span> g1000_eur<span class="dt">\ </span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">## SNP p-values as input; </span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">## indicate colname for sample size of the study (N) </span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ex">--pval</span> <span class="va">$ANNOT_PREFIX</span>.pval ncol=N<span class="dt">\ </span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">## Provide output file from step 1 with gene SNPs </span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="ex">--gene-annot</span> <span class="va">$OUTPUT_PREFIX</span>.genes.annot<span class="dt">\ </span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="ex">--out</span> <span class="va">$OUTPUT_PREFIX</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
 </section>
 </section>
 <section id="conclusion" class="level1">
@@ -331,12 +504,17 @@ de Leeuw, C. A., Mooij, J. M., Heskes, T., &amp; Posthuma, D. (2015). MAGMA: gen
 <p>&nbsp;</p>
 </section>
 <section id="references" class="level1">
-<h1>References</h1>
+
+
 
 
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-sun2023" class="csl-entry" role="listitem">
+Sun, Lei, Zhong Wang, Tianyuan Lu, Teri A. Manolio, and Andrew D. Paterson. 2023. <span>“eXclusionarY: Ten Years Later, Where Are the Sex Chromosomes in GWAS?”</span> <a href="http://dx.doi.org/10.1101/2023.02.03.526992">http://dx.doi.org/10.1101/2023.02.03.526992</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

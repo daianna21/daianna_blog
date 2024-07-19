@@ -59,22 +59,43 @@
 </section>
 <section id="snp-wise-gene-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="snp-wise-gene-analysis"><span style="color:#7AC5CD"><strong>SNP-wise gene analysis</strong></span></h3>
-<p>If no raw genotype data is available, MAGMA also accepts <u><strong>SNP <em>p</em>-values</strong></u> from a GWAS as input. In this case, such SNP <em>p</em>-values are first transformed into <u><strong>Z or</strong> <img src="https://latex.codecogs.com/png.latex?%5Cchi%5E2"> <strong>statistics</strong></u> and aggregated at the gene level (by the <span style="background-color: #F0FFF0"><strong>mean SNP statistic</strong></span> or <span style="background-color:#FFF0F5"><strong>top SNP statistic</strong></span> method) to obtain <u><strong>one test-statistic per gene</strong></u> which is then used to compute the <u><strong>gene <em>p</em>-value</strong></u>, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (top SNP statistic method).</p>
-<div>
-<p>Summary: SNP <em>p</em>-values → SNP statistics →<span style="color:#EE00EE"><strong>*</strong></span> gene tets-statistic →<span style="color: #00CD00"><strong>*</strong></span> gene <em>p</em>-value → gene <em>z</em>-score (<img src="https://latex.codecogs.com/png.latex?z_g">)</p>
+<p>If no raw genotype data is available, MAGMA also accepts <u><strong>SNP <em>p</em>-values</strong></u> from a GWAS as input. In this case SNP <em>p</em>-values for a gene are first transformed into <u><strong>Z or</strong> <img src="https://latex.codecogs.com/png.latex?%5Cchi%5E2"><strong>statistics</strong></u> and then combined into a <u><strong>gene test-statistic</strong></u> by the <span style="background-color: #F0FFF0"><strong>mean SNP statistic</strong></span> or <span style="background-color:#FFF0F5"><strong>top SNP statistic</strong></span> method. This gene test-statistic is then used to compute the <u><strong>gene <em>p</em>-value</strong></u>, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (mean and top SNP statistic methods).</p>
+<p>This SNP-wise MAGMA analysis based on SNP summary statisitcs requires a <strong>reference dataset</strong> with similar ancestry as the data from which SNPs <em>p</em>-values were computed. This is needed to account for LD between SNPs. If an approximation of the sampling distribution is used to compute the gene <em>p</em>-value, this reference is required to obtain the SNP statistic correlation matrix <img src="https://latex.codecogs.com/png.latex?R">. If phenotype permutation is chosen, these reference data are necessary to generate the gene test-statistics empirical sampling distribution.</p>
+<div style="background-color:#F2F2F2; padding: 15px">
+<p>Summary: SNP <em>p</em>-values → SNP statistics →<span style="color:#EE00EE"><strong>*</strong></span>gene test-statistic →<span style="color: #00CD00"><strong>*</strong></span> gene <em>p</em>-value → gene <em>z</em>-score (<img src="https://latex.codecogs.com/png.latex?z_g">)</p>
 </div>
-<p><span style="color:#EE00EE"><strong>*</strong></span>Gene test-statistics can be constructed from the SNP statistics (or <em>p</em>-values) applying one of two (main) implemented methods in MAGMA:</p>
+<p><span style="color:#EE00EE"><strong>*</strong></span>Gene test-statistics can be constructed from the SNP statistics applying one of two implemented methods in MAGMA:</p>
 <ul>
-<li><p><span style="background-color: #F0FFF0"><strong>Mean SNP statistic</strong></span>: the mean (weighted sum) of SNP Z/<img src="https://latex.codecogs.com/png.latex?%5Cchi%5E2"> statistics is used as the statistic of the gene. <span style="color: #00CD00"><strong>*</strong></span>The&nbsp;<em>p</em>-value of the gene is obtained based on a known <strong>approximation of the sampling distribution</strong>. The reference data is only used to estimate the&nbsp;<strong>SNP statistic correlation matrix</strong>. When using SNP Z-stats the mean of them is used, but for the mean $\chi^2$ method the sum of the -log(<em>p</em>-values) of the SNPs of the gene are used as the gene stats that follow a $\sim c\chi^2_{(f)}$.</p></li>
-<li><p><strong>Top SNP statistic</strong>: the lowest SNP&nbsp;<em>p</em>-value for the gene (of the most associated SNP) or the sum of the -log(<em>p</em>-values) for the top most associated SNP is used as the gene statistic. A permutation procedure is applied assigning random phenotypes to the reference data and an empirical&nbsp;<em>p</em>-value for the gene is computed&nbsp;<strong>as the proportion of these resulting permuted top gene statistics that are higher than the observed top gene stats</strong>*: an&nbsp;<strong>empirical sampling distribution</strong>&nbsp;of the gene test-statistics is generated and the gene&nbsp;<em>p</em>-value computed based on these reference data.&nbsp;<a href="https://emojipedia.org/thinking-face">**🤔</a>**&nbsp;<em>How are permuted gene statistics computed from reference data (with only SNP IDs)?</em></p></li>
-<li><p>Weighted mean of the top SNP statistics</p></li>
+<li><p><span style="background-color: #F0FFF0"><strong>Mean SNP statistic</strong></span>:</p>
+<ul>
+<li><p><strong>Mean Z gene test-statistic</strong>: SNP <em>p</em>-values of a gene are transformed to Z-statistics and the mean (weighted or unweighted sum) of such Z-stats is used as the test-statistic of the gene: <img src="https://latex.codecogs.com/png.latex?T=%5Csum_i%5EG%20w_iz_i">, with <img src="https://latex.codecogs.com/png.latex?G"> the total number of SNPs of the gene and <img src="https://latex.codecogs.com/png.latex?z_i"> and <img src="https://latex.codecogs.com/png.latex?w_i"> the Z-statistic and weight for SNP <img src="https://latex.codecogs.com/png.latex?i">, respectively. These gene test-stats follow a normal distribution.</p></li>
+<li><p><strong>Mean</strong> <img src="https://latex.codecogs.com/png.latex?%5Cchi%5E2"> <strong>gene test-statistic</strong>: the mean (weighted or unweighted sum) of the <img src="https://latex.codecogs.com/png.latex?-2log"> of the SNP <em>p</em>-values (that are <img src="https://latex.codecogs.com/png.latex?%5Csim%5Cchi%5E2_%7B(2)%7D">) is used as gene test-statistic: <img src="https://latex.codecogs.com/png.latex?T=-2%5Csum_i%5EG%20w_i%5Clog(p_i)">, with <img src="https://latex.codecogs.com/png.latex?p_i"> the <em>p</em>-value of SNP <img src="https://latex.codecogs.com/png.latex?i">. These gene test-stats are assumed to be <img src="https://latex.codecogs.com/png.latex?%5Csim%20c%5Cchi%5E2_%7B(f)%7D">, where <img src="https://latex.codecogs.com/png.latex?c"> and <img src="https://latex.codecogs.com/png.latex?f"> are constants of the distribution.</p></li>
 </ul>
+<p><span style="color: #00CD00"><strong>*</strong></span>For both mean Z and mean <img src="https://latex.codecogs.com/png.latex?%5Cchi%5E2"> gene test-statistics the <em>p</em>-value of the gene is obtained based on a known <strong>approximation of the sampling distribution</strong> of the gene test-stats. For such purposes, the reference dataset is needed to estimate the SNP statistic correlation matrix, from which the optional SNP weights (<img src="https://latex.codecogs.com/png.latex?w_i">) are computed to correct for dependency between SNPs. A phenotype permutation procedure can also be applied to compute empirical gene <em>p</em>-values (see further below).</p></li>
+<li><p><span style="background-color:#FFF0F5"><strong>Top SNP statistic(s)</strong></span>: the lowest SNP <em>p</em>-value among all SNPs in the gene (corresponding to the most associated SNP) or the sum of the <img src="https://latex.codecogs.com/png.latex?-log(p)"> for the top most associated SNPs is used as the gene test-statistic.</p>
+<p><span style="color: #00CD00"><strong>*</strong></span>To compute the gene <em>p</em>-value a <strong>phenotype permutation</strong> procedure is the only option available. Here random phenotypes are assigned to the reference data and a top gene test-statistic is computed in each permutation. The empirical gene <em>p</em>-value is computed as the proportion of these permuted gene test-statistics that are higher than the observed one.</p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that the SNP-wise gene analysis of MAGMA can also be run with raw genotype data, in which case SNP <em>p</em>-values are computed internally and the raw genotype data takes place of the reference data.</p>
+</div>
+</div>
 </section>
 </section>
 <section id="gene-set-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="gene-set-analysis">Gene-set analysis</h2>
+<p>Gene-set analysis operates in the same way for gene analysis results based on the PC linear regression</p>
 <p>By aggregating genes in groups of genes that share cellular or functional properties and evaluating their association with a phenotype, we can gain insights into the potential molecules, pathways, and tissues implicated in the phenotype’s etiology.</p>
 <p>Two gene-level regression models are implemented:</p>
+<p>Genes of our particular interest are in turn aggregated into gene sets depending on their biological functions or other shared characteristics/involvements (such as being up/down DEGs). Analyzing gene sets evidently reduces the number of output tests but the gene analysis still has to be performed.</p>
 </section>
 </section>
 <section id="conclusion" class="level1">

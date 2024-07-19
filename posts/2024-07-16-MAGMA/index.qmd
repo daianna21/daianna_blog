@@ -65,27 +65,41 @@ Then an F-test is used to assess if genotypes for gene $g$ have an effect on the
 
 ### [**SNP-wise gene analysis**]{style="color:#7AC5CD"}
 
-If no raw genotype data is available, MAGMA also accepts [**SNP *p*-values**]{.underline} from a GWAS as input. In this case, such SNP *p*-values are first transformed into [**Z or** $\chi^2$ **statistics**]{.underline} and aggregated at the gene level (by the [**mean SNP statistic**]{style="background-color: #F0FFF0"} or [**top SNP statistic**]{style="background-color:#FFF0F5"} method) to obtain [**one test-statistic per gene**]{.underline} which is then used to compute the [**gene *p*-value**]{.underline}, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (top SNP statistic method).
+If no raw genotype data is available, MAGMA also accepts [**SNP *p*-values**]{.underline} from a GWAS as input. In this case SNP *p*-values for a gene are first transformed into [**Z or** $\chi^2$**statistics**]{.underline} and then combined into a [**gene test-statistic**]{.underline} by the [**mean SNP statistic**]{style="background-color: #F0FFF0"} or [**top SNP statistic**]{style="background-color:#FFF0F5"} method. This gene test-statistic is then used to compute the [**gene *p*-value**]{.underline}, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (mean and top SNP statistic methods).
 
-<div>
+This SNP-wise MAGMA analysis based on SNP summary statisitcs requires a **reference dataset** with similar ancestry as the data from which SNPs *p*-values were computed. This is needed to account for LD between SNPs. If an approximation of the sampling distribution is used to compute the gene *p*-value, this reference is required to obtain the SNP statistic correlation matrix $R$. If phenotype permutation is chosen, these reference data are necessary to generate the gene test-statistics empirical sampling distribution.
 
-Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"} gene tets-statistic →[**\***]{style="color: #00CD00"} gene *p*-value → gene *z*-score ($z_g$)
+::: {style="background-color:#F2F2F2; padding: 15px"}
+Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gene test-statistic →[**\***]{style="color: #00CD00"} gene *p*-value → gene *z*-score ($z_g$)
+:::
 
-</div>
+[**\***]{style="color:#EE00EE"}Gene test-statistics can be constructed from the SNP statistics applying one of two implemented methods in MAGMA:
 
-[**\***]{style="color:#EE00EE"}Gene test-statistics can be constructed from the SNP statistics (or *p*-values) applying one of two (main) implemented methods in MAGMA:
+-   [**Mean SNP statistic**]{style="background-color: #F0FFF0"}:
 
--   [**Mean SNP statistic**]{style="background-color: #F0FFF0"}: the mean (weighted sum) of SNP Z/$\chi^2$ statistics is used as the statistic of the gene. [**\***]{style="color: #00CD00"}The *p*-value of the gene is obtained based on a known **approximation of the sampling distribution**. The reference data is only used to estimate the **SNP statistic correlation matrix**. When using SNP Z-stats the mean of them is used, but for the mean \$\\chi\^2\$ method the sum of the -log(*p*-values) of the SNPs of the gene are used as the gene stats that follow a \$\\sim c\\chi\^2\_{(f)}\$.
+    -   **Mean Z gene test-statistic**: SNP *p*-values of a gene are transformed to Z-statistics and the mean (weighted or unweighted sum) of such Z-stats is used as the test-statistic of the gene: $T=\sum_i^G w_iz_i$, with $G$ the total number of SNPs of the gene and $z_i$ and $w_i$ the Z-statistic and weight for SNP $i$, respectively. These gene test-stats follow a normal distribution.
 
--   **Top SNP statistic**: the lowest SNP *p*-value for the gene (of the most associated SNP) or the sum of the -log(*p*-values) for the top most associated SNP is used as the gene statistic. A permutation procedure is applied assigning random phenotypes to the reference data and an empirical *p*-value for the gene is computed **as the proportion of these resulting permuted top gene statistics that are higher than the observed top gene stats**\*: an **empirical sampling distribution** of the gene test-statistics is generated and the gene *p*-value computed based on these reference data. [\*\*🤔](https://emojipedia.org/thinking-face)\*\* *How are permuted gene statistics computed from reference data (with only SNP IDs)?*
+    -   **Mean** $\chi^2$ **gene test-statistic**: the mean (weighted or unweighted sum) of the $-2log$ of the SNP *p*-values (that are $\sim\chi^2_{(2)}$) is used as gene test-statistic: $T=-2\sum_i^G w_i\log(p_i)$, with $p_i$ the *p*-value of SNP $i$. These gene test-stats are assumed to be $\sim c\chi^2_{(f)}$, where $c$ and $f$ are constants of the distribution.
 
--   Weighted mean of the top SNP statistics
+    [**\***]{style="color: #00CD00"}For both mean Z and mean $\chi^2$ gene test-statistics the *p*-value of the gene is obtained based on a known **approximation of the sampling distribution** of the gene test-stats. For such purposes, the reference dataset is needed to estimate the SNP statistic correlation matrix, from which the optional SNP weights ($w_i$) are computed to correct for dependency between SNPs. A phenotype permutation procedure can also be applied to compute empirical gene *p*-values (see further below).
+
+-   [**Top SNP statistic(s)**]{style="background-color:#FFF0F5"}: the lowest SNP *p*-value among all SNPs in the gene (corresponding to the most associated SNP) or the sum of the $-log(p)$ for the top most associated SNPs is used as the gene test-statistic.
+
+    [**\***]{style="color: #00CD00"}To compute the gene *p*-value a **phenotype permutation** procedure is the only option available. Here random phenotypes are assigned to the reference data and a top gene test-statistic is computed in each permutation. The empirical gene *p*-value is computed as the proportion of these permuted gene test-statistics that are higher than the observed one.
+
+::: callout-note
+Note that the SNP-wise gene analysis of MAGMA can also be run with raw genotype data, in which case SNP *p*-values are computed internally and the raw genotype data takes place of the reference data.
+:::
 
 ## Gene-set analysis
+
+Gene-set analysis operates in the same way for gene analysis results based on the PC linear regression
 
 By aggregating genes in groups of genes that share cellular or functional properties and evaluating their association with a phenotype, we can gain insights into the potential molecules, pathways, and tissues implicated in the phenotype's etiology.
 
 Two gene-level regression models are implemented:
+
+Genes of our particular interest are in turn aggregated into gene sets depending on their biological functions or other shared characteristics/involvements (such as being up/down DEGs). Analyzing gene sets evidently reduces the number of output tests but the gene analysis still has to be performed.
 
 # Conclusion
 

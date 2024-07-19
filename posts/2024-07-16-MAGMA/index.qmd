@@ -67,7 +67,7 @@ Then an F-test is used to assess if genotypes for gene $g$ have an effect on the
 
 If no raw genotype data is available, MAGMA also accepts [**SNP *p*-values**]{.underline} from a GWAS as input. In this case SNP *p*-values for a gene are first transformed into [**Z or** $\chi^2$**statistics**]{.underline} and then combined into a [**gene test-statistic**]{.underline} by the [**mean SNP statistic**]{style="background-color: #F0FFF0"} or [**top SNP statistic**]{style="background-color:#FFF0F5"} method. This gene test-statistic is then used to compute the [**gene *p*-value**]{.underline}, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (mean and top SNP statistic methods).
 
-This SNP-wise MAGMA analysis based on SNP summary statisitcs requires a **reference dataset** with similar ancestry as the data from which SNPs *p*-values were computed. This is needed to account for LD between SNPs. If an approximation of the sampling distribution is used to compute the gene *p*-value, this reference is required to obtain the SNP statistic correlation matrix $R$. If phenotype permutation is chosen, these reference data are necessary to generate the gene test-statistics empirical sampling distribution.
+This SNP-wise MAGMA analysis based on SNP summary statistics requires a **reference dataset** with similar ancestry as the data from which SNPs *p*-values were computed. This is needed to account for LD between SNPs. If an approximation of the sampling distribution is used to compute the gene *p*-value, this reference is required to obtain the SNP statistic correlation matrix $R$. If phenotype permutation is chosen, these reference data are necessary to generate the gene test-statistics empirical sampling distribution.
 
 ::: {style="background-color:#F2F2F2; padding: 15px"}
 Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gene test-statistic →[**\***]{style="color: #00CD00"} gene *p*-value → gene *z*-score ($z_g$)
@@ -91,13 +91,13 @@ Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gen
 The SNP-wise gene analysis of MAGMA can also be run with raw genotype data, in which case SNP *p*-values are computed internally and the raw genotype data takes place of the reference data.
 :::
 
-After running the gene analysis, either by PC regression or SNP-wise analysis, the resulting gene *p*-values are subsequently transformed to z-scores ($z_g$) to be introduced in the gene-set analysis. These z-scores capture the association of the genes with the phenotype.
+After running the gene analysis, either by PC regression or SNP-wise analysis, the resulting gene *p*-values are subsequently transformed to z-scores ($z_g$) to be introduced in the gene-set analysis. These z-scores capture the association of the genes with the phenotype. (HEREEEEE)
 
 ## Gene-set analysis
 
-Before entering into what is a gene-set analysis and what inforamation it can provide, we must clarify that the gene-set analysis operates in the same way using gene analysis results based on the PC linear regression model or the SNP-wise analysis. All that's necessary to run the gene-set analysis are the gene *p*-values obtained from the gene analysis.
+Once having gene-level associations, we can now think of gene set associations. Intiatlly, we aggregate genes in groups of genes that share cellular or functional properties, such as involvements in certain biological processes, with particular molecular functions, cellular locations, cell-type specific expression or activity, or differential expression for a given condition. These define concrete processes or features we may be interested in relating with a GWAS phenotype. By doing this, we can gain insights into the potential molecules, pathways, and tissues implicated in a phenotype's etiology.
 
-By aggregating genes in groups of genes that share cellular or functional properties and evaluating their association with a phenotype, we can gain insights into the potential molecules, pathways, and tissues implicated in the phenotype's etiology.
+Since all that's necessary from the gene analysis to run the gene-set analysis are the gene *z*-scores, gene-set analysis operates the same independently of the gene analysis method applied (PC regression or SNP-wise), as both result in gene *p*-values and respective *z*-scores.
 
 Two gene-level regression models are implemented:
 

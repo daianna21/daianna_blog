@@ -77,7 +77,7 @@ Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gen
 
 -   [**Mean SNP statistic**]{style="background-color: #F0FFF0"}:
 
-    -   **Mean Z gene test-statistic**: SNP *p*-values of a gene are transformed to Z-statistics and the mean (weighted or unweighted sum) of such Z-stats is used as the test-statistic of the gene: $T=\sum_i^G w_iz_i$, with $G$ the total number of SNPs of the gene and $z_i$ and $w_i$ the Z-statistic and weight for SNP $i$, respectively. These gene test-stats follow a normal distribution.
+    -   **Mean Z gene test-statistic**: SNP *p*-values of a gene are transformed to Z-statistics and the mean (weighted or unweighted sum) of such Z-stats is used as the test-statistic of the gene: $T=\sum_i^G w_iz_i$, with $G$ the total number of SNPs in the gene and $z_i$ and $w_i$ the Z-statistic and weight for SNP $i$, respectively. These gene test-stats follow a normal distribution.
 
     -   **Mean** $\chi^2$ **gene test-statistic**: the mean (weighted or unweighted sum) of the $-2log$ of the SNP *p*-values (that are $\sim\chi^2_{(2)}$) is used as gene test-statistic: $T=-2\sum_i^G w_i\log(p_i)$, with $p_i$ the *p*-value of SNP $i$. These gene test-stats are assumed to be $\sim c\chi^2_{(f)}$, where $c$ and $f$ are constants of the distribution.
 

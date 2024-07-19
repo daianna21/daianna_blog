@@ -73,7 +73,7 @@ This SNP-wise MAGMA analysis based on SNP summary statistics requires a **refere
 Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gene test-statistic →[**\***]{style="color: #00CD00"} gene *p*-value → gene *z*-score ($z_g$)
 :::
 
-[**\***]{style="color:#EE00EE"}Gene test-statistics can be constructed from the SNP statistics applying one of two implemented methods in MAGMA:
+[**\***]{style="color:#EE00EE"}Gene test-statistics can be constructed from the SNP statistics applying one of the two implemented methods in MAGMA:
 
 -   [**Mean SNP statistic**]{style="background-color: #F0FFF0"}:
 

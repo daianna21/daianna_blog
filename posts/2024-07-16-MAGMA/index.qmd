@@ -91,17 +91,35 @@ Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gen
 The SNP-wise gene analysis of MAGMA can also be run with raw genotype data, in which case SNP *p*-values are computed internally and the raw genotype data takes place of the reference data.
 :::
 
-After running the gene analysis, either by PC regression or SNP-wise analysis, the resulting gene *p*-values are subsequently transformed to z-scores ($z_g$) to be introduced in the gene-set analysis. These z-scores capture the association of the genes with the phenotype. (**HEREEEEE**)
+After running the gene analysis, either by PC regression or SNP-wise analysis, the resulting gene *p*-values are subsequently transformed to [**Z-values (**$z_g$**)**]{.underline} to be introduced into the gene-set analysis. These Z-values are normally distributed and capture the **association** **strength** of the genes with the phenotype: the greater (higher positive) they are the stronger the gene association.
 
-## Gene-set analysis
+::: callout-caution
+Note that with the gene analysis F-test (with PC regression) and gene test-statistics (with SNP-wise models) we are not really looking at the sign (+/-) of the association of the genetic markers of a gene with the phenotype, just exploring if there's an association at all:
+
+-   In the PC regression model, we only assess if all genetic effects of a gene ($\alpha_g$'s) are zero or not, but not if the global gene effect is positive or negative.
+
+-   With SNP-wise methods, since they are based on SNP *p*-values that don't inform about the sign of the association, just how strong it is, the gene test-stats derived from them are also reflecting "sign-ignorant" associations. The gene *p*-value, however, is computed based on the right tail of the distribution of these gene test-stats ($T$'s) as they correspond to stronger (but not necessarily positive) associations.
+
+![](images/T_distribution_transp.png){fig-align="center" width="299"}
+:::
+
+## **Gene-set analysis**
 
 Once having gene-level associations, we can now think of gene set associations. Intiatlly, we aggregate genes in groups of genes that share cellular or functional properties, such as involvements in certain biological processes, with particular molecular functions, cellular locations, cell-type specific expression or activity, or differential expression for a given condition. These define concrete processes or features we may be interested in relating with a GWAS phenotype. By doing this, we can gain insights into the potential molecules, pathways, and tissues implicated in a phenotype's etiology.
 
-Since all that's necessary from the gene analysis to run the gene-set analysis are the gene *z*-scores, gene-set analysis operates the same independently of the gene analysis method applied (PC regression or SNP-wise), as both result in gene *p*-values and respective *z*-scores.
+Since all that's necessary from the gene analysis to run the gene-set analysis are the gene Z-values, gene-set analysis operates the same independently of the gene analysis method applied (PC regression or SNP-wise), as both result in gene *p*-values and respective $z_g$'s.
 
-Two gene-level regression models are implemented:
+Two gene-level regression models are implemented to asses the association of gene-sets with the phenotype:
 
-Genes of our particular interest are in turn aggregated into gene sets depending on their biological functions or other shared characteristics/involvements (such as being up/down DEGs). Analyzing gene sets evidently reduces the number of output tests but the gene analysis still has to be performed.
+### [**Self-contained analysis**]{style="color:#8FBC8F"}
+
+Tests if the genes of a gene set $s$ are jointly associated with the phenotype. This is assessed by an intercept-only linear regression $Z_s=\beta_0\overrightarrow1+\epsilon_s$, with $Z_s$ the variable with the $z_g$'s of the genes in $s$. With this simple model we evaluate the null $H_0:\beta_0=0$ (none of the genes is associated) against the alternative $H_A: \beta_0>0$. This is equivalent to a one-sided single-sample *t*-test comparing the mean association of genes in $s$ to 0. In other words, we are evaluating if the mean association of the genes in the set is greater than 0 (i.e., is a strong association, not to be confused with a positive effect of $s$ on the phenotype).
+
+### [**Competitive analysis**]{style="color:#CD9B9B"}
+
+Tests whether the genes in the set \$s\$ are more associated with the phenotype than the rest of genes not in the set (but with SNPs –and *z*-score– as well). Here the model now includes the *z*-scores of all genes. We define \$S_s\$ as a binary predictor of \$Z\$ that equals 1 if a gene is in \$s\$ and 0 if not: \$Z=\\beta\_{0s}\\overrightarrow1+S_s\\beta_s+\\epsilon\$. \$\\beta_s\$ reflects the difference in the association of the genes in \$s\$ versus those not in \$s\$. The *p*-value of the gene set results from testing on \$\\beta_s\$: we test \$H_0: \\beta_s=0\$ vs \$H_A: \\beta_s\>0\$ which is equivalent to a one-sided two-sample *t*-test evaluating if the mean association of genes in \$s\$ is greater than the mean association of genes not in \$s\$. This analysis is performed by default.
+
+Analyzing gene sets evidently reduces the number of output tests but the gene analysis still has to be performed.
 
 # Example of SNP-wise gene analysis and competitive gene-set analysis
 

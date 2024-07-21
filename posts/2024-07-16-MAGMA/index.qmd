@@ -22,11 +22,13 @@ This is a commonly used method that you'll likely find implemented while reading
 
 # What you'll learn here
 
-1.  Global description of the analyses MAGMA allows to run at gene and gene-set levels.
+1.  Acquire a general description of the analyses MAGMA allows to run at gene and gene-set levels; its purposes and applications.
 
-2.  A more detailed demonstration of the SNP-wise gene analysis implemented in MAGMA: inputs, commands and outputs ….
+2.  Learn and visualize basic statistical concepts used in MAGMA.
 
-3.  TODO
+3.  Receive a more detailed demonstration of the default SNP-wise gene analysis and the competitive gene-set analysis implemented in MAGMA, showing example input and output files, and needed commands.
+
+4.  Get a much more solid idea about what MAGMA is for and how it works, which will support your future analyses and interpretations.
 
 # How does it work?
 
@@ -69,12 +71,12 @@ Then an F-test is used to assess if genotypes for gene $g$ have an effect on the
 
 ### [**SNP-wise gene analysis**]{style="color:#7AC5CD"}
 
-If no raw genotype data is available, MAGMA also accepts [**SNP *p*-values**]{.underline} from a GWAS as input. In this case SNP *p*-values for a gene are first transformed into [**Z or** $\chi^2$**statistics**]{.underline} and then combined into a [**gene test-statistic**]{.underline} by the [**mean SNP statistic**]{style="background-color: #F0FFF0"} or [**top SNP statistic**]{style="background-color:#FFF0F5"} method. This gene test-statistic is then used to compute the [**gene *p*-value**]{.underline}, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (mean and top SNP statistic methods).
+If no raw genotype data is available, MAGMA also accepts [**SNP *p*-values**]{.underline} from a GWAS as input. In this case SNP *p*-values for a gene are first transformed into [**Z or**$\chi^2$**statistics**]{.underline} and then combined into a [**gene test-statistic**]{.underline} by the [**mean SNP statistic**]{style="background-color: #F0FFF0"} or [**top SNP statistic**]{style="background-color:#FFF0F5"} method. This gene test-statistic is then used to compute the [**gene *p*-value**]{.underline}, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (mean and top SNP statistic methods).
 
 This SNP-wise MAGMA analysis based on SNP summary statistics requires a **reference dataset** with similar ancestry as the data from which SNPs *p*-values were computed. This is needed to account for linkage disequilibrium (LD) between SNPs. If an approximation of the sampling distribution is used to compute the gene *p*-value, this reference is required to obtain the SNP statistic correlation matrix $R$. If phenotype permutation is chosen, these reference data are necessary to generate the gene test-statistics empirical sampling distribution.
 
-::: {style="background-color:#F2F2F2; padding: 15px"}
-Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gene test-statistic →[**\***]{style="color: #00CD00"} gene *p*-value → gene *z*-score ($z_g$)
+::: {style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px"}
+| Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gene test-statistic →[**\***]{style="color: #00CD00"} gene *p*-value → gene *z*-score ($z_g$)
 :::
 
 [**\***]{style="color:#EE00EE"}Gene test-statistics can be constructed from the SNP statistics applying one of the two implemented methods in MAGMA:
@@ -186,7 +188,7 @@ The first step is to map all SNPs from your GWAS data onto the genes of the refe
     ENSG00000237491 1 714150 745440 + AL669831.5
     ```
 
-    ::: callout-important
+    ::: callout-note
     SNPs in sexual chromosomes are usually excluded from the analysis as their inclusion brings additional analytical, statistical, and bioinformatic challenges for their analysis [@sun2023]. MAGMA only supports X chromosome analysis.
     :::
 
@@ -387,7 +389,7 @@ The `.gsa.sets.genes.out` file provides per-gene information for each gene set. 
 Here [`NGENES`]{style="background-color: gray"} doesn't always match the number of genes provided for a set. That's because these genes must 1) exist in the `.gene.loc` file in order to be assigned SNPs, and 2) have SNPs present in the GWAS study and in the reference data as only the ones present in this file are used. This is because only genes with SNP *p*-values can be assigned a $z_g$ and consequently be introduced into the gene-set analysis.
 :::
 
-::: callout-important
+::: callout-warning
 There must be an overlap \>1 between genes in the set and genes with assigned SNPs (i.e. `NGENES` \>1) to yield results. Otherwise MAGMA can't perform the GSA and returns [`NA`]{style="color: gray"}.
 :::
 

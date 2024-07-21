@@ -307,9 +307,10 @@ window.Quarto = {
 <section id="what-youll-learn-here" class="level1">
 <h1>What you’ll learn here</h1>
 <ol type="1">
-<li><p>Global description of the analyses MAGMA allows to run at gene and gene-set levels.</p></li>
-<li><p>A more detailed demonstration of the SNP-wise gene analysis implemented in MAGMA: inputs, commands and outputs ….</p></li>
-<li><p>TODO</p></li>
+<li><p>Acquire a general description of the analyses MAGMA allows to run at gene and gene-set levels; its purposes and applications.</p></li>
+<li><p>Learn and visualize basic statistical concepts used in MAGMA.</p></li>
+<li><p>Receive a more detailed demonstration of the default SNP-wise gene analysis and the competitive gene-set analysis implemented in MAGMA, showing example input and output files, and needed commands.</p></li>
+<li><p>Get a much more solid idea about what MAGMA is for and how it works, which will support your future analyses and interpretations.</p></li>
 </ol>
 </section>
 <section id="how-does-it-work" class="level1">
@@ -346,10 +347,10 @@ Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g
 </section>
 <section id="snp-wise-gene-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="snp-wise-gene-analysis"><span style="color:#7AC5CD"><strong>SNP-wise gene analysis</strong></span></h3>
-<p>If no raw genotype data is available, MAGMA also accepts <u><strong>SNP <em>p</em>-values</strong></u> from a GWAS as input. In this case SNP <em>p</em>-values for a gene are first transformed into <u><strong>Z or</strong> <span class="math inline">\(\chi^2\)</span><strong>statistics</strong></u> and then combined into a <u><strong>gene test-statistic</strong></u> by the <span style="background-color: #F0FFF0"><strong>mean SNP statistic</strong></span> or <span style="background-color:#FFF0F5"><strong>top SNP statistic</strong></span> method. This gene test-statistic is then used to compute the <u><strong>gene <em>p</em>-value</strong></u>, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (mean and top SNP statistic methods).</p>
+<p>If no raw genotype data is available, MAGMA also accepts <u><strong>SNP <em>p</em>-values</strong></u> from a GWAS as input. In this case SNP <em>p</em>-values for a gene are first transformed into <u><strong>Z or</strong><span class="math inline">\(\chi^2\)</span><strong>statistics</strong></u> and then combined into a <u><strong>gene test-statistic</strong></u> by the <span style="background-color: #F0FFF0"><strong>mean SNP statistic</strong></span> or <span style="background-color:#FFF0F5"><strong>top SNP statistic</strong></span> method. This gene test-statistic is then used to compute the <u><strong>gene <em>p</em>-value</strong></u>, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (mean and top SNP statistic methods).</p>
 <p>This SNP-wise MAGMA analysis based on SNP summary statistics requires a <strong>reference dataset</strong> with similar ancestry as the data from which SNPs <em>p</em>-values were computed. This is needed to account for linkage disequilibrium (LD) between SNPs. If an approximation of the sampling distribution is used to compute the gene <em>p</em>-value, this reference is required to obtain the SNP statistic correlation matrix <span class="math inline">\(R\)</span>. If phenotype permutation is chosen, these reference data are necessary to generate the gene test-statistics empirical sampling distribution.</p>
-<div style="background-color:#F2F2F2; padding: 15px">
-<p>Summary: SNP <em>p</em>-values → SNP statistics →<span style="color:#EE00EE"><strong>*</strong></span>gene test-statistic →<span style="color: #00CD00"><strong>*</strong></span> gene <em>p</em>-value → gene <em>z</em>-score (<span class="math inline">\(z_g\)</span>)</p>
+<div style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px">
+<div class="line-block">Summary: SNP <em>p</em>-values → SNP statistics →<span style="color:#EE00EE"><strong>*</strong></span>gene test-statistic →<span style="color: #00CD00"><strong>*</strong></span> gene <em>p</em>-value → gene <em>z</em>-score (<span class="math inline">\(z_g\)</span>)</div>
 </div>
 <p><span style="color:#EE00EE"><strong>*</strong></span>Gene test-statistics can be constructed from the SNP statistics applying one of the two implemented methods in MAGMA:</p>
 <ul>
@@ -482,13 +483,13 @@ Important
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000235146</span> 1 523009 530148 + AC114498.1 </span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000229905</span> 1 696291 697369 + AL669831.2 </span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="ex">ENSG00000237491</span> 1 714150 745440 + AL669831.5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Important
+Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -666,13 +667,13 @@ Important
 <p>Here <span style="background-color: gray"><code>NGENES</code></span> doesn’t always match the number of genes provided for a set. That’s because these genes must 1) exist in the <code>.gene.loc</code> file in order to be assigned SNPs, and 2) have SNPs present in the GWAS study and in the reference data as only the ones present in this file are used. This is because only genes with SNP <em>p</em>-values can be assigned a <span class="math inline">\(z_g\)</span> and consequently be introduced into the gene-set analysis.</p>
 </div>
 </div>
-<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Important
+Warning
 </div>
 </div>
 <div class="callout-body-container callout-body">

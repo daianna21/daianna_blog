@@ -332,7 +332,10 @@ window.Quarto = {
 Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g
 \]</span></p>
 <p><span class="math display">\[
-{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} +  \\ \stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
+{\begin{bmatrix}Y_1 \\ ... \\ Y_{N-1} \\ Y_N\end{bmatrix}} = {\begin{bmatrix}\alpha_{0g} \\ ... \\ \alpha_{0g} \\ \alpha_{0g}\end{bmatrix}} + \stackrel{PC1 \ \  \ \  \ \ PC2 \ \  \ \  \ \ ...  \ \ \ \ \ \ PC_K} {\begin{bmatrix}  x_{11} \ \ x_{12} \ \ ... \ \ x_{1K}  \\  ... \\ x_{(N-1)1} \ \ x_{(N-1)2} \ \ ... \ \ x_{(N-1)K} \\  x_{N1} \ \ x_{N2} \ \ ... \ \ x_{NK} \end{bmatrix}} {\begin{bmatrix}\alpha_{g1} \\  \alpha_{g2} \\ ... \\ \alpha_{gK}\end{bmatrix}} +  \\
+\]</span></p>
+<p><span class="math display">\[
+\stackrel{Cov1 \ \  \ \  \ \ Cov2 \ \  \ \  \ \ ...  \ \ \ \ \ \ CovL}{\begin{bmatrix}  w_{11} \ \ w_{12} \ \ ... \ \ w_{1L}  \\  ... \\ w_{(N-1)1} \ \ w_{(N-1)2} \ \ ... \ \ w_{(N-1)L} \\  w_{N1} \ \ w_{N2} \ \ ... \ \ w_{NL} \end{bmatrix}}{\begin{bmatrix}\beta_{g1} \\  \beta_{g2} \\ ... \\ \beta_{gL}\end{bmatrix}} +
 {\begin{bmatrix}\epsilon_{g1} \\ ... \\ \epsilon_{g(N-1)} \\  \epsilon_{gN}\end{bmatrix}}
 \]</span></p>
 <p>With <span class="math inline">\(X_{g}^*\)</span> the matrix of the first <span class="math inline">\(K\)</span> PCs for gene <span class="math inline">\(g\)</span> and <span class="math inline">\(W\)</span> a matrix of additional covariates for the individuals that can be included in the model. <span class="math inline">\(\alpha_g\)</span>’s and <span class="math inline">\(\beta_g\)</span>’s are the coefficients of the PCs and covariates for the gene <span class="math inline">\(g\)</span>, respectively. <span class="math inline">\(\epsilon_g\)</span> is the vector of residuals and <span class="math inline">\(\alpha_{0g}\)</span> the intercept. The <span class="math inline">\(\alpha_g\)</span>’s represent the effect of the genotype for gene <span class="math inline">\(g\)</span> on the phenotype (the <strong>genetic effect</strong>).</p>
@@ -555,19 +558,27 @@ Important
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
-<p>MAGMA is a powerful computational tool for extensible gene and gene-set analyses. By developing these two analyses as separate layers,</p>
+<p>MAGMA is a powerful computational tool for extensible and adaptable gene and gene-set analyses. As presented here, MAGMA offers multiple input options that further increase its applicability. Of outmost utility is the gene analysis SNP-wise alternatives that only utlize SNP summary statistics, given that raw genotype data are not always available or accessible. This opens up the possibility to analyze a wider range of GWASes results in a fast and interpretable manner. Additionally, by relying on individual- and gene-level multiple linear regression models, MAGMA enables to analyze any discrete and continuous covariates describing individuals’ features and gene properties in the gene and gene-set analysis, respectively.</p>
+<p>The power of this framework has proven itself, placed as one of the main methods to analyze GWAS data. Now that you know how it works, I bet you can imagine the number of hypotheses you can test by evaluating the association between any phenotype for which GWAS/genotype data are available and any set of genes with common characteristics of clinical or biological interest.</p>
 </section>
 <section id="relevant-links" class="level1">
 <h1>Relevant links</h1>
-<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3">
+<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
 <div class="line-block">📑 <strong>Original publication for MAGMA:</strong><br>
 de Leeuw, C. A., Mooij, J. M., Heskes, T., &amp; Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data.&nbsp;<em>PLoS computational biology</em>,&nbsp;<em>11</em>(4), e1004219. <a href="https://doi.org/10.1371/journal.pcbi.1004219https://doi.org/10.1371/journal.pcbi.1004219">https://doi.org/10.1371/journal.pcbi.1004219</a></div>
 </div>
-<p>&nbsp;</p>
+<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
+<div class="line-block">📔 <strong>Supplemental Methods for MAGMA:</strong><br>
+de Leeuw, C. A., Mooij, J. M., Heskes, T., &amp; Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data.&nbsp;<em>PLoS computational biology</em>,&nbsp;<em>11</em>(4, Suppl.), e1004219. Available here: <a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219#sec016" class="uri">https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219#sec016</a></div>
+</div>
+<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
+<div class="line-block">📓 <strong>MAGMA manual (version 1.09):</strong><br>
+Available here: <a href="https://ibg.colorado.edu/cdrom2021/Day10-posthuma/magma_session/manual_v1.09a.pdf" class="uri">https://ibg.colorado.edu/cdrom2021/Day10-posthuma/magma_session/manual_v1.09a.pdf</a></div>
+</div>
 </section>
 <section id="references" class="level1">
 <h1>References</h1>
-<p>Contents of this post are based on the original MAGMA publication and Supplementary File 1, and the official documentation website linked above.</p>
+<p>Contents of this post are based on the original MAGMA publication and Supplementary Methods, and on its official documentation (links shown above).</p>
 
 
 

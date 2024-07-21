@@ -30,7 +30,7 @@ This is a commonly used method that you'll likely find implemented while reading
 
 # How does it work?
 
-MAGMA allows to first perform a gene analysis and subsequently a gene-set analysis based on gene-level results. Note, however, that the gene-set analysis comes as a separate layer and it is an additional optional step, though it is frequently performed and quite useful.
+MAGMA allows to first perform a gene analysis and subsequently a gene-set analysis (GSA) based on gene-level results. Note, however, that the gene-set analysis comes as a separate layer and it is an additional optional step, though it is frequently performed and quite useful.
 
 ## **Gene analysis**
 
@@ -145,13 +145,16 @@ By default the SNP-wise gene analysis method implemented is the mean Z gene test
 
 ## Step 1: Annotation of SNPs onto genes
 
-The first step is to map all SNPs from your GWAS data onto the genes of a reference genome.
+The first step is to map all SNPs from your GWAS data onto the genes of the reference genome.
 
--   **Input**: we need SNP and gene positions based on the same human genome reference build; we provide this in the `.snploc` and in the `.gene.loc` files, respectively.
+-   **Input**: we need SNP and gene positions based on [the same human genome reference build]{style="background-color: #FFF68F"}; we provide this in the `.snploc` and in the `.gene.loc` files, respectively. [MAGMA website](https://cncr.nl/research/magma/) provides gene location files ready to download.
 
     ``` {.Bash style="padding: 14px"}
     ## .snploc file example
-    ## Columns: SNP ID, Chr, Position:
+    ## Columns: 
+    #  * SNP: SNP rsID
+    #  * CHR: SNP chromosome
+    #  * BP:  SNP position
 
            SNP CHR         BP 
     rs62513865   8  101592213 
@@ -167,7 +170,11 @@ The first step is to map all SNPs from your GWAS data onto the genes of a refere
 
     ``` {.Bash style="padding: 14px"}
     ## .gene.loc file example
-    ## Required columns: GeneID, Chr, Start site, Stop site:
+    ## Required columns: 
+    #  * GeneID
+    #  * Chr
+    #  * Start site
+    #  * Stop site
 
     ENSG00000243485 1 29554 31109 + MIR1302-2HG 
     ENSG00000186092 1 65419 71585 + OR4F5 
@@ -186,11 +193,11 @@ The first step is to map all SNPs from your GWAS data onto the genes of a refere
 -   **Commands**: the following are the flags and inputs used to map the SNPs onto genes.
 
     ``` {.Bash style="padding:14px"}
-    ## Run SNP annotation: 
-    ## --annotate: flag to run annotation 
-    ## --snp-loc: indicate file with SNP positions
-    ## --gene-loc: indicate file with gene positions
-    ## --out: prefix for output files
+    ## Run SNP annotation
+    #  --annotate: flag to run annotation 
+    #  --snp-loc: indicate file with SNP positions
+    #  --gene-loc: indicate file with gene positions
+    #  --out: prefix for output files
 
     magma --annotate \ 
           --snp-loc [.snploc file]\ 
@@ -198,11 +205,14 @@ The first step is to map all SNPs from your GWAS data onto the genes of a refere
           --out [output_prefix]
     ```
 
--   **Output**: this step returns the `.genes.annot` file as output, containing all SNPs that were assigned to a gene.
+-   **Output**: this step returns the `.genes.annot` file as output, containing all SNPs that were assigned to each gene.
 
     ``` {.Bash style="padding:14px"}
     ## .genes.annot file example
-    ## GeneID Chr:Start:Stop and corresponding SNP rsIDs:
+    ## Columns: 
+    #  * GeneID
+    #  * Chr:Start:Stop
+    #  * Corresponding gene SNP rsIDs
 
     window_up = 0 
     window_down = 0 
@@ -214,13 +224,16 @@ The first step is to map all SNPs from your GWAS data onto the genes of a refere
 
 ## Step 2: SNP-wise gene analysis
 
--   **Input**: we need to provide the SNP *p*-values in the `.pval` file and the gene-wise SNPs in the `.genes.annot` file obtained in the previous step. A reference dataset must be provided as well.
+-   **Input**: we need to provide the SNP *p*-values in a `.pval` file and the gene-wise SNPs in the `.genes.annot` file obtained in the previous step. A reference dataset must be provided as well. Check available options of reference data files in the [MAGMA website](https://cncr.nl/research/magma/).
 
-    The total sample size (N) of the GWAS from which the SNP *p*-values were derived must be indicated as well using the *N* modifier of `--pval`. Alternatively, if different sample sizes were used per SNP, these can be contained in a separate column of the `.pval` file which specified in the *ncol* modifier of `--pval`.
+    The total sample size (N) of the GWAS from which the SNP *p*-values were derived must be indicated as well using the *N* modifier of `--pval`. Alternatively, if different sample sizes were used per SNP, these can be contained in a separate column of the `.pval` file whose name is specified in the *ncol* modifier of `--pval`.
 
     ``` {.Bash style="padding:14px"}
     ## .pval file example
-    ## Columns: SNP ID, SNP p-value, and optionally SNP sample size 
+    ## Columns: 
+    #  * SNP: SNP ID
+    #  * P: SNP p-value
+    #  * N: optional SNP sample size 
 
            SNP      P      N 
     rs62513865 0.4847 130644 
@@ -236,7 +249,13 @@ The first step is to map all SNPs from your GWAS data onto the genes of a refere
 
     ``` {.Bash style="padding:14px"}
     ## g1000_eur reference data example
-    ## Columns: Chr, SNP ID, Genetic distance, Position, Allele1, Allele2
+    ## Columns: 
+    #  * Chr
+    #  * SNP rsID
+    #  * Genetic distance 
+    #  * Position
+    #  * Allele1
+    #  * Allele2
 
     1 rs537182016 0 10539 A C 
     1 rs575272151 0 11008 G C 
@@ -246,26 +265,131 @@ The first step is to map all SNPs from your GWAS data onto the genes of a refere
     1 rs200579949 0 13118 G A 
     ```
 
--   **Commands**: these are the flags used to run the SNP-wise mean Z stats method.
-
-    \## Reference data used was the 1000 Genomes European data
+-   **Commands**: the following are the flags and files required to run the SNP-wise mean Z-stats method.
 
     ``` {.Bash style="padding:14px"}
     ## Run gene analysis based on SNP p-values
-    ## --bfile
-    ## --pval
-    ## --gene-annot
-    ## --out
+    #  --bfile: indicate reference dataset
+    #  --pval: indicate file with SNP p-values
+    #                       ncol: colname for SNP samples sizes in .pval file
+    #    (or alteratively)  N: integer for total sample size of study
+    #  --gene-annot: indicate file with gene SNPs
+    #  --out: prefix for output files
 
     magma 
-    --bfile g1000_eur\ 
-    ## SNP p-values as input; 
-    ## indicate colname for sample size of the study (N) 
-    --pval $ANNOT_PREFIX.pval ncol=N\ 
-    ## Provide output file from step 1 with gene SNPs 
-    --gene-annot $OUTPUT_PREFIX.genes.annot\ 
-    --out $OUTPUT_PREFIX
+    --bfile [reference file]\ 
+    --pval [.pval file] ncol=[colname for N]\ 
+    --gene-annot [.genes.annot file]\ 
+    --out [output_prefix]
     ```
+
+-   **Output**: the output of the gene analysis are the gene *p*-values and the gene $z_g$'s. Also returned is the gene correlation matrix $R$ used to account for LD in the gene-set analysis (step 3).
+
+    Two files are returned as output: the `.genes.out` file that contains the gene analysis results in a human-readable format and the `.genes.raw` file that is an intermediary file input for gene-set analysis that also includes the gene correlations.
+
+    ``` {.Bash style="padding:14px"}
+    ## .genes.out output file example
+    #  * NSNPS: number of SNPs assigned to each gene 
+    #  * NPARAM: number of relevant parameters (such as PCs) used in the model for each gene 
+    #  * N: sample size for analyzing the gene 
+    #  * ZSTAT: gene z-value 
+    #  * P: gene p-value 
+
+               GENE CHR  START   STOP NSNPS NPARAM      N    ZSTAT       P 
+    ENSG00000237491   1 714150 745440    16      5 104688 0.59488  0.27596 
+    ENSG00000177757   1 752751 755217    11      2 114792 0.22362  0.41153 
+    ENSG00000225880   1 761586 762902     2      1 110271 0.18366  0.42714 
+    ENSG00000230368   1 803451 812283    10      3 120884 -1.2421   0.8929 
+    ENSG00000272438   1 840214 851356    32      4 116196  1.1083  0.13386 
+    ENSG00000223764   1 852245 856396    17      3 116843  1.2828 0.099786 
+    ```
+
+    ``` {.Bash style="padding:14px"}
+    ## .genes.raw output file example
+
+    VERSION = 110 
+    COVAR = NSAMP MAC 
+    ENSG00000237491 1 714150 745440 16 5 104688 63.625 0.594875 
+    ENSG00000177757 1 752751 755217 11 2 114792 103 0.223624 0.772254 
+    ENSG00000225880 1 761586 762902 2 1 110271 87 0.183658 0.825082 0.943709 
+    ENSG00000230368 1 803451 812283 10 3 120884 106.7 -1.24209 0.220645 0.404423 0.341011 ENSG00000272438 1 840214 851356 32 4 116196 212.625 1.10832 0.0435105 0.0410553 0.0368872
+    ```
+
+## Step 3: Competitive gene-set analysis
+
+-   **Input**: this analysis takes the $z_g$ for each gene obtained in the previous step (in the `.genes.raw` file) and the gene sets of interest.
+
+    ``` {.Bash style="padding:14px"}
+    ## gene_sets.txt file example
+    ## Columns:
+    #  * Gene: gene ID
+    #  * Set: set to which the gene belongs
+
+               Gene   Set 
+    ENSG00000164647  SetA 
+    ENSG00000105889  SetA 
+    ENSG00000085117  SetA 
+    ENSG00000071794  SetA 
+          ...         ...
+    ENSG00000135535  SetF 
+    ENSG00000183230  SetF 
+    ENSG00000124493  SetF
+    ```
+
+-   **Commands**:
+
+    ``` {.Bash style="padding:14px"}
+    ## Competitive GSA 
+    #  --gene-results: indicate file with gene z-values
+    #  --set-annot: indicate file with gene sets
+    #               gene-col: colname for genes   
+    #               set-col:  colname for sets
+    #  --out: name of output folder
+
+    magma 
+    --gene-results [.genes.raw file]\ 
+    --set-annot [gene_sets.txt file] 
+                gene-col=Gene 
+                set-col=Set\ 
+    --out [output folder]
+    ```
+
+-   **Output**: the file `.gsa.out` contains the primary results of the competitive gene-set analysis.
+
+    ``` {.Bash style="padding:14px"}
+    ## .gsa.out GSA output file example
+    #  * VARIABLE: gene set name 
+    #  * TYPE: type of variable (set) 
+    #  * NGENES: size of overlap between our genes in the set and genes with assigned SNPs
+    #            (i.e. number of genes in the set with SNPs) 
+    #  * BETA: regression coeff (Bs) for Ss 
+    #  * BETSA_STD: semi-standarized regression coeff. 
+    #               This is the predicted change in Z by a change of one sd in the 
+    #               predictor gene set (i.e., Bs/sd(Ss)) 
+    #  * SE: standard error of Bs
+    #  * P: p-value for the set 
+
+    TOTAL_GENES = 28129  ## Total number of genes included in the analysis 
+    TEST_DIRECTION = one-sided, positive (set), two-sided (covar)  ## one-sided (+) test for GSA CONDITIONED_INTERNAL = gene size, gene density, sample size, inverse mac, log(gene size), log(gene density), log(sample size), log(inverse mac)  ## Variables the analysis was conditioned on 
+
+    VARIABLE TYPE NGENES      BETA  BETA_STD        SE      P 
+        SetA  SET   2557  0.045582  0.013104  0.020419 0.0128 
+        SetB  SET    395  0.071821  0.008451  0.051418 0.081242 
+        SetC  SET    850 -0.039813 -0.0068155 0.034848 0.87337 
+        SetD  SET    163  0.033361  0.0025322 0.079059 0.33652 
+        SetE  SET   1709  0.083787  0.020016  0.02423  0.00027251 
+        SetF  SET    232  0.099547  0.0090033 0.067531 0.0702
+    ```
+
+The `.gsa.sets.genes.out` file provides per-gene information for each gene set. The $z_g$'s used for the analysis are shown in this file and in `.gsa.genes.out` that has information for all genes in the analysis.
+
+::: callout-important
+Here [`NGENES`]{style="background-color: gray"} doesn't always match the number of genes provided for a set. That's because these genes must 1) exist in the `.gene.loc` file in order to be assigned SNPs, and 2) have SNPs present in the GWAS study and in the reference data as only the ones present in this file are used. This is because only genes with SNP *p*-values can be assigned a $z_g$ and consequently be introduced into the gene-set analysis.
+:::
+
+::: callout-important
+There must be an overlap \>1 between genes in the set and genes with assigned SNPs (i.e. `NGENES` \>1) to yield results. Otherwise MAGMA can't perform the GSA and returns [`NA`]{style="color: gray"}.
+:::
 
 # Conclusion
 
@@ -273,7 +397,7 @@ MAGMA is a powerful computational tool for extensible and adaptable gene and gen
 
 The power of this framework has proven itself, placed as one of the main methods to analyze GWAS data. Now that you know how it works, I bet you can imagine the number of hypotheses you can test by evaluating the association between any phenotype for which GWAS/genotype data are available and any set of genes with common characteristics of clinical or biological interest.
 
-# Relevant links
+# Relevant links and bibliography
 
 ::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
 | 📑 **Original publication for MAGMA:**
@@ -281,7 +405,7 @@ The power of this framework has proven itself, placed as one of the main methods
 :::
 
 ::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
-| 📔 **Supplemental Methods for MAGMA:**
+| 📁 **Supplemental Methods for MAGMA:**
 | de Leeuw, C. A., Mooij, J. M., Heskes, T., & Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data. *PLoS computational biology*, *11*(4, Suppl.), e1004219. Available here: <https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219#sec016>
 :::
 
@@ -290,6 +414,9 @@ The power of this framework has proven itself, placed as one of the main methods
 | Available here: <https://ibg.colorado.edu/cdrom2021/Day10-posthuma/magma_session/manual_v1.09a.pdf>
 :::
 
-# References
+::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
+| 🔎 **MAGMA website:**
+| Available here: <https://cncr.nl/research/magma/>
+:::
 
-Contents of this post are based on the original MAGMA publication and Supplementary Methods, and on its official documentation (links shown above).
+Contents of this post are based on the original MAGMA publication and Supplementary Methods, as well as on its official documentation site (links shown above).

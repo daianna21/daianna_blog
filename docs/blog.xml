@@ -35,7 +35,7 @@
 </section>
 <section id="how-does-it-work" class="level1">
 <h1>How does it work?</h1>
-<p>MAGMA allows to first perform a gene analysis and subsequently a gene-set analysis based on gene-level results. Note, however, that the gene-set analysis comes as a separate layer and it is an additional optional step, though it is frequently performed and quite useful.</p>
+<p>MAGMA allows to first perform a gene analysis and subsequently a gene-set analysis (GSA) based on gene-level results. Note, however, that the gene-set analysis comes as a separate layer and it is an additional optional step, though it is frequently performed and quite useful.</p>
 <section id="gene-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="gene-analysis"><strong>Gene analysis</strong></h2>
 <p>Genetic markers are aggregated to the level of whole individual genes and those in a given gene are jointly tested for their association with the phenotype, defining in such way the association of the gene itself. This definitely allows to detect significant associations of multiple small-effect markers in a gene that individually would be missed, i.e., associations that depend on multiple markers. This also reduces the number of required tests and makes the results more interpretable by summarizing at the gene level.</p>
@@ -162,44 +162,53 @@ Important
 <p>By default the SNP-wise gene analysis method implemented is the mean Z gene test-statistic, and the default gene-set analysis is the competitive one. Let’s exemplify how to run these analyses. The following are the three main steps implemented by MAGMA.</p>
 <section id="step-1-annotation-of-snps-onto-genes" class="level2">
 <h2 class="anchored" data-anchor-id="step-1-annotation-of-snps-onto-genes">Step 1: Annotation of SNPs onto genes</h2>
-<p>The first step is to map all SNPs from your GWAS data onto the genes of a reference genome.</p>
+<p>The first step is to map all SNPs from your GWAS data onto the genes of the reference genome.</p>
 <ul>
-<li><p><strong>Input</strong>: we need SNP and gene positions based on the same human genome reference build; we provide this in the&nbsp;<code>.snploc</code>&nbsp;and in the&nbsp;<code>.gene.loc</code>&nbsp;files, respectively.</p>
+<li><p><strong>Input</strong>: we need SNP and gene positions based on <span style="background-color: #FFF68F">the same human genome reference build</span>; we provide this in the&nbsp;<code>.snploc</code>&nbsp;and in the&nbsp;<code>.gene.loc</code>&nbsp;files, respectively. <a href="https://cncr.nl/research/magma/">MAGMA website</a> provides gene location files ready to download.</p>
 <div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">## .snploc file example</span></span>
 <span id="cb1-2"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## Columns: SNP ID, Chr, Position:</span></span>
-<span id="cb1-3"></span>
-<span id="cb1-4">       <span class="ex" style="color: null;
+font-style: inherit;">## Columns: </span></span>
+<span id="cb1-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * SNP: SNP rsID</span></span>
+<span id="cb1-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * CHR: SNP chromosome</span></span>
+<span id="cb1-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * BP:  SNP position</span></span>
+<span id="cb1-6"></span>
+<span id="cb1-7">       <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">SNP</span> CHR         BP </span>
-<span id="cb1-5"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">rs62513865</span>   8  101592213 </span>
-<span id="cb1-6"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">rs79643588</span>   8  106973048 </span>
-<span id="cb1-7"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">rs17396518</span>   8  108690829 </span>
 <span id="cb1-8"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">rs983166</span>     8  108681675 </span>
+font-style: inherit;">rs62513865</span>   8  101592213 </span>
 <span id="cb1-9"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">rs28842593</span>   8  103044620 </span>
+font-style: inherit;">rs79643588</span>   8  106973048 </span>
 <span id="cb1-10"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">rs7014597</span>    8  104152280 </span>
+font-style: inherit;">rs17396518</span>   8  108690829 </span>
 <span id="cb1-11"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">rs3134156</span>    8  100479917 </span>
+font-style: inherit;">rs983166</span>     8  108681675 </span>
 <span id="cb1-12"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">rs6980591</span>    8  103144592 </span>
+font-style: inherit;">rs28842593</span>   8  103044620 </span>
 <span id="cb1-13"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">rs7014597</span>    8  104152280 </span>
+<span id="cb1-14"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">rs3134156</span>    8  100479917 </span>
+<span id="cb1-15"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">rs6980591</span>    8  103144592 </span>
+<span id="cb1-16"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">rs72670434</span>   8  108166508</span></code></pre></div>
 <div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
@@ -207,36 +216,48 @@ background-color: null;
 font-style: inherit;">## .gene.loc file example</span></span>
 <span id="cb2-2"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## Required columns: GeneID, Chr, Start site, Stop site:</span></span>
-<span id="cb2-3"></span>
-<span id="cb2-4"><span class="ex" style="color: null;
+font-style: inherit;">## Required columns: </span></span>
+<span id="cb2-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * GeneID</span></span>
+<span id="cb2-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * Chr</span></span>
+<span id="cb2-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * Start site</span></span>
+<span id="cb2-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * Stop site</span></span>
+<span id="cb2-7"></span>
+<span id="cb2-8"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">ENSG00000243485</span> 1 29554 31109 + MIR1302-2HG </span>
-<span id="cb2-5"><span class="ex" style="color: null;
+<span id="cb2-9"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">ENSG00000186092</span> 1 65419 71585 + OR4F5 </span>
-<span id="cb2-6"><span class="ex" style="color: null;
+<span id="cb2-10"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">ENSG00000238009</span> 1 89295 133723 <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">-</span> AL627309.1 </span>
-<span id="cb2-7"><span class="ex" style="color: null;
+<span id="cb2-11"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">ENSG00000239906</span> 1 139790 140339 <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">-</span> AL627309.2 </span>
-<span id="cb2-8"><span class="ex" style="color: null;
+<span id="cb2-12"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">ENSG00000236601</span> 5 180881343 180888537 <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">-</span> AL732372.1 </span>
-<span id="cb2-9"><span class="ex" style="color: null;
+<span id="cb2-13"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">ENSG00000235146</span> 1 523009 530148 + AC114498.1 </span>
-<span id="cb2-10"><span class="ex" style="color: null;
+<span id="cb2-14"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">ENSG00000229905</span> 1 696291 697369 + AL669831.2 </span>
-<span id="cb2-11"><span class="ex" style="color: null;
+<span id="cb2-15"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">ENSG00000237491</span> 1 714150 745440 + AL669831.5</span></code></pre></div>
 <div class="callout callout-style-default callout-important callout-titled">
@@ -255,19 +276,19 @@ Important
 <li><p><strong>Commands</strong>: the following are the flags and inputs used to map the SNPs onto genes.</p>
 <div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## Run SNP annotation: </span></span>
+font-style: inherit;">## Run SNP annotation</span></span>
 <span id="cb3-2"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## --annotate: flag to run annotation </span></span>
+font-style: inherit;">#  --annotate: flag to run annotation </span></span>
 <span id="cb3-3"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## --snp-loc: indicate file with SNP positions</span></span>
+font-style: inherit;">#  --snp-loc: indicate file with SNP positions</span></span>
 <span id="cb3-4"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## --gene-loc: indicate file with gene positions</span></span>
+font-style: inherit;">#  --gene-loc: indicate file with gene positions</span></span>
 <span id="cb3-5"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## --out: prefix for output files</span></span>
+font-style: inherit;">#  --out: prefix for output files</span></span>
 <span id="cb3-6"></span>
 <span id="cb3-7"><span class="ex" style="color: null;
 background-color: null;
@@ -295,30 +316,39 @@ background-color: null;
 font-style: inherit;">output_prefix</span><span class="pp" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">]</span></span></code></pre></div></li>
-<li><p><strong>Output</strong>: this step returns the <code>.genes.annot</code> file as output, containing all SNPs that were assigned to a gene.</p>
+<li><p><strong>Output</strong>: this step returns the <code>.genes.annot</code> file as output, containing all SNPs that were assigned to each gene.</p>
 <div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">## .genes.annot file example</span></span>
 <span id="cb4-2"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## GeneID Chr:Start:Stop and corresponding SNP rsIDs:</span></span>
-<span id="cb4-3"></span>
-<span id="cb4-4"><span class="ex" style="color: null;
+font-style: inherit;">## Columns: </span></span>
+<span id="cb4-3"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">window_up</span> = 0 </span>
-<span id="cb4-5"><span class="ex" style="color: null;
+font-style: inherit;">#  * GeneID</span></span>
+<span id="cb4-4"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">window_down</span> = 0 </span>
-<span id="cb4-6"><span class="ex" style="color: null;
+font-style: inherit;">#  * Chr:Start:Stop</span></span>
+<span id="cb4-5"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">ENSG00000237491</span> 1:714150:745440 rs186002080 rs12184267 rs142557973 rs149887893 </span>
+font-style: inherit;">#  * Corresponding gene SNP rsIDs</span></span>
+<span id="cb4-6"></span>
 <span id="cb4-7"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">ENSG00000177757</span> 1:752751:755217 rs3115859 rs3131968 rs3131967 rs3115860 </span>
+font-style: inherit;">window_up</span> = 0 </span>
 <span id="cb4-8"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">ENSG00000225880</span> 1:761586:762902 rs2286139 rs377377186 rs374493323 </span>
+font-style: inherit;">window_down</span> = 0 </span>
 <span id="cb4-9"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000237491</span> 1:714150:745440 rs186002080 rs12184267 rs142557973 rs149887893 </span>
+<span id="cb4-10"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000177757</span> 1:752751:755217 rs3115859 rs3131968 rs3131967 rs3115860 </span>
+<span id="cb4-11"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000225880</span> 1:761586:762902 rs2286139 rs377377186 rs374493323 </span>
+<span id="cb4-12"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">ENSG00000230368</span> 1:803451:812283 rs11240779 rs28410559 rs72631880 rs58686784 </span></code></pre></div></li>
 </ul>
@@ -326,37 +356,46 @@ font-style: inherit;">ENSG00000230368</span> 1:803451:812283 rs11240779 rs284105
 <section id="step-2-snp-wise-gene-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="step-2-snp-wise-gene-analysis">Step 2: SNP-wise gene analysis</h2>
 <ul>
-<li><p><strong>Input</strong>: we need to provide the SNP <em>p</em>-values in the <code>.pval</code> file and the gene-wise SNPs in the <code>.genes.annot</code> file obtained in the previous step. A reference dataset must be provided as well.</p>
-<p>The total sample size (N) of the GWAS from which the SNP <em>p</em>-values were derived must be indicated as well using the <em>N</em> modifier of <code>--pval</code>. Alternatively, if different sample sizes were used per SNP, these can be contained in a separate column of the <code>.pval</code> file which specified in the <em>ncol</em> modifier of <code>--pval</code>.</p>
+<li><p><strong>Input</strong>: we need to provide the SNP <em>p</em>-values in a <code>.pval</code> file and the gene-wise SNPs in the <code>.genes.annot</code> file obtained in the previous step. A reference dataset must be provided as well. Check available options of reference data files in the <a href="https://cncr.nl/research/magma/">MAGMA website</a>.</p>
+<p>The total sample size (N) of the GWAS from which the SNP <em>p</em>-values were derived must be indicated as well using the <em>N</em> modifier of <code>--pval</code>. Alternatively, if different sample sizes were used per SNP, these can be contained in a separate column of the <code>.pval</code> file whose name is specified in the <em>ncol</em> modifier of <code>--pval</code>.</p>
 <div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">## .pval file example</span></span>
 <span id="cb5-2"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## Columns: SNP ID, SNP p-value, and optionally SNP sample size </span></span>
-<span id="cb5-3"></span>
-<span id="cb5-4">       <span class="ex" style="color: null;
+font-style: inherit;">## Columns: </span></span>
+<span id="cb5-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * SNP: SNP ID</span></span>
+<span id="cb5-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * P: SNP p-value</span></span>
+<span id="cb5-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * N: optional SNP sample size </span></span>
+<span id="cb5-6"></span>
+<span id="cb5-7">       <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">SNP</span>      P      N </span>
-<span id="cb5-5"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">rs62513865</span> 0.4847 130644 </span>
-<span id="cb5-6"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">rs79643588</span> 0.5605 130644 </span>
-<span id="cb5-7"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">rs17396518</span> 0.8145 130644 </span>
 <span id="cb5-8"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">rs983166</span>   0.5704 130644 </span>
+font-style: inherit;">rs62513865</span> 0.4847 130644 </span>
 <span id="cb5-9"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">rs28842593</span> 0.7488 130644 </span>
+font-style: inherit;">rs79643588</span> 0.5605 130644 </span>
 <span id="cb5-10"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">rs7014597</span>  0.5034 130644 </span>
+font-style: inherit;">rs17396518</span> 0.8145 130644 </span>
 <span id="cb5-11"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">rs983166</span>   0.5704 130644 </span>
+<span id="cb5-12"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">rs28842593</span> 0.7488 130644 </span>
+<span id="cb5-13"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">rs7014597</span>  0.5034 130644 </span>
+<span id="cb5-14"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">rs3134156</span>  0.2225 130644</span></code></pre></div>
 <p>The next is a <code>head</code> of the 1000 Genomes European panel data used as the reference dataset.</p>
@@ -365,81 +404,361 @@ background-color: null;
 font-style: inherit;">## g1000_eur reference data example</span></span>
 <span id="cb6-2"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## Columns: Chr, SNP ID, Genetic distance, Position, Allele1, Allele2</span></span>
-<span id="cb6-3"></span>
-<span id="cb6-4"><span class="ex" style="color: null;
+font-style: inherit;">## Columns: </span></span>
+<span id="cb6-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * Chr</span></span>
+<span id="cb6-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * SNP rsID</span></span>
+<span id="cb6-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * Genetic distance </span></span>
+<span id="cb6-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * Position</span></span>
+<span id="cb6-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * Allele1</span></span>
+<span id="cb6-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * Allele2</span></span>
+<span id="cb6-9"></span>
+<span id="cb6-10"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">1</span> rs537182016 0 10539 A C </span>
-<span id="cb6-5"><span class="ex" style="color: null;
+<span id="cb6-11"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">1</span> rs575272151 0 11008 G C </span>
-<span id="cb6-6"><span class="ex" style="color: null;
+<span id="cb6-12"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">1</span> rs544419019 0 11012 G C </span>
-<span id="cb6-7"><span class="ex" style="color: null;
+<span id="cb6-13"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">1</span> rs540538026 0 13110 A G </span>
-<span id="cb6-8"><span class="ex" style="color: null;
+<span id="cb6-14"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">1</span> rs62635286  0 13116 G T </span>
-<span id="cb6-9"><span class="ex" style="color: null;
+<span id="cb6-15"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">1</span> rs200579949 0 13118 G A </span></code></pre></div></li>
-<li><p><strong>Commands</strong>: these are the flags used to run the SNP-wise mean Z stats method.</p>
-<p>## Reference data used was the 1000 Genomes European data</p>
+<li><p><strong>Commands</strong>: the following are the flags and files required to run the SNP-wise mean Z-stats method.</p>
 <div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">## Run gene analysis based on SNP p-values</span></span>
 <span id="cb7-2"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## --bfile</span></span>
+font-style: inherit;">#  --bfile: indicate reference dataset</span></span>
 <span id="cb7-3"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## --pval</span></span>
+font-style: inherit;">#  --pval: indicate file with SNP p-values</span></span>
 <span id="cb7-4"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## --gene-annot</span></span>
+font-style: inherit;">#                       ncol: colname for SNP samples sizes in .pval file</span></span>
 <span id="cb7-5"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">## --out</span></span>
-<span id="cb7-6"></span>
-<span id="cb7-7"><span class="ex" style="color: null;
+font-style: inherit;">#    (or alteratively)  N: integer for total sample size of study</span></span>
+<span id="cb7-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  --gene-annot: indicate file with gene SNPs</span></span>
+<span id="cb7-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  --out: prefix for output files</span></span>
+<span id="cb7-8"></span>
+<span id="cb7-9"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">magma</span> </span>
-<span id="cb7-8"><span class="ex" style="color: null;
+<span id="cb7-10"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">--bfile</span> g1000_eur<span class="dt" style="color: #AD0000;
+font-style: inherit;">--bfile</span> [reference file]<span class="dt" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">\ </span></span>
-<span id="cb7-9"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">## SNP p-values as input; </span></span>
-<span id="cb7-10"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">## indicate colname for sample size of the study (N) </span></span>
 <span id="cb7-11"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">--pval</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">$ANNOT_PREFIX</span>.pval ncol=N<span class="dt" style="color: #AD0000;
+font-style: inherit;">--pval</span> [.pval file] ncol=[colname for N]<span class="dt" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">\ </span></span>
-<span id="cb7-12"><span class="co" style="color: #5E5E5E;
+<span id="cb7-12"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">## Provide output file from step 1 with gene SNPs </span></span>
+font-style: inherit;">--gene-annot</span> [.genes.annot file]<span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\ </span></span>
 <span id="cb7-13"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">--gene-annot</span> <span class="va" style="color: #111111;
+font-style: inherit;">--out</span> <span class="pp" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">$OUTPUT_PREFIX</span>.genes.annot<span class="dt" style="color: #AD0000;
+font-style: inherit;">[</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">output_prefix</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">]</span></span></code></pre></div></li>
+<li><p><strong>Output</strong>: the output of the gene analysis are the gene <em>p</em>-values and the gene <img src="https://latex.codecogs.com/png.latex?z_g">’s. Also returned is the gene correlation matrix <img src="https://latex.codecogs.com/png.latex?R"> used to account for LD in the gene-set analysis (step 3).</p>
+<p>Two files are returned as output: the <code>.genes.out</code> file that contains the gene analysis results in a human-readable format and the <code>.genes.raw</code> file that is an intermediary file input for gene-set analysis that also includes the gene correlations.</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">## .genes.out output file example</span></span>
+<span id="cb8-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * NSNPS: number of SNPs assigned to each gene </span></span>
+<span id="cb8-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * NPARAM: number of relevant parameters (such as PCs) used in the model for each gene </span></span>
+<span id="cb8-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * N: sample size for analyzing the gene </span></span>
+<span id="cb8-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * ZSTAT: gene z-value </span></span>
+<span id="cb8-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * P: gene p-value </span></span>
+<span id="cb8-7"></span>
+<span id="cb8-8">           <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">GENE</span> CHR  START   STOP NSNPS NPARAM      N    ZSTAT       P </span>
+<span id="cb8-9"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000237491</span>   1 714150 745440    16      5 104688 0.59488  0.27596 </span>
+<span id="cb8-10"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000177757</span>   1 752751 755217    11      2 114792 0.22362  0.41153 </span>
+<span id="cb8-11"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000225880</span>   1 761586 762902     2      1 110271 0.18366  0.42714 </span>
+<span id="cb8-12"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000230368</span>   1 803451 812283    10      3 120884 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-1.2421</span>   0.8929 </span>
+<span id="cb8-13"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000272438</span>   1 840214 851356    32      4 116196  1.1083  0.13386 </span>
+<span id="cb8-14"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000223764</span>   1 852245 856396    17      3 116843  1.2828 0.099786 </span></code></pre></div>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">## .genes.raw output file example</span></span>
+<span id="cb9-2"></span>
+<span id="cb9-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">VERSION</span> = 110 </span>
+<span id="cb9-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">COVAR</span> = NSAMP MAC </span>
+<span id="cb9-5"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000237491</span> 1 714150 745440 16 5 104688 63.625 0.594875 </span>
+<span id="cb9-6"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000177757</span> 1 752751 755217 11 2 114792 103 0.223624 0.772254 </span>
+<span id="cb9-7"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000225880</span> 1 761586 762902 2 1 110271 87 0.183658 0.825082 0.943709 </span>
+<span id="cb9-8"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000230368</span> 1 803451 812283 10 3 120884 106.7 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-1.24209</span> 0.220645 0.404423 0.341011 ENSG00000272438 1 840214 851356 32 4 116196 212.625 1.10832 0.0435105 0.0410553 0.0368872</span></code></pre></div></li>
+</ul>
+</section>
+<section id="step-3-competitive-gene-set-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-competitive-gene-set-analysis">Step 3: Competitive gene-set analysis</h2>
+<ul>
+<li><p><strong>Input</strong>: this analysis takes the <img src="https://latex.codecogs.com/png.latex?z_g"> for each gene obtained in the previous step (in the <code>.genes.raw</code> file) and the gene sets of interest.</p>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">## gene_sets.txt file example</span></span>
+<span id="cb10-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">## Columns:</span></span>
+<span id="cb10-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * Gene: gene ID</span></span>
+<span id="cb10-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * Set: set to which the gene belongs</span></span>
+<span id="cb10-5"></span>
+<span id="cb10-6">           <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Gene</span>   Set </span>
+<span id="cb10-7"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000164647</span>  SetA </span>
+<span id="cb10-8"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000105889</span>  SetA </span>
+<span id="cb10-9"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000085117</span>  SetA </span>
+<span id="cb10-10"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000071794</span>  SetA </span>
+<span id="cb10-11">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">...</span>         ...</span>
+<span id="cb10-12"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000135535</span>  SetF </span>
+<span id="cb10-13"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000183230</span>  SetF </span>
+<span id="cb10-14"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ENSG00000124493</span>  SetF</span></code></pre></div></li>
+<li><p><strong>Commands</strong>:</p>
+<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">## Competitive GSA </span></span>
+<span id="cb11-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  --gene-results: indicate file with gene z-values</span></span>
+<span id="cb11-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  --set-annot: indicate file with gene sets</span></span>
+<span id="cb11-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#               gene-col: colname for genes   </span></span>
+<span id="cb11-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#               set-col:  colname for sets</span></span>
+<span id="cb11-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  --out: name of output folder</span></span>
+<span id="cb11-7"></span>
+<span id="cb11-8"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">magma</span> </span>
+<span id="cb11-9"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">--gene-results</span> [.genes.raw file]<span class="dt" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">\ </span></span>
-<span id="cb7-14"><span class="ex" style="color: null;
+<span id="cb11-10"><span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">--out</span> <span class="va" style="color: #111111;
+font-style: inherit;">--set-annot</span> [gene_sets.txt file] </span>
+<span id="cb11-11">            <span class="ex" style="color: null;
 background-color: null;
-font-style: inherit;">$OUTPUT_PREFIX</span></span></code></pre></div></li>
+font-style: inherit;">gene-col=Gene</span> </span>
+<span id="cb11-12">            <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">set-col=Set\ </span></span>
+<span id="cb11-13"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">--out</span> [output folder]</span></code></pre></div></li>
+<li><p><strong>Output</strong>: the file <code>.gsa.out</code> contains the primary results of the competitive gene-set analysis.</p>
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">## .gsa.out GSA output file example</span></span>
+<span id="cb12-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * VARIABLE: gene set name </span></span>
+<span id="cb12-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * TYPE: type of variable (set) </span></span>
+<span id="cb12-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * NGENES: size of overlap between our genes in the set and genes with assigned SNPs</span></span>
+<span id="cb12-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#            (i.e. number of genes in the set with SNPs) </span></span>
+<span id="cb12-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * BETA: regression coeff (Bs) for Ss </span></span>
+<span id="cb12-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * BETSA_STD: semi-standarized regression coeff. </span></span>
+<span id="cb12-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#               This is the predicted change in Z by a change of one sd in the </span></span>
+<span id="cb12-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#               predictor gene set (i.e., Bs/sd(Ss)) </span></span>
+<span id="cb12-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * SE: standard error of Bs</span></span>
+<span id="cb12-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  * P: p-value for the set </span></span>
+<span id="cb12-12"></span>
+<span id="cb12-13"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">TOTAL_GENES</span> = 28129  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">## Total number of genes included in the analysis </span></span>
+<span id="cb12-14"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">TEST_DIRECTION</span> = one-sided, positive <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">set</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">)</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">,</span> two-sided <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">covar</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">)</span>  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">## one-sided (+) test for GSA CONDITIONED_INTERNAL = gene size, gene density, sample size, inverse mac, log(gene size), log(gene density), log(sample size), log(inverse mac)  ## Variables the analysis was conditioned on </span></span>
+<span id="cb12-15"></span>
+<span id="cb12-16"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">VARIABLE</span> TYPE NGENES      BETA  BETA_STD        SE      P </span>
+<span id="cb12-17">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">SetA</span>  SET   2557  0.045582  0.013104  0.020419 0.0128 </span>
+<span id="cb12-18">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">SetB</span>  SET    395  0.071821  0.008451  0.051418 0.081242 </span>
+<span id="cb12-19">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">SetC</span>  SET    850 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-0.039813</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-0.0068155</span> 0.034848 0.87337 </span>
+<span id="cb12-20">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">SetD</span>  SET    163  0.033361  0.0025322 0.079059 0.33652 </span>
+<span id="cb12-21">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">SetE</span>  SET   1709  0.083787  0.020016  0.02423  0.00027251 </span>
+<span id="cb12-22">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">SetF</span>  SET    232  0.099547  0.0090033 0.067531 0.0702</span></code></pre></div></li>
 </ul>
+<p>The <code>.gsa.sets.genes.out</code> file provides per-gene information for each gene set. The <img src="https://latex.codecogs.com/png.latex?z_g">’s used for the analysis are shown in this file and in <code>.gsa.genes.out</code> that has information for all genes in the analysis.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Here <span style="background-color: gray"><code>NGENES</code></span> doesn’t always match the number of genes provided for a set. That’s because these genes must 1) exist in the <code>.gene.loc</code> file in order to be assigned SNPs, and 2) have SNPs present in the GWAS study and in the reference data as only the ones present in this file are used. This is because only genes with SNP <em>p</em>-values can be assigned a <img src="https://latex.codecogs.com/png.latex?z_g"> and consequently be introduced into the gene-set analysis.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There must be an overlap &gt;1 between genes in the set and genes with assigned SNPs (i.e.&nbsp;<code>NGENES</code> &gt;1) to yield results. Otherwise MAGMA can’t perform the GSA and returns <span style="color: gray"><code>NA</code></span>.</p>
+</div>
+</div>
 </section>
 </section>
 <section id="conclusion" class="level1">
@@ -447,24 +766,25 @@ font-style: inherit;">$OUTPUT_PREFIX</span></span></code></pre></div></li>
 <p>MAGMA is a powerful computational tool for extensible and adaptable gene and gene-set analyses. As presented here, MAGMA offers multiple input options that further increase its applicability. Of outmost utility is the gene analysis SNP-wise alternatives that only utlize SNP summary statistics, given that raw genotype data are not always available or accessible. This opens up the possibility to analyze a wider range of GWASes results in a fast and interpretable manner. Additionally, by relying on individual- and gene-level multiple linear regression models, MAGMA enables to analyze any discrete and continuous covariates describing individuals’ features and gene properties in the gene and gene-set analysis, respectively.</p>
 <p>The power of this framework has proven itself, placed as one of the main methods to analyze GWAS data. Now that you know how it works, I bet you can imagine the number of hypotheses you can test by evaluating the association between any phenotype for which GWAS/genotype data are available and any set of genes with common characteristics of clinical or biological interest.</p>
 </section>
-<section id="relevant-links" class="level1">
-<h1>Relevant links</h1>
+<section id="relevant-links-and-bibliography" class="level1">
+<h1>Relevant links and bibliography</h1>
 <div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
 <div class="line-block">📑 <strong>Original publication for MAGMA:</strong><br>
 de Leeuw, C. A., Mooij, J. M., Heskes, T., &amp; Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data.&nbsp;<em>PLoS computational biology</em>,&nbsp;<em>11</em>(4), e1004219. <a href="https://doi.org/10.1371/journal.pcbi.1004219https://doi.org/10.1371/journal.pcbi.1004219">https://doi.org/10.1371/journal.pcbi.1004219</a></div>
 </div>
 <div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
-<div class="line-block">📔 <strong>Supplemental Methods for MAGMA:</strong><br>
+<div class="line-block">📁 <strong>Supplemental Methods for MAGMA:</strong><br>
 de Leeuw, C. A., Mooij, J. M., Heskes, T., &amp; Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data.&nbsp;<em>PLoS computational biology</em>,&nbsp;<em>11</em>(4, Suppl.), e1004219. Available here: <a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219#sec016" class="uri">https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219#sec016</a></div>
 </div>
 <div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
 <div class="line-block">📓 <strong>MAGMA manual (version 1.09):</strong><br>
 Available here: <a href="https://ibg.colorado.edu/cdrom2021/Day10-posthuma/magma_session/manual_v1.09a.pdf" class="uri">https://ibg.colorado.edu/cdrom2021/Day10-posthuma/magma_session/manual_v1.09a.pdf</a></div>
 </div>
-</section>
-<section id="references" class="level1">
-<h1>References</h1>
-<p>Contents of this post are based on the original MAGMA publication and Supplementary Methods, and on its official documentation (links shown above).</p>
+<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
+<div class="line-block">🔎 <strong>MAGMA website:</strong><br>
+Available here: <a href="https://cncr.nl/research/magma/" class="uri">https://cncr.nl/research/magma/</a></div>
+</div>
+<p>Contents of this post are based on the original MAGMA publication and Supplementary Methods, as well as on its official documentation site (links shown above).</p>
 
 
 

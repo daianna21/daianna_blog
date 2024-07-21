@@ -262,8 +262,8 @@ window.Quarto = {
 <h1 class="title">MAGMA: How does the Gene and the Gene-Set analysis operate?</h1>
   <div class="quarto-categories">
     <div class="quarto-category">GWAS</div>
-    <div class="quarto-category">Gene analysis</div>
-    <div class="quarto-category">Gene Set Enrichment</div>
+    <div class="quarto-category">Gene Analysis</div>
+    <div class="quarto-category">Gene Set Analysis</div>
     <div class="quarto-category">SNP summary statistics</div>
   </div>
   </div>
@@ -302,7 +302,7 @@ window.Quarto = {
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
 <p>MAGMA&nbsp;stands for&nbsp;<strong>Multi-marker Analysis of GenoMic Annotation</strong>&nbsp;and is a computational tool for the analysis of the joint effect of multiple genetic markers on a phenotype based on Genome-Wide Association Study (GWAS) data. MAGMA constitutes a flexible and generalizable approach to assess the&nbsp;<strong>association</strong>&nbsp;of&nbsp;<u><strong>individual genes</strong></u>&nbsp;or&nbsp;<u><strong>gene-sets</strong></u>&nbsp;with a&nbsp;<strong>phenotype</strong>&nbsp;based on the associations that the&nbsp;<u><strong>SNPs</strong></u>&nbsp;of the genes have with the same phenotype.</p>
-<p>This is a commonly used method that you’ll likely find implemented while reading about GWASes or that you’ll need to run if working with genetic variant associations and gene-set enrichment analysis, so let’s see how it works.</p>
+<p>This is a commonly used method that you’ll likely find implemented while reading about GWASes or that you’ll need to run if working with genetic variant associations and gene/gene-set analysis, so let’s see how it works.</p>
 </section>
 <section id="what-youll-learn-here" class="level1">
 <h1>What you’ll learn here</h1>
@@ -324,7 +324,7 @@ window.Quarto = {
 <p>If the input data is <strong>raw genotype data</strong>, MAGMA fits a multiple linear PC regression model to the individuals’ phenotypes. Here, for one gene <span class="math inline">\(g\)</span> at a time, the SNP matrix that contains the information of the SNPs for that gene across all the <span class="math inline">\(N\)</span> individuals studied, is projected onto its Principal Components (PCs). These PCs capture genotypic differences between individuals for the given gene and the first <span class="math inline">\(K\)</span> most explanatory ones (comprising 99.9% of the variance) are used as predictors of the phenotype (<span class="math inline">\(Y\)</span>) in the linear model.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/MAGMA_PC_model.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="700"></p>
+<p><img src="images/MAGMA_PC_model.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin:0px" width="700"></p>
 </figure>
 </div>
 <p>Phenotype is modeled as:</p>
@@ -344,7 +344,7 @@ Y = \alpha_{0g}+X^*_{g}\alpha_g+W\beta_g+\epsilon_g
 <section id="snp-wise-gene-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="snp-wise-gene-analysis"><span style="color:#7AC5CD"><strong>SNP-wise gene analysis</strong></span></h3>
 <p>If no raw genotype data is available, MAGMA also accepts <u><strong>SNP <em>p</em>-values</strong></u> from a GWAS as input. In this case SNP <em>p</em>-values for a gene are first transformed into <u><strong>Z or</strong> <span class="math inline">\(\chi^2\)</span><strong>statistics</strong></u> and then combined into a <u><strong>gene test-statistic</strong></u> by the <span style="background-color: #F0FFF0"><strong>mean SNP statistic</strong></span> or <span style="background-color:#FFF0F5"><strong>top SNP statistic</strong></span> method. This gene test-statistic is then used to compute the <u><strong>gene <em>p</em>-value</strong></u>, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (mean and top SNP statistic methods).</p>
-<p>This SNP-wise MAGMA analysis based on SNP summary statistics requires a <strong>reference dataset</strong> with similar ancestry as the data from which SNPs <em>p</em>-values were computed. This is needed to account for LD between SNPs. If an approximation of the sampling distribution is used to compute the gene <em>p</em>-value, this reference is required to obtain the SNP statistic correlation matrix <span class="math inline">\(R\)</span>. If phenotype permutation is chosen, these reference data are necessary to generate the gene test-statistics empirical sampling distribution.</p>
+<p>This SNP-wise MAGMA analysis based on SNP summary statistics requires a <strong>reference dataset</strong> with similar ancestry as the data from which SNPs <em>p</em>-values were computed. This is needed to account for linkage disequilibrium (LD) between SNPs. If an approximation of the sampling distribution is used to compute the gene <em>p</em>-value, this reference is required to obtain the SNP statistic correlation matrix <span class="math inline">\(R\)</span>. If phenotype permutation is chosen, these reference data are necessary to generate the gene test-statistics empirical sampling distribution.</p>
 <div style="background-color:#F2F2F2; padding: 15px">
 <p>Summary: SNP <em>p</em>-values → SNP statistics →<span style="color:#EE00EE"><strong>*</strong></span>gene test-statistic →<span style="color: #00CD00"><strong>*</strong></span> gene <em>p</em>-value → gene <em>z</em>-score (<span class="math inline">\(z_g\)</span>)</p>
 </div>
@@ -390,7 +390,7 @@ Caution
 </ul>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/T_distribution_transp.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="299"></p>
+<p><img src="images/T_distribution_transp.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin:0px" width="271"></p>
 </figure>
 </div>
 </div>
@@ -404,12 +404,39 @@ Caution
 <p>Two gene-level regression models are implemented to asses the association of gene-sets with the phenotype:</p>
 <section id="self-contained-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="self-contained-analysis"><span style="color:#8FBC8F"><strong>Self-contained analysis</strong></span></h3>
-<p>Tests if the genes of a gene set <span class="math inline">\(s\)</span> are jointly associated with the phenotype. This is assessed by an intercept-only linear regression <span class="math inline">\(Z_s=\beta_0\overrightarrow1+\epsilon_s\)</span>, with <span class="math inline">\(Z_s\)</span> the variable with the <span class="math inline">\(z_g\)</span>’s of the genes in <span class="math inline">\(s\)</span>. With this simple model we evaluate the null <span class="math inline">\(H_0:\beta_0=0\)</span> (none of the genes is associated) against the alternative <span class="math inline">\(H_A: \beta_0&gt;0\)</span>. This is equivalent to a one-sided single-sample <em>t</em>-test comparing the mean association of genes in <span class="math inline">\(s\)</span> to 0. In other words, we are evaluating if the mean association of the genes in the set is greater than 0 (i.e., is a strong association, not to be confused with a positive effect of <span class="math inline">\(s\)</span> on the phenotype).</p>
+<p>Tests if the genes of a gene set <span class="math inline">\(s\)</span> are jointly associated with the phenotype. This is assessed by an intercept-only linear regression <span class="math inline">\(Z_s=\beta_0\overrightarrow1+\epsilon_s\)</span>, with <span class="math inline">\(Z_s\)</span> the variable with the <span class="math inline">\(z_g\)</span>’s of the genes in <span class="math inline">\(s\)</span>. With this simple model we evaluate the null <span class="math inline">\(H_0:\beta_0=0\)</span> against the alternative <span class="math inline">\(H_A: \beta_0&gt;0\)</span>. This is equivalent to a one-sided single-sample <em>t</em>-test comparing the mean association of genes in <span class="math inline">\(s\)</span> to 0. In other words, we are evaluating if the mean association of the genes in the set is greater than 0 (i.e., is a strong association, not to be confused with a positive effect of <span class="math inline">\(s\)</span> on the phenotype).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/GSA_self_contained.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin:0px" width="378"></p>
+</figure>
+</div>
 </section>
 <section id="competitive-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="competitive-analysis"><span style="color:#CD9B9B"><strong>Competitive analysis</strong></span></h3>
-<p>Tests whether the genes in the set $s$ are more associated with the phenotype than the rest of genes not in the set (but with SNPs –and&nbsp;<em>z</em>-score– as well). Here the model now includes the&nbsp;<em>z</em>-scores of all genes. We define $S_s$ as a binary predictor of $Z$ that equals 1 if a gene is in $s$ and 0 if not: $Z=\beta_{0s}\overrightarrow1+S_s\beta_s+\epsilon$. $\beta_s$ reflects the difference in the association of the genes in $s$ versus those not in $s$. The&nbsp;<em>p</em>-value of the gene set results from testing on $\beta_s$: we test $H_0: \beta_s=0$ vs $H_A: \beta_s&gt;0$ which is equivalent to a one-sided two-sample&nbsp;<em>t</em>-test evaluating if the mean association of genes in $s$ is greater than the mean association of genes not in $s$. This analysis is performed by default.</p>
-<p>Analyzing gene sets evidently reduces the number of output tests but the gene analysis still has to be performed.</p>
+<p>Tests whether the genes in the set <span class="math inline">\(s\)</span> are more strongly associated with the phenotype than the rest of genes not in the set. Here the outcome variable <span class="math inline">\(Z\)</span> of the model now includes the <span class="math inline">\(z_g\)</span> of all genes. We define <span class="math inline">\(S_s\)</span> as a binary predictor of <span class="math inline">\(Z\)</span> that equals 1 if a gene is in <span class="math inline">\(s\)</span> and 0 if not: <span class="math inline">\(Z=\beta_{0s}\overrightarrow1+S_s\beta_s+\epsilon\)</span>.</p>
+<p>Here <span class="math inline">\(\beta_s\)</span> reflects the difference in the association strength of the genes in <span class="math inline">\(s\)</span> versus those not in <span class="math inline">\(s\)</span>. The <em>p</em>-value of the gene set results from testing on <span class="math inline">\(\beta_s\)</span>: we test <span class="math inline">\(H_0: \beta_s=0\)</span> vs <span class="math inline">\(H_A: \beta_s&gt;0\)</span>, which is equivalent to a one-sided two-sample <em>t</em>-test evaluating if the mean association strength of genes in <span class="math inline">\(s\)</span> is greater than the mean association strength of genes not in <span class="math inline">\(s\)</span>. But again, this doesn’t mean genes in the set <span class="math inline">\(s\)</span> have a positive association with the phenotype. This analysis is performed by default.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/GSA_competitive.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin:0px" width="228"></p>
+</figure>
+</div>
+<div style="background-color:#F2F2F2; padding: 15px">
+<p>✔️ Both self-contained and competitive gene-set analyses are implemented through more general gene-level regression models that can accommodate combinations of gene sets and gene properties such as gene expression levels and gene size to test for their effects and correct for potential confounding effects. This can be useful, for example, to test if variables such as differential expression between tissues (🧠 vs 🩸) or conditions (⚕️ vs 💊) have an effect on the phenotype associations.</p>
+<p>Moreover, analyzing gene sets evidently reduces the number of output tests, but note that one test per gene still has to be performed in the the gene analysis.</p>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Due to LD between SNPs neighboring genes are usually correlated. This obligate us to assume <span class="math inline">\(\epsilon \sim MVN(\overrightarrow0, \sigma^2R)\)</span> in the gene-set analysis, where <span class="math inline">\(R\)</span> is the <strong>gene-gene correlation matrix</strong>.</p>
+</div>
+</div>
 </section>
 </section>
 </section>
@@ -528,6 +555,7 @@ Important
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
+<p>MAGMA is a powerful computational tool for extensible and flexible gene and gene-set analyses.</p>
 </section>
 <section id="relevant-links" class="level1">
 <h1>Relevant links</h1>
@@ -538,7 +566,8 @@ de Leeuw, C. A., Mooij, J. M., Heskes, T., &amp; Posthuma, D. (2015). MAGMA: gen
 <p>&nbsp;</p>
 </section>
 <section id="references" class="level1">
-
+<h1>References</h1>
+<p>Contents of this post are based on the original MAGMA publication and Supplementary File 1, and the official documentation website linked above.</p>
 
 
 

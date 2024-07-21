@@ -7,8 +7,8 @@ author:
 date: 2024-07-16
 categories:
   - "GWAS"
-  - "Gene analysis"
-  - "Gene Set Enrichment"
+  - "Gene Analysis"
+  - "Gene Set Analysis"
   - "SNP summary statistics"
 image: "images/logo.png"
 bibliography: references.bib
@@ -18,7 +18,7 @@ bibliography: references.bib
 
 MAGMA stands for **Multi-marker Analysis of GenoMic Annotation** and is a computational tool for the analysis of the joint effect of multiple genetic markers on a phenotype based on Genome-Wide Association Study (GWAS) data. MAGMA constitutes a flexible and generalizable approach to assess the **association** of [**individual genes**]{.underline} or [**gene-sets**]{.underline} with a **phenotype** based on the associations that the [**SNPs**]{.underline} of the genes have with the same phenotype.
 
-This is a commonly used method that you'll likely find implemented while reading about GWASes or that you'll need to run if working with genetic variant associations and gene-set enrichment analysis, so let's see how it works.
+This is a commonly used method that you'll likely find implemented while reading about GWASes or that you'll need to run if working with genetic variant associations and gene/gene-set analysis, so let's see how it works.
 
 # What you'll learn here
 
@@ -42,7 +42,7 @@ Two alternatives for gene analysis are offered by MAGMA:
 
 If the input data is **raw genotype data**, MAGMA fits a multiple linear PC regression model to the individuals' phenotypes. Here, for one gene $g$ at a time, the SNP matrix that contains the information of the SNPs for that gene across all the $N$ individuals studied, is projected onto its Principal Components (PCs). These PCs capture genotypic differences between individuals for the given gene and the first $K$ most explanatory ones (comprising 99.9% of the variance) are used as predictors of the phenotype ($Y$) in the linear model.
 
-![](images/MAGMA_PC_model.png){fig-align="center" width="700"}
+![](images/MAGMA_PC_model.png){style="margin:0px" fig-align="center" width="700"}
 
 Phenotype is modeled as:
 
@@ -67,7 +67,7 @@ Then an F-test is used to assess if genotypes for gene $g$ have an effect on the
 
 If no raw genotype data is available, MAGMA also accepts [**SNP *p*-values**]{.underline} from a GWAS as input. In this case SNP *p*-values for a gene are first transformed into [**Z or** $\chi^2$**statistics**]{.underline} and then combined into a [**gene test-statistic**]{.underline} by the [**mean SNP statistic**]{style="background-color: #F0FFF0"} or [**top SNP statistic**]{style="background-color:#FFF0F5"} method. This gene test-statistic is then used to compute the [**gene *p*-value**]{.underline}, either by an approximation of the sampling distribution (mean SNP statistic method) or by phenotype permutation (mean and top SNP statistic methods).
 
-This SNP-wise MAGMA analysis based on SNP summary statistics requires a **reference dataset** with similar ancestry as the data from which SNPs *p*-values were computed. This is needed to account for LD between SNPs. If an approximation of the sampling distribution is used to compute the gene *p*-value, this reference is required to obtain the SNP statistic correlation matrix $R$. If phenotype permutation is chosen, these reference data are necessary to generate the gene test-statistics empirical sampling distribution.
+This SNP-wise MAGMA analysis based on SNP summary statistics requires a **reference dataset** with similar ancestry as the data from which SNPs *p*-values were computed. This is needed to account for linkage disequilibrium (LD) between SNPs. If an approximation of the sampling distribution is used to compute the gene *p*-value, this reference is required to obtain the SNP statistic correlation matrix $R$. If phenotype permutation is chosen, these reference data are necessary to generate the gene test-statistics empirical sampling distribution.
 
 ::: {style="background-color:#F2F2F2; padding: 15px"}
 Summary: SNP *p*-values → SNP statistics →[**\***]{style="color:#EE00EE"}gene test-statistic →[**\***]{style="color: #00CD00"} gene *p*-value → gene *z*-score ($z_g$)
@@ -100,7 +100,7 @@ Note that with the gene analysis F-test (with PC regression) and gene test-stati
 
 -   With SNP-wise methods, since they are based on SNP *p*-values that don't inform about the sign of the association, just how strong it is, the gene test-stats derived from them are also reflecting "sign-ignorant" associations. The gene *p*-value, however, is computed based on the right tail of the distribution of these gene test-stats ($T$'s) as they correspond to stronger (but not necessarily positive) associations.
 
-![](images/T_distribution_transp.png){fig-align="center" width="299"}
+![](images/T_distribution_transp.png){style="margin:0px" fig-align="center" width="271"}
 :::
 
 ## **Gene-set analysis**
@@ -113,13 +113,27 @@ Two gene-level regression models are implemented to asses the association of gen
 
 ### [**Self-contained analysis**]{style="color:#8FBC8F"}
 
-Tests if the genes of a gene set $s$ are jointly associated with the phenotype. This is assessed by an intercept-only linear regression $Z_s=\beta_0\overrightarrow1+\epsilon_s$, with $Z_s$ the variable with the $z_g$'s of the genes in $s$. With this simple model we evaluate the null $H_0:\beta_0=0$ (none of the genes is associated) against the alternative $H_A: \beta_0>0$. This is equivalent to a one-sided single-sample *t*-test comparing the mean association of genes in $s$ to 0. In other words, we are evaluating if the mean association of the genes in the set is greater than 0 (i.e., is a strong association, not to be confused with a positive effect of $s$ on the phenotype).
+Tests if the genes of a gene set $s$ are jointly associated with the phenotype. This is assessed by an intercept-only linear regression $Z_s=\beta_0\overrightarrow1+\epsilon_s$, with $Z_s$ the variable with the $z_g$'s of the genes in $s$. With this simple model we evaluate the null $H_0:\beta_0=0$ against the alternative $H_A: \beta_0>0$. This is equivalent to a one-sided single-sample *t*-test comparing the mean association of genes in $s$ to 0. In other words, we are evaluating if the mean association of the genes in the set is greater than 0 (i.e., is a strong association, not to be confused with a positive effect of $s$ on the phenotype).
+
+![](images/GSA_self_contained.png){style="margin:0px" fig-align="center" width="378"}
 
 ### [**Competitive analysis**]{style="color:#CD9B9B"}
 
-Tests whether the genes in the set \$s\$ are more associated with the phenotype than the rest of genes not in the set (but with SNPs –and *z*-score– as well). Here the model now includes the *z*-scores of all genes. We define \$S_s\$ as a binary predictor of \$Z\$ that equals 1 if a gene is in \$s\$ and 0 if not: \$Z=\\beta\_{0s}\\overrightarrow1+S_s\\beta_s+\\epsilon\$. \$\\beta_s\$ reflects the difference in the association of the genes in \$s\$ versus those not in \$s\$. The *p*-value of the gene set results from testing on \$\\beta_s\$: we test \$H_0: \\beta_s=0\$ vs \$H_A: \\beta_s\>0\$ which is equivalent to a one-sided two-sample *t*-test evaluating if the mean association of genes in \$s\$ is greater than the mean association of genes not in \$s\$. This analysis is performed by default.
+Tests whether the genes in the set $s$ are more strongly associated with the phenotype than the rest of genes not in the set. Here the outcome variable $Z$ of the model now includes the $z_g$ of all genes. We define $S_s$ as a binary predictor of $Z$ that equals 1 if a gene is in $s$ and 0 if not: $Z=\beta_{0s}\overrightarrow1+S_s\beta_s+\epsilon$.
 
-Analyzing gene sets evidently reduces the number of output tests but the gene analysis still has to be performed.
+Here $\beta_s$ reflects the difference in the association strength of the genes in $s$ versus those not in $s$. The *p*-value of the gene set results from testing on $\beta_s$: we test $H_0: \beta_s=0$ vs $H_A: \beta_s>0$, which is equivalent to a one-sided two-sample *t*-test evaluating if the mean association strength of genes in $s$ is greater than the mean association strength of genes not in $s$. But again, this doesn't mean genes in the set $s$ have a positive association with the phenotype. This analysis is performed by default.
+
+![](images/GSA_competitive.png){style="margin:0px" fig-align="center" width="228"}
+
+::: {style="background-color:#F2F2F2; padding: 15px"}
+✔️ Both self-contained and competitive gene-set analyses are implemented through more general gene-level regression models that can accommodate combinations of gene sets and gene properties such as gene expression levels and gene size to test for their effects and correct for potential confounding effects. This can be useful, for example, to test if variables such as differential expression between tissues (🧠 vs 🩸) or conditions (⚕️ vs 💊) have an effect on the phenotype associations.
+
+Moreover, analyzing gene sets evidently reduces the number of output tests, but note that one test per gene still has to be performed in the the gene analysis.
+:::
+
+::: callout-important
+Due to LD between SNPs neighboring genes are usually correlated. This obligate us to assume $\epsilon \sim MVN(\overrightarrow0, \sigma^2R)$ in the gene-set analysis, where $R$ is the **gene-gene correlation matrix**.
+:::
 
 # Example of SNP-wise gene analysis and competitive gene-set analysis
 
@@ -251,6 +265,8 @@ The first step is to map all SNPs from your GWAS data onto the genes of a refere
 
 # Conclusion
 
+MAGMA is a powerful computational tool for extensible and flexible gene and gene-set analyses.
+
 # Relevant links
 
 ::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3"}
@@ -261,3 +277,5 @@ The first step is to map all SNPs from your GWAS data onto the genes of a refere
  
 
 # References
+
+Contents of this post are based on the original MAGMA publication and Supplementary File 1, and the official documentation website linked above.

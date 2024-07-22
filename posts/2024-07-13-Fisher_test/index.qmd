@@ -10,7 +10,7 @@ categories:
   - "enrichment"
   - "GO"
   - "KEGG"
-image: "images/logo.png"
+image: ""
 bibliography: references.bib
 ---
 

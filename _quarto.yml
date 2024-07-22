@@ -25,7 +25,9 @@ website:
         href: mailto:glezdaianna@gmail.com
       - icon: rss
         href: blog.xml
-
+  comments:
+    giscus: 
+      repo: lahuuki/lahuuki.github.io
 
 format:
   html:

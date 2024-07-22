@@ -562,7 +562,7 @@ Note
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  --bfile: indicate reference dataset</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  --pval: indicate file with SNP p-values</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#                       ncol: colname for SNP samples sizes in .pval file</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#    (or alteratively)  N: integer for total sample size of study</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#    (or alternatively) N: integer for total sample size of study</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#  --gene-annot: indicate file with gene SNPs</span></span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#  --out: prefix for output files</span></span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
@@ -630,7 +630,7 @@ Note
 <span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>            <span class="ex">set-col=Set\ </span></span>
 <span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="ex">--out</span> [output folder]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
 <li><p><strong>Output</strong>: the file <code>.gsa.out</code> contains the primary results of the competitive gene-set analysis.</p>
-<div class="sourceCode" id="cb12" style="padding:14px"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">## .gsa.out GSA output file example</span></span>
+<div class="sourceCode" id="cb12" style="padding:14px"><pre class="sourceCode Bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">## .gsa.out output file example</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  * VARIABLE: gene set name </span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  * TYPE: type of variable (set) </span></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">#  * NGENES: size of overlap between our genes in the set and genes with assigned SNPs</span></span>
@@ -643,15 +643,16 @@ Note
 <span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">#  * P: p-value for the set </span></span>
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="ex">TOTAL_GENES</span> = 28129  <span class="co">## Total number of genes included in the analysis </span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="ex">TEST_DIRECTION</span> = one-sided, positive <span class="er">(</span><span class="bu">set</span><span class="kw">)</span><span class="ex">,</span> two-sided <span class="er">(</span><span class="ex">covar</span><span class="kw">)</span>  <span class="co">## one-sided (+) test for GSA CONDITIONED_INTERNAL = gene size, gene density, sample size, inverse mac, log(gene size), log(gene density), log(sample size), log(inverse mac)  ## Variables the analysis was conditioned on </span></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="ex">VARIABLE</span> TYPE NGENES      BETA  BETA_STD        SE      P </span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetA</span>  SET   2557  0.045582  0.013104  0.020419 0.0128 </span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetB</span>  SET    395  0.071821  0.008451  0.051418 0.081242 </span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetC</span>  SET    850 <span class="at">-0.039813</span> <span class="at">-0.0068155</span> 0.034848 0.87337 </span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetD</span>  SET    163  0.033361  0.0025322 0.079059 0.33652 </span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetE</span>  SET   1709  0.083787  0.020016  0.02423  0.00027251 </span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetF</span>  SET    232  0.099547  0.0090033 0.067531 0.0702</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="ex">TEST_DIRECTION</span> = one-sided, positive <span class="er">(</span><span class="bu">set</span><span class="kw">)</span><span class="ex">,</span> two-sided <span class="er">(</span><span class="ex">covar</span><span class="kw">)</span>  <span class="co">## one-sided (+) test for GSA </span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="ex">CONDITIONED_INTERNAL</span> = gene size, gene density, sample size, inverse mac, log<span class="er">(</span><span class="ex">gene</span> size<span class="kw">)</span><span class="ex">,</span> log<span class="er">(</span><span class="ex">gene</span> density<span class="kw">)</span><span class="ex">,</span> log<span class="er">(</span><span class="ex">sample</span> size<span class="kw">)</span><span class="ex">,</span> log<span class="er">(</span><span class="ex">inverse</span> mac<span class="kw">)</span>  <span class="co">## Variables the analysis was conditioned on </span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="ex">VARIABLE</span> TYPE NGENES      BETA  BETA_STD        SE      P </span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetA</span>  SET   2557  0.045582  0.013104  0.020419 0.0128 </span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetB</span>  SET    395  0.071821  0.008451  0.051418 0.081242 </span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetC</span>  SET    850 <span class="at">-0.039813</span> <span class="at">-0.0068155</span> 0.034848 0.87337 </span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetD</span>  SET    163  0.033361  0.0025322 0.079059 0.33652 </span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetE</span>  SET   1709  0.083787  0.020016  0.02423  0.00027251 </span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    <span class="ex">SetF</span>  SET    232  0.099547  0.0090033 0.067531 0.0702</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
 </ul>
 <p>The <code>.gsa.sets.genes.out</code> file provides per-gene information for each gene set. The <span class="math inline">\(z_g\)</span>’s used for the analysis are shown in this file and in <code>.gsa.genes.out</code> that has information for all genes in the analysis.</p>
 <div class="callout callout-style-default callout-important callout-titled">
@@ -664,7 +665,7 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Here <code>NGENES</code> doesn’t always match the number of genes provided for a set. That’s because these genes must 1) exist in the <code>.gene.loc</code> file in order to be assigned SNPs, and 2) have SNPs present in the GWAS study and in the reference data as only the ones present in this file are used. This is because only genes with SNP <em>p</em>-values can be assigned a <span class="math inline">\(z_g\)</span> and consequently be introduced into the gene-set analysis.</p>
+<p>Here <code>NGENES</code> doesn’t always match the number of genes provided for a set. That’s because these genes must 1) exist in the <code>.gene.loc</code> file in order to be assigned SNPs, and 2) have SNPs present in the GWAS study and in the reference data as only the ones included in this latter file are used. This is because only genes with SNP <em>p</em>-values can be assigned a <span class="math inline">\(z_g\)</span> and consequently be introduced into the gene-set analysis (see schematic representation below).</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-warning callout-titled">
@@ -680,11 +681,17 @@ Warning
 <p>There must be an overlap &gt;1 between genes in the set and genes with assigned SNPs (i.e.&nbsp;<code>NGENES</code> &gt;1) to yield results. Otherwise MAGMA can’t perform the GSA and returns <span style="color: gray"><code>NA</code></span>.</p>
 </div>
 </div>
+<p>A visual representation of these three steps:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/MAGMA_steps.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin:0px"></p>
+</figure>
+</div>
 </section>
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
-<p>MAGMA is a powerful computational tool for extensible and adaptable gene and gene-set analyses. As presented here, MAGMA offers multiple input options that further increase its applicability. Of outmost utility is the gene analysis SNP-wise alternatives that only utlize SNP summary statistics, given that raw genotype data are not always available or accessible. This opens up the possibility to analyze a wider range of GWASes results in a fast and interpretable manner. Additionally, by relying on individual- and gene-level multiple linear regression models, MAGMA enables to analyze any discrete and continuous covariates describing individuals’ features and gene properties in the gene and gene-set analysis, respectively.</p>
+<p>MAGMA is a powerful computational tool for extensible and adaptable gene and gene-set analyses. As presented here, MAGMA offers multiple input options that further increase its applicability. Of outmost utility is the gene analysis SNP-wise alternatives that only utilize SNP summary statistics, given that raw genotype data are not always available or accessible. This opens up the possibility to analyze a wider range of GWASes results in a fast and interpretable manner. Additionally, by relying on individual- and gene-level multiple linear regression models, MAGMA enables to analyze any discrete and continuous covariates describing individuals’ features and gene properties in the gene and gene-set analysis, respectively.</p>
 <p>The power of this framework has proven itself, placed as one of the main methods to analyze GWAS data. Now that you know how it works, I bet you can imagine the number of hypotheses you can test by evaluating the association between any phenotype for which GWAS/genotype data are available and any set of genes with common characteristics of clinical or biological interest.</p>
 </section>
 <section id="relevant-links-and-bibliography" class="level1">
@@ -705,7 +712,7 @@ Available here: <a href="https://ibg.colorado.edu/cdrom2021/Day10-posthuma/magma
 <div class="line-block">🔎 <strong>MAGMA website:</strong><br>
 Available here: <a href="https://cncr.nl/research/magma/" class="uri">https://cncr.nl/research/magma/</a></div>
 </div>
-<p>Contents of this post are based on the original MAGMA publication and Supplementary Methods, as well as on its official documentation site (links shown above).</p>
+<p>Contents of this post are based on the original MAGMA publication and Supplementary Methods, as well as on its official documentation sites (links shown above).</p>
 
 
 

@@ -274,7 +274,7 @@ The first step is to map all SNPs from your GWAS data onto the genes of the refe
     #  --bfile: indicate reference dataset
     #  --pval: indicate file with SNP p-values
     #                       ncol: colname for SNP samples sizes in .pval file
-    #    (or alteratively)  N: integer for total sample size of study
+    #    (or alternatively) N: integer for total sample size of study
     #  --gene-annot: indicate file with gene SNPs
     #  --out: prefix for output files
 
@@ -359,7 +359,7 @@ The first step is to map all SNPs from your GWAS data onto the genes of the refe
 -   **Output**: the file `.gsa.out` contains the primary results of the competitive gene-set analysis.
 
     ``` {.Bash style="padding:14px"}
-    ## .gsa.out GSA output file example
+    ## .gsa.out output file example
     #  * VARIABLE: gene set name 
     #  * TYPE: type of variable (set) 
     #  * NGENES: size of overlap between our genes in the set and genes with assigned SNPs
@@ -372,7 +372,8 @@ The first step is to map all SNPs from your GWAS data onto the genes of the refe
     #  * P: p-value for the set 
 
     TOTAL_GENES = 28129  ## Total number of genes included in the analysis 
-    TEST_DIRECTION = one-sided, positive (set), two-sided (covar)  ## one-sided (+) test for GSA CONDITIONED_INTERNAL = gene size, gene density, sample size, inverse mac, log(gene size), log(gene density), log(sample size), log(inverse mac)  ## Variables the analysis was conditioned on 
+    TEST_DIRECTION = one-sided, positive (set), two-sided (covar)  ## one-sided (+) test for GSA 
+    CONDITIONED_INTERNAL = gene size, gene density, sample size, inverse mac, log(gene size), log(gene density), log(sample size), log(inverse mac)  ## Variables the analysis was conditioned on 
 
     VARIABLE TYPE NGENES      BETA  BETA_STD        SE      P 
         SetA  SET   2557  0.045582  0.013104  0.020419 0.0128 
@@ -386,16 +387,20 @@ The first step is to map all SNPs from your GWAS data onto the genes of the refe
 The `.gsa.sets.genes.out` file provides per-gene information for each gene set. The $z_g$'s used for the analysis are shown in this file and in `.gsa.genes.out` that has information for all genes in the analysis.
 
 ::: callout-important
-Here `NGENES` doesn't always match the number of genes provided for a set. That's because these genes must 1) exist in the `.gene.loc` file in order to be assigned SNPs, and 2) have SNPs present in the GWAS study and in the reference data as only the ones present in this file are used. This is because only genes with SNP *p*-values can be assigned a $z_g$ and consequently be introduced into the gene-set analysis.
+Here `NGENES` doesn't always match the number of genes provided for a set. That's because these genes must 1) exist in the `.gene.loc` file in order to be assigned SNPs, and 2) have SNPs present in the GWAS study and in the reference data as only the ones included in this latter file are used. This is because only genes with SNP *p*-values can be assigned a $z_g$ and consequently be introduced into the gene-set analysis (see schematic representation below).
 :::
 
 ::: callout-warning
 There must be an overlap \>1 between genes in the set and genes with assigned SNPs (i.e. `NGENES` \>1) to yield results. Otherwise MAGMA can't perform the GSA and returns [`NA`]{style="color: gray"}.
 :::
 
+A visual representation of these three steps:
+
+![](images/MAGMA_steps.png){style="margin:0px" fig-align="center"}
+
 # Conclusion
 
-MAGMA is a powerful computational tool for extensible and adaptable gene and gene-set analyses. As presented here, MAGMA offers multiple input options that further increase its applicability. Of outmost utility is the gene analysis SNP-wise alternatives that only utlize SNP summary statistics, given that raw genotype data are not always available or accessible. This opens up the possibility to analyze a wider range of GWASes results in a fast and interpretable manner. Additionally, by relying on individual- and gene-level multiple linear regression models, MAGMA enables to analyze any discrete and continuous covariates describing individuals' features and gene properties in the gene and gene-set analysis, respectively.
+MAGMA is a powerful computational tool for extensible and adaptable gene and gene-set analyses. As presented here, MAGMA offers multiple input options that further increase its applicability. Of outmost utility is the gene analysis SNP-wise alternatives that only utilize SNP summary statistics, given that raw genotype data are not always available or accessible. This opens up the possibility to analyze a wider range of GWASes results in a fast and interpretable manner. Additionally, by relying on individual- and gene-level multiple linear regression models, MAGMA enables to analyze any discrete and continuous covariates describing individuals' features and gene properties in the gene and gene-set analysis, respectively.
 
 The power of this framework has proven itself, placed as one of the main methods to analyze GWAS data. Now that you know how it works, I bet you can imagine the number of hypotheses you can test by evaluating the association between any phenotype for which GWAS/genotype data are available and any set of genes with common characteristics of clinical or biological interest.
 
@@ -421,4 +426,4 @@ The power of this framework has proven itself, placed as one of the main methods
 | Available here: <https://cncr.nl/research/magma/>
 :::
 
-Contents of this post are based on the original MAGMA publication and Supplementary Methods, as well as on its official documentation site (links shown above).
+Contents of this post are based on the original MAGMA publication and Supplementary Methods, as well as on its official documentation sites (links shown above).

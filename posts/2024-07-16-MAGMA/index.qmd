@@ -132,7 +132,7 @@ Here $\beta_s$ reflects the difference in the association strength of the genes 
 ![](images/GSA_competitive.png){style="margin:0px" fig-align="center" width="228"}
 
 ::: {style="background-color:#F2F2F2; padding: 15px"}
-✔️ Both self-contained and competitive gene-set analyses are implemented through more general gene-level regression models that can accommodate combinations of gene sets and gene properties such as gene expression levels and gene size to test for their effects and correct for potential confounding effects. This can be useful, for example, to test if variables such as differential expression between tissues (🧠 vs 🩸) or conditions (⚕️ vs 💊) have an effect on the phenotype.
+✔️ Both self-contained and competitive gene-set analyses are implemented through more general gene-level regression models that can accommodate combinations of gene sets and gene properties such as gene expression levels and gene size to test for their effects and correct for potential confounding effects. This can be useful, for example, to test if variables such as differential expression between tissues (🧠 vs 🩸) or conditions (⚕️vs 💊) have an effect on the phenotype.
 
 Further, analyzing gene sets evidently reduces the number of output tests, but note that one test per gene still has to be performed in the the previous gene analysis.
 :::

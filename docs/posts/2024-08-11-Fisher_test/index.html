@@ -199,7 +199,7 @@ window.Quarto = {
   <li><a href="#the-fishers-exact-test" id="toc-the-fishers-exact-test" class="nav-link" data-scroll-target="#the-fishers-exact-test">The Fisher’s exact test</a>
   <ul class="collapse">
   <li><a href="#creating-and-understanding-contingency-tables" id="toc-creating-and-understanding-contingency-tables" class="nav-link" data-scroll-target="#creating-and-understanding-contingency-tables">1. Creating and understanding contingency tables</a></li>
-  <li><a href="#assessing-gene-set-enrichment" id="toc-assessing-gene-set-enrichment" class="nav-link" data-scroll-target="#assessing-gene-set-enrichment">2. Assessing gene set enrichment</a></li>
+  <li><a href="#testing-for-gene-set-enrichment" id="toc-testing-for-gene-set-enrichment" class="nav-link" data-scroll-target="#testing-for-gene-set-enrichment">2. Testing for gene-set enrichment</a></li>
   <li><a href="#assessing-gene-set-depletion" id="toc-assessing-gene-set-depletion" class="nav-link" data-scroll-target="#assessing-gene-set-depletion">3. Assessing gene set depletion?</a></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
@@ -298,9 +298,6 @@ How to find my gene universe?
 </div>
 </div></li>
 <li><p><span style="color: #FF4500"><strong>Our gene set</strong></span>: a list of interest genes derived from our experimental measurements and analyses, and to which we want to assign biological meanings. In our hypothetical case this is the list of DEGs from all available genes that were assessed for DGE (i.e.&nbsp;the <span style="color: #595959"><strong>gene universe</strong></span>).</p></li>
-</ul>
-<!-- -->
-<ul>
 <li><p><span style="color: #1C86EE"><strong>Functional gene set</strong></span>: a set of genes with shared biological attributes (e.g.&nbsp;participation in a given pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via databases such as <a href="https://geneontology.org">Gene Ontology (GO)</a> <span class="citation" data-cites="ashburner2000">(<a href="#ref-ashburner2000" role="doc-biblioref">Ashburner et al. 2000</a>)</span> and the <a href="https://www.kegg.jp">Kyoto encyclopedia of genes and genomes (KEGG)</a> <span class="citation" data-cites="kanehisa2000">(<a href="#ref-kanehisa2000" role="doc-biblioref">Kanehisa 2000</a>)</span>.</p>
 <p>→ Let’s denote as “BP” the variable determining if a gene is involved in a particular biological process (BP+) or not (BP-).</p></li>
 </ul>
@@ -308,7 +305,7 @@ How to find my gene universe?
 <p>Following our hypothetical example, let’s suppose we have analyzed DGE for a total of 32 genes and of these 15 were DEGs. Suppose we have a functional gene set containing 12 genes involved in a biological process (BP+) and of these 9 were DEGs. Having identified such gene sets, we proceed to create a <strong>2x2 contingency table</strong> showing the number of genes that belong to each category for each variable.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/contingency_table.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="339"></p>
+<p><img src="images/contingency_table_2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="414"></p>
 </figure>
 </div>
 <p>The numbers of DEGs, non-DEGs, BP+ genes, and BP- genes are called the <em>marginal values</em>, as they lie on the periphery of this 2x2 table. The middle cells (<span class="math inline">\(a\)</span>’s) are the <em>joint values</em>, as they contain the overlap between the categories of the two variables.</p>
@@ -335,14 +332,19 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When we say “association” between DE and BP please note that it could be either <strong>positive</strong> or <strong>negative</strong>, with the former implying a larger overlap between DEGs and BP+ genes, thus corresponding to enrichment, and the latter implying a smaller overlap and thus meaning depletion. We’ll also delve into the statistical implications of each type of association later.</p>
+<p>When we test for “association” between DE and BP please note that it could be either <strong>positive</strong> or <strong>negative</strong>, with the former implying a larger overlap between DEGs and BP+ genes, and thus corresponding to enrichment, and the latter implying a smaller overlap and thus meaning depletion. We’ll also delve into the statistical implications of each type of association in the next section.</p>
 </div>
 </div>
 </section>
-<section id="assessing-gene-set-enrichment" class="level2">
-<h2 class="anchored" data-anchor-id="assessing-gene-set-enrichment">2. Assessing gene set enrichment</h2>
+<section id="testing-for-gene-set-enrichment" class="level2">
+<h2 class="anchored" data-anchor-id="testing-for-gene-set-enrichment">2. Testing for gene-set enrichment</h2>
 <p>The Fisher’s exact test is used to determine the probability of observing a certain joint value (<span class="math inline">\(a_{11}\)</span>) within the actual contingency table under the <strong>null hypothesis</strong> (<span class="math inline">\(H_0\)</span>) that there’s no assoaciation between the categorical variables, i.e., that they are independent.</p>
-<p>Strictly, we estimate the probability that <span class="math inline">\(a_{11}\)</span> in our table or a more extreme joint value (and their respective contingency tables for the same fixed marginal totals) would occur under the null hypothesis. These probabilities are referred to as <em>p</em>-values. **</p>
+<p>Strictly, we estimate the probability of observing the <span class="math inline">\(a_{11}\)</span> in our table or a more extreme joint value <span class="math inline">\(a_{11}\)</span> (for contingency tables with the same fixed marginal totals) under the null hypothesis. These probabilities are referred to as <em>p</em>-values. Smaller probabilities offer strong evidence against the null hypothesis, which is translated into statistical evidence to accept the alternative hypothesis (<span class="math inline">\(H_A\)</span>) of association between the two variables.</p>
+<p>This is how it operates:</p>
+<ol type="1">
+<li><p>Given the marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <span class="math inline">\(a_{11}\)</span>: from 0 to 12 which are the min. and max. number of DEGs that can be in BP+, respectively.</p>
+<p>The top left cell ($a_{11}$) of each table always corresponds to the joint value positive for both variables under examination (DEGs and markers).</p></li>
+</ol>
 </section>
 <section id="assessing-gene-set-depletion" class="level2">
 <h2 class="anchored" data-anchor-id="assessing-gene-set-depletion">3. Assessing gene set depletion?</h2>

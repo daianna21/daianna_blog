@@ -846,9 +846,9 @@ Sun, Lei, Zhong Wang, Tianyuan Lu, Teri A. Manolio, and Andrew D. Paterson. 2023
   <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-07-16-MAGMA/images/MAGMA_logo.png" medium="image" type="image/png" height="76" width="144"/>
 </item>
 <item>
-  <title>Fisher’s exact test</title>
+  <title>Fisher’s exact test for enrichment analysis of gene sets</title>
   <dc:creator>Daianna Gonzalez-Padilla</dc:creator>
-  <link>https://daianna21.github.io/daianna_blog/posts/2024-07-13-Fisher_test/</link>
+  <link>https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/</link>
   <description><![CDATA[ 
 
 
@@ -856,20 +856,136 @@ Sun, Lei, Zhong Wang, Tianyuan Lu, Teri A. Manolio, and Andrew D. Paterson. 2023
 
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p>Under construction</p>
-<p>Bear with me!</p>
+<p>Imagine you have analyzed high-throughput omics data and have ended up with a list of candidate/interest genes (because everything is more interpretable at the gene level, isn’t?). These genes could be, for instance, differently expressed genes (DEGs), genes associated with a certain disease, genes affected by risk SNPs, markers for cell types, etc. Any list of <strong>experimentally-derived genes</strong> with biological or clinical relevance applies.</p>
+<p>Now, what comes after that? If you found a few genes, you can do a little of research about them and make sense of your results, but what if you got thousands of genes? That’s not an easy task anymore and becomes unscalable. Moreover, despite each individual found gene providing valuable information, we can reveal more definite insights by studying all genes at the same time.</p>
+<p>So what’s to do? We need to start thinking of these <strong>genes as a unique <u>set</u></strong> with its own properties, and ask questions such as <em>what do these genes have in common?</em> <em>what makes them being involved or affected by the condition under study</em>, and <em>what does that imply for cell functionality?</em></p>
+<p><strong>Functional enrichment analysis</strong> based on the <span style="background-color: #FFF68F"><strong>one-sided Fisher’s exact test</strong></span> aims to test whether <span style="color: #FF4500"><strong>our genes <u>as a set</u></strong></span> are associated with certain cellular properties or functions by assessing if <em>sets of known genes that share biological activities or attributes</em> (<span style="color: #1C86EE"><strong>functional gene sets</strong></span>), have a statistically significant <strong>large overlap</strong> with our genes, i.e., if such functional gene sets are, what we call <u><strong>over-represented</strong></u> (or <u><strong>enriched</strong></u>, which is the same), among our genes. Stay on this post to learn more about how this test operates and how to understand and apply it to analyze sets of genes.</p>
+</section>
+<section id="what-youll-learn-here" class="level1">
+<h1>What you’ll learn here</h1>
+<ol type="1">
+<li>Comprehend the purpose and the basic operation of a functional enrichment analysis based on gene sets.</li>
+<li>Understand the probabilistic and statistic foundations of the Fisher’s exact test and interpret it with genes and gene sets.</li>
+<li>Clarify the required input data to correctly perform this analysis.</li>
+<li>Learn how to run this test using R.</li>
+<li>Differentiate <strong>enrichment</strong> vs.&nbsp;<strong>depletion</strong> when performing this test.</li>
+</ol>
+</section>
+<section id="the-fishers-exact-test" class="level1">
+<h1>The Fisher’s exact test</h1>
+<p>This is a classical statistical test based on the hypergeometric distribution (thus also called <strong>hypergeometric test</strong>) used to assess if there is a significant association between two categorical binary variables, such as differential expression of the genes and their involvement in a specific biological process. The association of the two variables is measured in terms of the intersection size between their elements.</p>
+<p>For illustrative purposes to show the application of this test for gene set-based functional enrichment analysis, imagine we have run a differential gene expression analysis (DGE) for a condition and have obtained a list of DEGs. As part of downstream analyses, we want to know how many of such DEGs participate in a specific biological process of interest and if that number is significantly greater than the number of non-DEGs that are also involved in the process, and DEGs that don’t participate. This is what it means to test for enrichment.</p>
+<p>In the following sections we’ll go into more detail on how to demarcate the required sets of genes, represent them in contingency tables, assess enrichment (or depletion) in R, and how to interpret this test and its results.</p>
+<section id="creating-and-understanding-contingency-tables" class="level2">
+<h2 class="anchored" data-anchor-id="creating-and-understanding-contingency-tables">1. Creating and understanding contingency tables</h2>
+<p>The following are the required gene sets and their specifications. Please note that when referring a set of genes, we are specifically referring to the set of gene IDs; that all we need to run this test!</p>
+<ul>
+<li><p><span style="color: #595959"><strong>Gene universe/background</strong></span>: these are all the genes that were experimentally measured and interrogated to derive into the list of interest genes (<span style="color: #FF4500"><strong>our gene set</strong></span>). In our hypothetical scenario this is given by all genes that were assessed for DGE: all genes that can be classified as either DEG or non-DEG.</p>
+<p>→ Let’s denote as “DE” the variable defining if a gene is differentially expressed (DEG) or not (non-DEG).</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+How to find my gene universe?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that since we are testing enrichment of functional gene sets among our DEGs, and not the other way around, our “gene universe” must correspond to the total number of genes for which we assessed DGE. Within those genes, categorized by DE, we search for genes contained in a functional set.</p>
+</div>
+</div></li>
+<li><p><span style="color: #FF4500"><strong>Our gene set</strong></span>: a list of interest genes derived from our experimental measurements and analyses, and to which we want to assign biological meanings. In our hypothetical case this is the list of DEGs from all available genes that were assessed for DGE (i.e.&nbsp;the <span style="color: #595959"><strong>gene universe</strong></span>).</p></li>
+<li><p><span style="color: #1C86EE"><strong>Functional gene set</strong></span>: a set of genes with shared biological attributes (e.g.&nbsp;participation in a given pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via databases such as <a href="https://geneontology.org">Gene Ontology (GO)</a> <span class="citation" data-cites="ashburner2000">(Ashburner et al. 2000)</span> and the <a href="https://www.kegg.jp">Kyoto encyclopedia of genes and genomes (KEGG)</a> <span class="citation" data-cites="kanehisa2000">(Kanehisa 2000)</span>.</p>
+<p>→ Let’s denote as “BP” the variable determining if a gene is involved in a particular biological process (BP+) or not (BP-).</p></li>
+</ul>
+<p>Fisher’s exact test aims to detect functional gene sets whose genes are unusually represented (enriched/over-represented or under-represented) in our set of interest genes. That is, if there’s a large (or small) overlap between the genes of the functional set (BP+ genes in this case) and the genes we classified as relevant from our data (DEGs in this case).</p>
+<p>Following our hypothetical example, let’s suppose we have analyzed DGE for a total of 32 genes and of these 15 were DEGs. Suppose we have a functional gene set containing 12 genes involved in a biological process (BP+) and of these 9 were DEGs. Having identified such gene sets, we proceed to create a <strong>2x2 contingency table</strong> showing the number of genes that belong to each category for each variable.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/contingency_table_2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="414"></p>
+</figure>
+</div>
+<p>The numbers of DEGs, non-DEGs, BP+ genes, and BP- genes are called the <em>marginal values</em>, as they lie on the periphery of this 2x2 table. The middle cells (<img src="https://latex.codecogs.com/png.latex?a">’s) are the <em>joint values</em>, as they contain the overlap between the categories of the two variables.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that by changing only one joint value, say <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">, all the remaining joint values will be already determined since the marginals are fixed. In that way we can describe whole contingency tables with just their <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> corner values.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When we test for “association” between DE and BP please note that it could be either <strong>positive</strong> or <strong>negative</strong>, with the former implying a larger overlap between DEGs and BP+ genes, and thus corresponding to enrichment, and the latter implying a smaller overlap and thus meaning depletion. We’ll also delve into the statistical implications of each type of association in the next section.</p>
+</div>
+</div>
+</section>
+<section id="testing-for-gene-set-enrichment" class="level2">
+<h2 class="anchored" data-anchor-id="testing-for-gene-set-enrichment">2. Testing for gene-set enrichment</h2>
+<p>The Fisher’s exact test is used to determine the probability of observing a certain joint value (<img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">) within the actual contingency table under the <strong>null hypothesis</strong> (<img src="https://latex.codecogs.com/png.latex?H_0">) that there’s no assoaciation between the categorical variables, i.e., that they are independent.</p>
+<p>Strictly, we estimate the probability of observing the <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> in our table or a more extreme joint value <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> (for contingency tables with the same fixed marginal totals) under the null hypothesis. These probabilities are referred to as <em>p</em>-values. Smaller probabilities offer strong evidence against the null hypothesis, which is translated into statistical evidence to accept the alternative hypothesis (<img src="https://latex.codecogs.com/png.latex?H_A">) of association between the two variables.</p>
+<p>This is how it operates:</p>
+<ol type="1">
+<li><p>Given the marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">: from 0 to 12 which are the min. and max. number of DEGs that can be in BP+, respectively.</p>
+<p>The top left cell ($a_{11}$) of each table always corresponds to the joint value positive for both variables under examination (DEGs and markers).</p></li>
+</ol>
+</section>
+<section id="assessing-gene-set-depletion" class="level2">
+<h2 class="anchored" data-anchor-id="assessing-gene-set-depletion">3. Assessing gene set depletion?</h2>
+</section>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<p>The one-sided Fisher’s exact test is a broadly used test to assess the <strong>enrichment</strong> of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays.</p>
+<p>Even though here we focused on the Fisher’s exact test, there are plenty of other approaches to assess functional enrichment [].</p>
+<p>Secondly, I want to highlight that the use DEGs and functional gene sets to exemplify this analysis was based on the fact that this is a common scenario, but your sets don’t necessarily have to be such. Now that you have the framework around this test, I’m sure you are much more prepared to decide if this is appropiate and suitable for your data; remember, as long as you have your universe of features, have defined a subset of all features that is of interest, and a second set of features defining a functional property for which you can compute the intersection with your data, then you can use this test.</p>
+<p>Last reminder, Fisher’s exact test works to test enrichemnt but also depletion, careful with how you run this analysis!</p>
+</section>
+<section id="relevant-links" class="level1">
+<h1>Relevant links</h1>
+<ol type="1">
+<li><p>Functional enrichment analysis of omics data</p>
+<p>The Bioconductor 2018 Workshop Compilation, Chapter 9 <a href="https://bioconductor.github.io/BiocWorkshops" class="uri">https://bioconductor.github.io/BiocWorkshops</a></p></li>
+<li><p>Material from Bioc2020 (4th edition): <a href="https://github.com/waldronlab/enrichOmics" class="uri">https://github.com/waldronlab/enrichOmics</a> <a href="https://www.youtube.com/watch?v=n0vVwuQSZkg" class="uri">https://www.youtube.com/watch?v=n0vVwuQSZkg</a></p></li>
+</ol>
+
 
 
 </section>
 
- ]]></description>
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0">
+<div id="ref-ashburner2000" class="csl-entry">
+Ashburner, Michael, Catherine A. Ball, Judith A. Blake, David Botstein, Heather Butler, J. Michael Cherry, Allan P. Davis, et al. 2000. <span>“Gene Ontology: Tool for the Unification of Biology.”</span> <em>Nature Genetics</em> 25 (1): 25–29. <a href="https://doi.org/10.1038/75556">https://doi.org/10.1038/75556</a>.
+</div>
+<div id="ref-kanehisa2000" class="csl-entry">
+Kanehisa, M. 2000. <span>“KEGG: Kyoto Encyclopedia of Genes and Genomes.”</span> <em>Nucleic Acids Research</em> 28 (1): 27–30. <a href="https://doi.org/10.1093/nar/28.1.27">https://doi.org/10.1093/nar/28.1.27</a>.
+</div>
+</div></section></div> ]]></description>
+  <category>Fisher&#39;s exact test</category>
   <category>overrepresentation</category>
+  <category>ORA</category>
   <category>enrichment</category>
+  <category>Gene Set Enrichment Analysis</category>
   <category>GO</category>
   <category>KEGG</category>
-  <guid>https://daianna21.github.io/daianna_blog/posts/2024-07-13-Fisher_test/</guid>
+  <category>Functional enrichment</category>
+  <guid>https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/</guid>
   <pubDate>Fri, 12 Jul 2024 06:00:00 GMT</pubDate>
-  <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-07-13-Fisher_test" medium="image"/>
+  <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test" medium="image"/>
 </item>
 </channel>
 </rss>

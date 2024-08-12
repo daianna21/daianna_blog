@@ -68,7 +68,7 @@ Fisher's exact test aims to detect functional gene sets whose genes are unusuall
 
 Following our hypothetical example, let's suppose we have analyzed DGE for a total of 32 genes and of these 15 were DEGs. Suppose we have a functional gene set containing 12 genes involved in a biological process (BP+) and of these 9 were DEGs. Having identified such gene sets, we proceed to create a **2x2 contingency table** showing the number of genes that belong to each category for each variable.
 
-![](images/contingency_table_2.png){fig-align="center" style="margin: 0px" width="414"}
+![](images/contingency_table_2.png){style="margin: 0px" fig-align="center" width="416"}
 
 The numbers of DEGs, non-DEGs, BP+ genes, and BP- genes are called the *marginal values*, as they lie on the periphery of this 2x2 table. The middle cells ($a$'s) are the *joint values*, as they contain the overlap between the categories of the two variables.
 
@@ -88,9 +88,15 @@ Strictly, we estimate the probability of observing the $a_{11}$ in our table or 
 
 This is how it operates:
 
-1.  Given the marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values $a_{11}$: from 0 to 12 which are the min. and max. number of DEGs that can be in BP+, respectively.
+1.  Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values $a_{11}$: from 0 to 12 which are the min. and max. number of DEGs that can be in BP+, respectively.
 
-    The top left cell (\$a\_{11}\$) of each table always corresponds to the joint value positive for both variables under examination (DEGs and markers).
+![](images/all_tables.png){style="margin: 0px" fig-align="center" width="359"}
+
+::: {style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px"}
+| ❗️ The top left cell ($a_{11}$) of each table always corresponds to the joint value positive for both variables under examination (DEGs and BP+ genes).
+:::
+
+2.  Then we estimate the probability of having such arrangements of joint values in each table under the null hypothesis, corresponding to the *p*-value of each possible contingency table. To do that we need to think of the ways of selecting each joint value by randomness in the gene selection process. Only 3 values are needed to be estimated for that:
 
 ## 3. Assessing gene set depletion?
 

@@ -903,7 +903,7 @@ How to find my gene universe?
 <p>Following our hypothetical example, let’s suppose we have analyzed DGE for a total of 32 genes and of these 15 were DEGs. Suppose we have a functional gene set containing 12 genes involved in a biological process (BP+) and of these 9 were DEGs. Having identified such gene sets, we proceed to create a <strong>2x2 contingency table</strong> showing the number of genes that belong to each category for each variable.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/contingency_table_2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="414"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/contingency_table_2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="416"></p>
 </figure>
 </div>
 <p>The numbers of DEGs, non-DEGs, BP+ genes, and BP- genes are called the <em>marginal values</em>, as they lie on the periphery of this 2x2 table. The middle cells (<img src="https://latex.codecogs.com/png.latex?a">’s) are the <em>joint values</em>, as they contain the overlap between the categories of the two variables.</p>
@@ -940,8 +940,18 @@ Important
 <p>Strictly, we estimate the probability of observing the <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> in our table or a more extreme joint value <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> (for contingency tables with the same fixed marginal totals) under the null hypothesis. These probabilities are referred to as <em>p</em>-values. Smaller probabilities offer strong evidence against the null hypothesis, which is translated into statistical evidence to accept the alternative hypothesis (<img src="https://latex.codecogs.com/png.latex?H_A">) of association between the two variables.</p>
 <p>This is how it operates:</p>
 <ol type="1">
-<li><p>Given the marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">: from 0 to 12 which are the min. and max. number of DEGs that can be in BP+, respectively.</p>
-<p>The top left cell ($a_{11}$) of each table always corresponds to the joint value positive for both variables under examination (DEGs and markers).</p></li>
+<li>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">: from 0 to 12 which are the min. and max. number of DEGs that can be in BP+, respectively.</li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/all_tables.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="359"></p>
+</figure>
+</div>
+<div style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px">
+<div class="line-block">❗️ The top left cell (<img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">) of each table always corresponds to the joint value positive for both variables under examination (DEGs and BP+ genes).</div>
+</div>
+<ol start="2" type="1">
+<li>Then we estimate the probability of having such arrangements of joint values in each table under the null hypothesis, corresponding to the <em>p</em>-value of each possible contingency table. To do that we need to think of the ways of selecting each joint value by randomness in the gene selection process. Only 3 values are needed to be estimated for that:</li>
 </ol>
 </section>
 <section id="assessing-gene-set-depletion" class="level2">

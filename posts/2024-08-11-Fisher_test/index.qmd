@@ -4,7 +4,7 @@ description: |
  A complete and interpretable explanation of the Fisher's exact test in the context of gene set-based enrichment analysis. The genomic applicability of this test is exemplified with a functional enrichment analysis for DEGs. 
 author:
   - name: Daianna Gonzalez-Padilla
-date: 2024-07-12
+date: 2024-08-13
 categories:
   - "Fisher's exact test"
   - "overrepresentation"
@@ -130,51 +130,50 @@ This is how it operates:
 
 1.  Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values $a_{11}$: in this case from 0 to 12, which are the min. and max. numbers of DEGs that can be in BP+, respectively.
 
-    ![](images/all_tables.png){fig-align="center" style="margin: 0px" width="449"}
+![](images/all_tables.png){fig-align="center" style="margin: 0px" width="449"}
 
-    ::: {style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px"}
-    | ❗️ The top left cell ($a_{11}$) of each table always corresponds to the joint value positive for both variables under examination (DEGs and BP+ genes).
-    :::
+::: {style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px"}
+| ❗️ The top left cell ($a_{11}$) of each table always corresponds to the joint value positive for both variables under examination (DEGs and BP+ genes).
+:::
 
-    ![](images/white_space.png){style="margin: 0px" width="30" height="4"}
+![](images/white_space.png){style="margin: 0px" width="30" height="4"}
 
 2.  Then we estimate the probability of having such joint values in each contingency table under the null hypothesis. To do that we need to calculate the number of ways of obtaining the joint values by randomness in the gene selection process. Only 3 values have to be estimated for that:
 
-    1.  The ways of selecting $a_{11} + a_{12}$ =15 genes (corresponding to the number of DEGs) without replacement from the total genes in the gene universe: ${a_{11} + a_{12} + a_{21} + a_{22}} \choose a_{11} + a_{12}$
+    1.  The ways of selecting $a_{11} + a_{12}$ = 15 genes (corresponding to the number of DEGs) without replacement from the total genes in the gene universe: ${a_{11} + a_{12} + a_{21} + a_{22}} \choose a_{11} + a_{12}$
 
-        ![](images/choose_15_32.png){fig-align="center" width="357"}
+        ![](images/32_choose_15.png){fig-align="center" width="451"}
 
-    2.  The ways of selecting $a_{11}$ =9 genes (number of BP+ DEGs) without replacement out of the $a_{11} + a_{21}$ =12 genes in the functional set (BP+ genes): ${{a_{11} + a_{21}} \choose a_{11}}$
+    2.  The ways of selecting $a_{11}$ = 9 genes (number of BP+ DEGs) without replacement out of the $a_{11} + a_{21}$ = 12 genes in the functional set (BP+ genes): ${{a_{11} + a_{21}} \choose a_{11}}$
 
-        ![](images/choose_12_9.png){fig-align="center" width="312"}
+        ![](images/12_choose_9.png){fig-align="center" width="351"}
 
-    3.  The ways of selecting $a_{12}$ =6 genes (number of BP- DEGs) without replacement out of the $a_{12}+a_{22}$ =20 genes not in the functional set (BP- genes): ${a_{12}+a_{22}}\choose{a_{12}}$
+    3.   The ways of selecting $a_{12}$ = 6 genes (number of BP- DEGs) without replacement out of the $a_{12}+a_{22}$ = 20 genes not in the functional set (BP- genes): ${a_{12}+a_{22}}\choose{a_{12}}$
 
-        ![](images/choose_20_6.png){fig-align="center" width="333"}
+    ![](images/20_choose_6.png){fig-align="center" width="355"}
 
-        With these 3 values we define the probability of each table arrangement:
+With these 3 values we define the probability of each table arrangement:
 
-        $$
-         p=\frac{{{a_{11}+a_{21}}\choose a_{11}} \times {{a_{12}+a_{22}}\choose{a_{12}}} }{{a_{11}+a_{12}+a_{21}+a_{22}}\choose{a_{11}+a_{12}}}
-        $$
+$$
+ p=\frac{{{a_{11}+a_{21}}\choose a_{11}} \times {{a_{12}+a_{22}}\choose{a_{12}}} }{{a_{11}+a_{12}+a_{21}+a_{22}}\choose{a_{11}+a_{12}}}
+$$
 
-        This is precisely the probability function for the [hypergeometric distribution](#0), used for sampling *without* replacement and which we use to test the null hypothesis.
+This is precisely the probability function for the [hypergeometric distribution](#0), used for sampling *without* replacement and which we use to test the null hypothesis.
 
-        $$
-        p(x)=\frac{{m \choose x} {n \choose {k-x}}}{{m+n}\choose k}
-        $$
+$$
+p(x)=\frac{{m \choose x} {n \choose {k-x}}}{{m+n}\choose k}$$
 
-        -   $k$ is the sample size (number of DEGs) = $a_{11} + a_{12}$ = 15
+-   $k$ is the sample size (number of DEGs) = $a_{11} + a_{12}$ = 15
 
-        -   $m$ is the number of successes in the population (number of BP+ genes) = $a_{11} + a_{21}$ = 12
+-   $m$ is the number of successes in the population (number of BP+ genes) = $a_{11} + a_{21}$ = 12
 
-        -   $n$ is the number of failures in the population (number of BP- genes) = $a_{12} + a_{22}$ = 20
+-   $n$ is the number of failures in the population (number of BP- genes) = $a_{12} + a_{22}$ = 20
 
-        -   $x$ is the number of successes in the sample (number of BP+ among DEGs) = $a_{11}$ = 9
+-   $x$ is the number of successes in the sample (number of BP+ among DEGs) = $a_{11}$ = 9
 
-        -   $k-x$ is the number of failures in the sample (number of BP- among DEGs) = $a_{12}$ = 6
+-   $k-x$ is the number of failures in the sample (number of BP- among DEGs) = $a_{12}$ = 6
 
-        -   $m+n$ is the population size (size of gene universe) = $a_{11} + a_{12} + a_{21} + a_{22}$ = 32
+-   $m+n$ is the population size (size of gene universe) = $a_{11} + a_{12} + a_{21} + a_{22}$ = 32
 
 ::: {style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px"}
 | 💡 Basically, we are quantifying the number of ways of obtaining a sample of size $k$ composed of $x$ successes from a total of $m$ successes in the population ($m+n$) AND the remaining $k-x$ elements as failures from a total of $n$ failures in the population; of all possible ways of randomly selecting $k$ elements from the population. 
@@ -182,7 +181,7 @@ This is how it operates:
 
 ![](images/white_space.png){style="margin: 0px" width="19" height="NaN"}
 
-Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both BP+ and BP- genes. Repeat the experiment multiple times and count the times 9 of the 15 genes were BP+ (out of 12 BP+ genes in total) and the remaining 6 genes BP- (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers just by chance.
+Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both BP+ and BP- genes. Repeat the experiment multiple times and count the times 9 of the 15 genes were BP+ (out of 12 BP+ genes in total) and the remaining 6 genes BP- (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (9 BP+ and 6 BP- genes in the sample) just by chance.
 
 Let's see the density function for the hypergeometric distribution with the above parameters.
 
@@ -296,7 +295,7 @@ fisher.test(m, alternative = "less")
 
 ## **Two-sided test**
 
-The **two-sided Fisher’s exact test** looks at both tails of the hypergeometric distribution and thus is used when we want to assess both enrichment and depletion, if there's any association between the variables irrespective of the sign.
+The **two-sided Fisher’s exact test** considers both tails of the hypergeometric distribution and thus is used when we are interested in both enrichment and depletion, just if there's any association between the variables irrespective of the sign.
 
 accounts for both enrichment and depletion.
 

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Daianna Gonzalez-Padilla">
-<meta name="dcterms.date" content="2024-07-12">
+<meta name="dcterms.date" content="2024-08-13">
 <meta name="description" content="A complete and interpretable explanation of the Fisher’s exact test in the context of gene set-based enrichment analysis. The genomic applicability of this test is exemplified with a functional enrichment analysis for DEGs.">
 
 <title>Daianna Gonzalez-Padilla - Fisher’s exact test for enrichment analysis of gene sets</title>
@@ -282,7 +282,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">July 12, 2024</p>
+      <p class="date">August 13, 2024</p>
     </div>
   </div>
   
@@ -438,7 +438,8 @@ Important
 <p>The Fisher’s exact test is used to determine the probability of observing the joint value <span class="math inline">\(a_{11}\)</span> in our table or a more extreme value (for contingency tables with the same fixed marginal totals) under the null hypothesis (<span class="math inline">\(H_0\)</span>) that there’s no association between the categorical variables, i.e., that they are independent. These probabilities are referred to as <em>p</em>-values. Smaller probabilities offer strong evidence against the null hypothesis, which is translated into statistical evidence to accept the alternative hypothesis (<span class="math inline">\(H_A\)</span>) of association between the two variables.</p>
 <p>This is how it operates:</p>
 <ol type="1">
-<li><p>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <span class="math inline">\(a_{11}\)</span>: in this case from 0 to 12, which are the min. and max. numbers of DEGs that can be in BP+, respectively.</p>
+<li>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <span class="math inline">\(a_{11}\)</span>: in this case from 0 to 12, which are the min. and max. numbers of DEGs that can be in BP+, respectively.</li>
+</ol>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/all_tables.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="449"></p>
@@ -447,35 +448,37 @@ Important
 <div style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px">
 <div class="line-block">❗️ The top left cell (<span class="math inline">\(a_{11}\)</span>) of each table always corresponds to the joint value positive for both variables under examination (DEGs and BP+ genes).</div>
 </div>
-<p><img src="images/white_space.png" style="margin: 0px" width="30" height="4"></p></li>
+<p><img src="images/white_space.png" style="margin: 0px" width="30" height="4"></p>
+<ol start="2" type="1">
 <li><p>Then we estimate the probability of having such joint values in each contingency table under the null hypothesis. To do that we need to calculate the number of ways of obtaining the joint values by randomness in the gene selection process. Only 3 values have to be estimated for that:</p>
 <ol type="1">
-<li><p>The ways of selecting <span class="math inline">\(a_{11} + a_{12}\)</span> =15 genes (corresponding to the number of DEGs) without replacement from the total genes in the gene universe: <span class="math inline">\({a_{11} + a_{12} + a_{21} + a_{22}} \choose a_{11} + a_{12}\)</span></p>
+<li><p>The ways of selecting <span class="math inline">\(a_{11} + a_{12}\)</span> = 15 genes (corresponding to the number of DEGs) without replacement from the total genes in the gene universe: <span class="math inline">\({a_{11} + a_{12} + a_{21} + a_{22}} \choose a_{11} + a_{12}\)</span></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/choose_15_32.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="357"></p>
+<p><img src="images/32_choose_15.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="451"></p>
 </figure>
 </div></li>
-<li><p>The ways of selecting <span class="math inline">\(a_{11}\)</span> =9 genes (number of BP+ DEGs) without replacement out of the <span class="math inline">\(a_{11} + a_{21}\)</span> =12 genes in the functional set (BP+ genes): <span class="math inline">\({{a_{11} + a_{21}} \choose a_{11}}\)</span></p>
+<li><p>The ways of selecting <span class="math inline">\(a_{11}\)</span> = 9 genes (number of BP+ DEGs) without replacement out of the <span class="math inline">\(a_{11} + a_{21}\)</span> = 12 genes in the functional set (BP+ genes): <span class="math inline">\({{a_{11} + a_{21}} \choose a_{11}}\)</span></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/choose_12_9.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="312"></p>
+<p><img src="images/12_choose_9.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="351"></p>
 </figure>
 </div></li>
-<li><p>The ways of selecting <span class="math inline">\(a_{12}\)</span> =6 genes (number of BP- DEGs) without replacement out of the <span class="math inline">\(a_{12}+a_{22}\)</span> =20 genes not in the functional set (BP- genes): <span class="math inline">\({a_{12}+a_{22}}\choose{a_{12}}\)</span></p>
+<li><p>The ways of selecting <span class="math inline">\(a_{12}\)</span> = 6 genes (number of BP- DEGs) without replacement out of the <span class="math inline">\(a_{12}+a_{22}\)</span> = 20 genes not in the functional set (BP- genes): <span class="math inline">\({a_{12}+a_{22}}\choose{a_{12}}\)</span></p></li>
+</ol>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/choose_20_6.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="333"></p>
+<p><img src="images/20_choose_6.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="355"></p>
 </figure>
-</div>
+</div></li>
+</ol>
 <p>With these 3 values we define the probability of each table arrangement:</p>
 <p><span class="math display">\[
 p=\frac{{{a_{11}+a_{21}}\choose a_{11}} \times {{a_{12}+a_{22}}\choose{a_{12}}} }{{a_{11}+a_{12}+a_{21}+a_{22}}\choose{a_{11}+a_{12}}}
 \]</span></p>
 <p>This is precisely the probability function for the <a href="#0">hypergeometric distribution</a>, used for sampling <em>without</em> replacement and which we use to test the null hypothesis.</p>
 <p><span class="math display">\[
-p(x)=\frac{{m \choose x} {n \choose {k-x}}}{{m+n}\choose k}
-\]</span></p>
+p(x)=\frac{{m \choose x} {n \choose {k-x}}}{{m+n}\choose k}\]</span></p>
 <ul>
 <li><p><span class="math inline">\(k\)</span> is the sample size (number of DEGs) = <span class="math inline">\(a_{11} + a_{12}\)</span> = 15</p></li>
 <li><p><span class="math inline">\(m\)</span> is the number of successes in the population (number of BP+ genes) = <span class="math inline">\(a_{11} + a_{21}\)</span> = 12</p></li>
@@ -483,14 +486,12 @@ p(x)=\frac{{m \choose x} {n \choose {k-x}}}{{m+n}\choose k}
 <li><p><span class="math inline">\(x\)</span> is the number of successes in the sample (number of BP+ among DEGs) = <span class="math inline">\(a_{11}\)</span> = 9</p></li>
 <li><p><span class="math inline">\(k-x\)</span> is the number of failures in the sample (number of BP- among DEGs) = <span class="math inline">\(a_{12}\)</span> = 6</p></li>
 <li><p><span class="math inline">\(m+n\)</span> is the population size (size of gene universe) = <span class="math inline">\(a_{11} + a_{12} + a_{21} + a_{22}\)</span> = 32</p></li>
-</ul></li>
-</ol></li>
-</ol>
+</ul>
 <div style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px">
 <div class="line-block">💡 Basically, we are quantifying the number of ways of obtaining a sample of size <span class="math inline">\(k\)</span> composed of <span class="math inline">\(x\)</span> successes from a total of <span class="math inline">\(m\)</span> successes in the population (<span class="math inline">\(m+n\)</span>) AND the remaining <span class="math inline">\(k-x\)</span> elements as failures from a total of <span class="math inline">\(n\)</span> failures in the population; of all possible ways of randomly selecting <span class="math inline">\(k\)</span> elements from the population.</div>
 </div>
 <p><img src="images/white_space.png" style="margin: 0px" width="19"></p>
-<p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both BP+ and BP- genes. Repeat the experiment multiple times and count the times 9 of the 15 genes were BP+ (out of 12 BP+ genes in total) and the remaining 6 genes BP- (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers just by chance.</p>
+<p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both BP+ and BP- genes. Repeat the experiment multiple times and count the times 9 of the 15 genes were BP+ (out of 12 BP+ genes in total) and the remaining 6 genes BP- (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (9 BP+ and 6 BP- genes in the sample) just by chance.</p>
 <p>Let’s see the density function for the hypergeometric distribution with the above parameters.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
@@ -691,7 +692,7 @@ odds ratio
 </section>
 <section id="two-sided-test" class="level2">
 <h2 class="anchored" data-anchor-id="two-sided-test"><strong>Two-sided test</strong></h2>
-<p>The <strong>two-sided Fisher’s exact test</strong> looks at both tails of the hypergeometric distribution and thus is used when we want to assess both enrichment and depletion, if there’s any association between the variables irrespective of the sign.</p>
+<p>The <strong>two-sided Fisher’s exact test</strong> considers both tails of the hypergeometric distribution and thus is used when we are interested in both enrichment and depletion, just if there’s any association between the variables irrespective of the sign.</p>
 <p>accounts for both enrichment and depletion.</p>
 <p>An approach to account for extreme values on both sides is just to multiply by two the sum of the extreme tables’ probabilities at one side (one-sided&nbsp;<em>p</em>-value):</p>
 <p>❓&nbsp;<strong>What’s the odds ratio?</strong></p>

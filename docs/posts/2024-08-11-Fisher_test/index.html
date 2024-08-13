@@ -23,6 +23,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 /* CSS for citations */
 div.csl-bib-body { }
 div.csl-entry {
@@ -199,8 +233,12 @@ window.Quarto = {
   <li><a href="#the-fishers-exact-test" id="toc-the-fishers-exact-test" class="nav-link" data-scroll-target="#the-fishers-exact-test">The Fisher’s exact test</a>
   <ul class="collapse">
   <li><a href="#creating-and-understanding-contingency-tables" id="toc-creating-and-understanding-contingency-tables" class="nav-link" data-scroll-target="#creating-and-understanding-contingency-tables">1. Creating and understanding contingency tables</a></li>
-  <li><a href="#testing-for-gene-set-enrichment" id="toc-testing-for-gene-set-enrichment" class="nav-link" data-scroll-target="#testing-for-gene-set-enrichment">2. Testing for gene-set enrichment</a></li>
-  <li><a href="#assessing-gene-set-depletion" id="toc-assessing-gene-set-depletion" class="nav-link" data-scroll-target="#assessing-gene-set-depletion">3. Assessing gene set depletion?</a></li>
+  <li><a href="#testing-for-gene-set-enrichment" id="toc-testing-for-gene-set-enrichment" class="nav-link" data-scroll-target="#testing-for-gene-set-enrichment">2. Testing for gene-set enrichment</a>
+  <ul class="collapse">
+  <li><a href="#one-sided-test" id="toc-one-sided-test" class="nav-link" data-scroll-target="#one-sided-test"><strong>One-sided test</strong></a></li>
+  </ul></li>
+  <li><a href="#assessing-gene-set-depletion" id="toc-assessing-gene-set-depletion" class="nav-link" data-scroll-target="#assessing-gene-set-depletion">Assessing gene-set depletion?</a></li>
+  <li><a href="#two-sided-test" id="toc-two-sided-test" class="nav-link" data-scroll-target="#two-sided-test"><strong>Two-sided test</strong></a></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   <li><a href="#relevant-links" id="toc-relevant-links" class="nav-link" data-scroll-target="#relevant-links">Relevant links</a></li>
@@ -275,14 +313,14 @@ window.Quarto = {
 </section>
 <section id="the-fishers-exact-test" class="level1">
 <h1>The Fisher’s exact test</h1>
-<p>This is a classical statistical test based on the hypergeometric distribution (thus also called <strong>hypergeometric test</strong>) used to assess if there is a significant association between two categorical binary variables, such as differential expression of the genes and their involvement in a specific biological process. The association of the two variables is measured in terms of the intersection size between their elements.</p>
+<p>This is a classical statistical test based on the hypergeometric distribution (thus also called <strong>hypergeometric test</strong>) used to assess if there is a significant association between two categorical binary variables, such as differential expression of the genes and their involvement in a specific biological process. The association of the two variables is calculated in terms of the intersection size between their elements.</p>
 <p>For illustrative purposes to show the application of this test for gene set-based functional enrichment analysis, imagine we have run a differential gene expression analysis (DGE) for a condition and have obtained a list of DEGs. As part of downstream analyses, we want to know how many of such DEGs participate in a specific biological process of interest and if that number is significantly greater than the number of non-DEGs that are also involved in the process, and DEGs that don’t participate. This is what it means to test for enrichment.</p>
-<p>In the following sections we’ll go into more detail on how to demarcate the required sets of genes, represent them in contingency tables, assess enrichment (or depletion) in R, and how to interpret this test and its results.</p>
+<p>In the next sections we’ll go into more detail on how to demarcate the required sets of genes, represent them in contingency tables, assess enrichment (or depletion) in R, and how to interpret this test and its results.</p>
 <section id="creating-and-understanding-contingency-tables" class="level2">
 <h2 class="anchored" data-anchor-id="creating-and-understanding-contingency-tables">1. Creating and understanding contingency tables</h2>
-<p>The following are the required gene sets and their specifications. Please note that when referring a set of genes, we are specifically referring to the set of gene IDs; that all we need to run this test!</p>
+<p>The following are the required gene sets and their specifications. Please note that when referring to a set of genes, we are specifically referring to the set of gene IDs; that all we need to run this test!</p>
 <ul>
-<li><p><span style="color: #595959"><strong>Gene universe/background</strong></span>: these are all the genes that were experimentally measured and interrogated to derive into the list of interest genes (<span style="color: #FF4500"><strong>our gene set</strong></span>). In our hypothetical scenario this is given by all genes that were assessed for DGE: all genes that can be classified as either DEG or non-DEG.</p>
+<li><p><span style="color: #595959"><strong>Gene universe/back</strong></span><span style="color: #595959"><strong>gro</strong></span><span style="color: #595959"><strong>und</strong></span>: these are all the genes that were experimentally measured and interrogated to generate the list of interest genes (<span style="color: #FF4500"><strong>our gene set</strong></span>). In our hypothetical scenario this is given by all genes that were assessed for DGE: all genes that can be classified as either DEG or non-DEG.</p>
 <p>→ Let’s denote as “DE” the variable defining if a gene is differentially expressed (DEG) or not (non-DEG).</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -294,18 +332,18 @@ How to find my gene universe?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Note that since we are testing enrichment of functional gene sets among our DEGs, and not the other way around, our “gene universe” must correspond to the total number of genes for which we assessed DGE. Within those genes, categorized by DE, we search for genes contained in a functional set.</p>
+<p>Since we are testing enrichment of functional gene sets among our DEGs, and not the other way around, our “gene universe” must correspond to the total number of genes for which we assessed DGE. Within those genes, categorized by DE, we search for genes contained in a functional set.</p>
 </div>
 </div></li>
-<li><p><span style="color: #FF4500"><strong>Our gene set</strong></span>: a list of interest genes derived from our experimental measurements and analyses, and to which we want to assign biological meanings. In our hypothetical case this is the list of DEGs from all available genes that were assessed for DGE (i.e.&nbsp;the <span style="color: #595959"><strong>gene universe</strong></span>).</p></li>
-<li><p><span style="color: #1C86EE"><strong>Functional gene set</strong></span>: a set of genes with shared biological attributes (e.g.&nbsp;participation in a given pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via databases such as <a href="https://geneontology.org">Gene Ontology (GO)</a> <span class="citation" data-cites="ashburner2000">(<a href="#ref-ashburner2000" role="doc-biblioref">Ashburner et al. 2000</a>)</span> and the <a href="https://www.kegg.jp">Kyoto encyclopedia of genes and genomes (KEGG)</a> <span class="citation" data-cites="kanehisa2000">(<a href="#ref-kanehisa2000" role="doc-biblioref">Kanehisa 2000</a>)</span>.</p>
+<li><p><span style="color: #FF4500"><strong>Our gene set</strong></span>: a list of interest genes derived from our experimental measurements and analyses, and to which we want to assign biological meanings. In our hypothetical case this is the list of DEGs from the <span style="color: #595959"><strong>gene universe</strong></span>.</p></li>
+<li><p><span style="color: #1C86EE"><strong>Functional gene set</strong></span>: a set of genes with shared biological attributes (e.g.&nbsp;participation in a pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via databases such as <a href="https://geneontology.org">Gene Ontology (GO)</a> <span class="citation" data-cites="ashburner2000">(<a href="#ref-ashburner2000" role="doc-biblioref">Ashburner et al. 2000</a>)</span> and the <a href="https://www.kegg.jp">Kyoto encyclopedia of genes and genomes (KEGG)</a> <span class="citation" data-cites="kanehisa2000">(<a href="#ref-kanehisa2000" role="doc-biblioref">Kanehisa 2000</a>)</span>.</p>
 <p>→ Let’s denote as “BP” the variable determining if a gene is involved in a particular biological process (BP+) or not (BP-).</p></li>
 </ul>
 <p>Fisher’s exact test aims to detect functional gene sets whose genes are unusually represented (enriched/over-represented or under-represented) in our set of interest genes. That is, if there’s a large (or small) overlap between the genes of the functional set (BP+ genes in this case) and the genes we classified as relevant from our data (DEGs in this case).</p>
 <p>Following our hypothetical example, let’s suppose we have analyzed DGE for a total of 32 genes and of these 15 were DEGs. Suppose we have a functional gene set containing 12 genes involved in a biological process (BP+) and of these 9 were DEGs. Having identified such gene sets, we proceed to create a <strong>2x2 contingency table</strong> showing the number of genes that belong to each category for each variable.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/contingency_table_2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="416"></p>
+<p><img src="images/contingency_table_2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="365"></p>
 </figure>
 </div>
 <p>The numbers of DEGs, non-DEGs, BP+ genes, and BP- genes are called the <em>marginal values</em>, as they lie on the periphery of this 2x2 table. The middle cells (<span class="math inline">\(a\)</span>’s) are the <em>joint values</em>, as they contain the overlap between the categories of the two variables.</p>
@@ -319,7 +357,66 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Note that by changing only one joint value, say <span class="math inline">\(a_{11}\)</span>, all the remaining joint values will be already determined since the marginals are fixed. In that way we can describe whole contingency tables with just their <span class="math inline">\(a_{11}\)</span> corner values.</p>
+<p>Note that by changing only one joint value, say <span class="math inline">\(a_{11}\)</span>, all the remaining joint values will be already determined since the marginals are fixed. In that way we can describe whole contingency tables with only their <span class="math inline">\(a_{11}\)</span> corner values.</p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Define example gene universe: 32 total genes analyzed </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>gene_universe <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Srsf5"</span>, <span class="st">"Gm15387"</span>, <span class="st">"Mprip"</span>, <span class="st">"Pim1"</span>, <span class="st">"Bnip3l"</span>, <span class="st">"Efr3a"</span>, <span class="st">"Marco"</span>, <span class="st">"Tuba1a"</span>, <span class="st">"Gsk3a"</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Dap3"</span>, <span class="st">"Tmod3"</span>, <span class="st">"Dnajb1"</span>, <span class="st">"Tulp4"</span>, <span class="st">"Lsm14b"</span>, <span class="st">"Khdrbs2"</span>, <span class="st">"Mfsd9"</span>, <span class="st">"Ufd1"</span>, <span class="st">"Ypel5"</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Rbm3"</span>, <span class="st">"Dnajc28"</span>, <span class="st">"Msrb2"</span>, <span class="st">"Memo1"</span>, <span class="st">"Cebpg"</span>, <span class="st">"Flywch1"</span>, <span class="st">"Ip6k1"</span>, <span class="st">"Nudt4"</span>, <span class="st">"Csnk1e"</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Qsox2"</span>, <span class="st">"Gm43517"</span>, <span class="st">"Rhbdf2"</span>, <span class="st">"Fbxw11"</span>, <span class="st">"Hmgxb4"</span>) </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(gene_universe)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 32</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Define 15 DEGs from universe</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">08122024</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>DEGs <span class="ot">&lt;-</span> <span class="fu">sample</span>(gene_universe, <span class="dv">15</span>, <span class="at">replace =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>DEGs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "Srsf5"   "Flywch1" "Ip6k1"   "Cebpg"   "Nudt4"   "Ypel5"   "Marco"  
+ [8] "Csnk1e"  "Qsox2"   "Gsk3a"   "Dap3"    "Tuba1a"  "Efr3a"   "Hmgxb4" 
+[15] "Gm15387"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">unique</span>(DEGs))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 15</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Remaining 17 non-DEGs</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>non_DEGs <span class="ot">&lt;-</span> gene_universe[<span class="sc">!</span>gene_universe <span class="sc">%in%</span> DEGs]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Example functional set of 12 BP+ genes (with 9 being DEGs)</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>funct_gene_set <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">sample</span>(DEGs, <span class="dv">9</span>, <span class="at">replace =</span> <span class="cn">FALSE</span>), <span class="fu">sample</span>(non_DEGs, <span class="dv">3</span>, <span class="at">replace =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">unique</span>(funct_gene_set))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 12</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="do">## BP- genes</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>genes_not_func_set <span class="ot">&lt;-</span> gene_universe[<span class="sc">!</span>gene_universe <span class="sc">%in%</span> funct_gene_set]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Intersections:</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. DEGs and BP+ genes</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>DEGs_in_set <span class="ot">&lt;-</span> <span class="fu">intersect</span>(DEGs, funct_gene_set)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. non-DEGs and BP+ genes</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>non_DEGs_in_set <span class="ot">&lt;-</span> <span class="fu">intersect</span>(non_DEGs, funct_gene_set)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. DEGs and BP- genes</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>DEGs_not_in_set <span class="ot">&lt;-</span> <span class="fu">intersect</span>(DEGs, genes_not_func_set)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. non-DEGs and BP- genes</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>non_DEGs_not_in_set <span class="ot">&lt;-</span> <span class="fu">intersect</span>(non_DEGs, genes_not_func_set)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="do">## Create contingency table</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fu">length</span>(DEGs_in_set), <span class="fu">length</span>(DEGs_not_in_set), </span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">length</span>(non_DEGs_in_set), <span class="fu">length</span>(non_DEGs_not_in_set)), </span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>            <span class="at">byrow =</span> <span class="cn">TRUE</span>, <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>m</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     [,1] [,2]
+[1,]    9    6
+[2,]    3   14</code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-important callout-titled">
@@ -332,32 +429,274 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When we test for “association” between DE and BP please note that it could be either <strong>positive</strong> or <strong>negative</strong>, with the former implying a larger overlap between DEGs and BP+ genes, and thus corresponding to enrichment, and the latter implying a smaller overlap and thus meaning depletion. We’ll also delve into the statistical implications of each type of association in the next section.</p>
+<p>When we test for “association” between DE and BP it could be either <strong>positive</strong> or <strong>negative</strong>, with the former implying a larger overlap between DEGs and BP+ genes, and thus corresponding to enrichment, and the latter implying a smaller overlap and thus meaning depletion. We’ll also delve into the statistical implications of each type of association in the next section.</p>
 </div>
 </div>
 </section>
 <section id="testing-for-gene-set-enrichment" class="level2">
 <h2 class="anchored" data-anchor-id="testing-for-gene-set-enrichment">2. Testing for gene-set enrichment</h2>
-<p>The Fisher’s exact test is used to determine the probability of observing a certain joint value (<span class="math inline">\(a_{11}\)</span>) within the actual contingency table under the <strong>null hypothesis</strong> (<span class="math inline">\(H_0\)</span>) that there’s no assoaciation between the categorical variables, i.e., that they are independent.</p>
-<p>Strictly, we estimate the probability of observing the <span class="math inline">\(a_{11}\)</span> in our table or a more extreme joint value <span class="math inline">\(a_{11}\)</span> (for contingency tables with the same fixed marginal totals) under the null hypothesis. These probabilities are referred to as <em>p</em>-values. Smaller probabilities offer strong evidence against the null hypothesis, which is translated into statistical evidence to accept the alternative hypothesis (<span class="math inline">\(H_A\)</span>) of association between the two variables.</p>
+<p>The Fisher’s exact test is used to determine the probability of observing the joint value <span class="math inline">\(a_{11}\)</span> in our table or a more extreme value (for contingency tables with the same fixed marginal totals) under the null hypothesis (<span class="math inline">\(H_0\)</span>) that there’s no association between the categorical variables, i.e., that they are independent. These probabilities are referred to as <em>p</em>-values. Smaller probabilities offer strong evidence against the null hypothesis, which is translated into statistical evidence to accept the alternative hypothesis (<span class="math inline">\(H_A\)</span>) of association between the two variables.</p>
 <p>This is how it operates:</p>
 <ol type="1">
-<li>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <span class="math inline">\(a_{11}\)</span>: from 0 to 12 which are the min. and max. number of DEGs that can be in BP+, respectively.</li>
-</ol>
+<li><p>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <span class="math inline">\(a_{11}\)</span>: in this case from 0 to 12, which are the min. and max. numbers of DEGs that can be in BP+, respectively.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/all_tables.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="359"></p>
+<p><img src="images/all_tables.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="449"></p>
 </figure>
 </div>
 <div style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px">
 <div class="line-block">❗️ The top left cell (<span class="math inline">\(a_{11}\)</span>) of each table always corresponds to the joint value positive for both variables under examination (DEGs and BP+ genes).</div>
 </div>
-<ol start="2" type="1">
-<li>Then we estimate the probability of having such arrangements of joint values in each table under the null hypothesis, corresponding to the <em>p</em>-value of each possible contingency table. To do that we need to think of the ways of selecting each joint value by randomness in the gene selection process. Only 3 values are needed to be estimated for that:</li>
+<p><img src="images/white_space.png" style="margin: 0px" width="30" height="4"></p></li>
+<li><p>Then we estimate the probability of having such joint values in each contingency table under the null hypothesis. To do that we need to calculate the number of ways of obtaining the joint values by randomness in the gene selection process. Only 3 values have to be estimated for that:</p>
+<ol type="1">
+<li><p>The ways of selecting <span class="math inline">\(a_{11} + a_{12}\)</span> =15 genes (corresponding to the number of DEGs) without replacement from the total genes in the gene universe: <span class="math inline">\({a_{11} + a_{12} + a_{21} + a_{22}} \choose a_{11} + a_{12}\)</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/choose_15_32.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="357"></p>
+</figure>
+</div></li>
+<li><p>The ways of selecting <span class="math inline">\(a_{11}\)</span> =9 genes (number of BP+ DEGs) without replacement out of the <span class="math inline">\(a_{11} + a_{21}\)</span> =12 genes in the functional set (BP+ genes): <span class="math inline">\({{a_{11} + a_{21}} \choose a_{11}}\)</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/choose_12_9.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="312"></p>
+</figure>
+</div></li>
+<li><p>The ways of selecting <span class="math inline">\(a_{12}\)</span> =6 genes (number of BP- DEGs) without replacement out of the <span class="math inline">\(a_{12}+a_{22}\)</span> =20 genes not in the functional set (BP- genes): <span class="math inline">\({a_{12}+a_{22}}\choose{a_{12}}\)</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/choose_20_6.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="333"></p>
+</figure>
+</div>
+<p>With these 3 values we define the probability of each table arrangement:</p>
+<p><span class="math display">\[
+p=\frac{{{a_{11}+a_{21}}\choose a_{11}} \times {{a_{12}+a_{22}}\choose{a_{12}}} }{{a_{11}+a_{12}+a_{21}+a_{22}}\choose{a_{11}+a_{12}}}
+\]</span></p>
+<p>This is precisely the probability function for the <a href="#0">hypergeometric distribution</a>, used for sampling <em>without</em> replacement and which we use to test the null hypothesis.</p>
+<p><span class="math display">\[
+p(x)=\frac{{m \choose x} {n \choose {k-x}}}{{m+n}\choose k}
+\]</span></p>
+<ul>
+<li><p><span class="math inline">\(k\)</span> is the sample size (number of DEGs) = <span class="math inline">\(a_{11} + a_{12}\)</span> = 15</p></li>
+<li><p><span class="math inline">\(m\)</span> is the number of successes in the population (number of BP+ genes) = <span class="math inline">\(a_{11} + a_{21}\)</span> = 12</p></li>
+<li><p><span class="math inline">\(n\)</span> is the number of failures in the population (number of BP- genes) = <span class="math inline">\(a_{12} + a_{22}\)</span> = 20</p></li>
+<li><p><span class="math inline">\(x\)</span> is the number of successes in the sample (number of BP+ among DEGs) = <span class="math inline">\(a_{11}\)</span> = 9</p></li>
+<li><p><span class="math inline">\(k-x\)</span> is the number of failures in the sample (number of BP- among DEGs) = <span class="math inline">\(a_{12}\)</span> = 6</p></li>
+<li><p><span class="math inline">\(m+n\)</span> is the population size (size of gene universe) = <span class="math inline">\(a_{11} + a_{12} + a_{21} + a_{22}\)</span> = 32</p></li>
+</ul></li>
+</ol></li>
 </ol>
+<div style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px">
+<div class="line-block">💡 Basically, we are quantifying the number of ways of obtaining a sample of size <span class="math inline">\(k\)</span> composed of <span class="math inline">\(x\)</span> successes from a total of <span class="math inline">\(m\)</span> successes in the population (<span class="math inline">\(m+n\)</span>) AND the remaining <span class="math inline">\(k-x\)</span> elements as failures from a total of <span class="math inline">\(n\)</span> failures in the population; of all possible ways of randomly selecting <span class="math inline">\(k\)</span> elements from the population.</div>
+</div>
+<p><img src="images/white_space.png" style="margin: 0px" width="19"></p>
+<p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both BP+ and BP- genes. Repeat the experiment multiple times and count the times 9 of the 15 genes were BP+ (out of 12 BP+ genes in total) and the remaining 6 genes BP- (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers just by chance.</p>
+<p>Let’s see the density function for the hypergeometric distribution with the above parameters.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Hypergeometric distribution parameters:</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="do">##  -x = 0:12 (a11 for all possible tables)</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  -m = 12 </span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="do">##  -n = 20</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="do">##  -k = 15</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>probabilities <span class="ot">&lt;-</span> <span class="fu">dhyper</span>(<span class="at">x=</span><span class="fu">c</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">12</span>), <span class="at">m=</span><span class="dv">12</span>, <span class="at">n=</span><span class="dv">20</span>, <span class="at">k=</span><span class="dv">15</span>, <span class="at">log =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>xs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">12</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x=</span>xs, <span class="at">p=</span>probabilities)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>df </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    x            p
+1   0 2.740565e-05
+2   1 8.221696e-04
+3   2 9.043865e-03
+4   3 4.898760e-02
+5   4 1.469628e-01
+6   5 2.586545e-01
+7   6 2.743306e-01
+8   7 1.763554e-01
+9   8 6.782899e-02
+10  9 1.507311e-02
+11 10 1.808773e-03
+12 11 1.027712e-04
+13 12 2.015121e-06</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bar plot</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>p, <span class="at">label=</span>p)) <span class="sc">+</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>     <span class="fu">theme_classic</span>() <span class="sc">+</span> </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>     <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>, <span class="at">fill=</span> <span class="st">"beige"</span>, <span class="at">colour=</span><span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>     <span class="fu">geom_text</span>(<span class="at">label=</span><span class="fu">signif</span>(probabilities, <span class="dv">2</span>), </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                             <span class="at">y=</span>probabilities, <span class="at">size=</span><span class="dv">3</span>, <span class="at">hjust=</span><span class="fl">0.5</span>, <span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>     <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Number of BP+ DEGs"</span>, <span class="at">y =</span> <span class="st">"Probability"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>For our actual contingency table <span class="math inline">\(p(x=9)=\frac{{12 \choose 9} \times {20\choose6}}{32\choose15}\)</span>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Calculate manually</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">choose</span>(<span class="dv">12</span>,<span class="dv">9</span>)<span class="sc">*</span><span class="fu">choose</span>(<span class="dv">20</span>,<span class="dv">6</span>) <span class="sc">/</span> <span class="fu">choose</span>(<span class="dv">32</span>,<span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.01507311</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] 0.001334633</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="one-sided-test" class="level3">
+<h3 class="anchored" data-anchor-id="one-sided-test"><strong>One-sided test</strong></h3>
+<p>As mentioned before, we are not only interested in the probability of the observed contingency table but also in those for more extreme contingency tables, i.e., tables with greater <span class="math inline">\(a_{11}\)</span>’s.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/all_tables_extreme.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="494"></p>
+</figure>
+</div>
+<p>We add the probabilities of the actual table + the probabilities for such more extreme tables in order to get the probability of having 9 or more DEGs that are BP+ under the null hypothesis:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(probabilities[<span class="dv">10</span><span class="sc">:</span><span class="dv">13</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.01698667</code></pre>
+</div>
+</div>
+<p>Since it is &lt;0.05, we reject the null hypothesis and accept that there’s an enrichment of BP+ genes amongst our DEGs.</p>
+<p>This is called a <strong>one-sided Fisher’s exact test</strong> since we are evaluating probabilities of extreme values at only one side of the density curve (for values equal or greater than <span class="math inline">\(a_{11}\)</span>=9; see plot below).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Color in red those x&gt;=9</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">'beige'</span>, <span class="dv">9</span>), <span class="fu">rep</span>(<span class="st">'red'</span>, <span class="dv">4</span>))</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>colors <span class="ot">&lt;-</span> colors</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>p, <span class="at">label=</span>p, <span class="at">fill=</span>colors)) <span class="sc">+</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>, <span class="at">fill=</span> colors, <span class="at">colour=</span><span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">geom_text</span>(<span class="at">label=</span><span class="fu">signif</span>(probabilities, <span class="dv">2</span>),</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">y=</span>probabilities, <span class="at">size=</span><span class="dv">3</span>, <span class="at">hjust=</span><span class="fl">0.5</span>, <span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>                <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Number of BP+ DEGs"</span>, <span class="at">y =</span> <span class="st">"Probability"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We obtain the same result with <code>fisher.test(alternative = ”greater”)</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fisher.test</span>(m, <span class="at">alternative =</span> <span class="st">"greater"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Fisher's Exact Test for Count Data
+
+data:  m
+p-value = 0.01699
+alternative hypothesis: true odds ratio is greater than 1
+95 percent confidence interval:
+ 1.402791      Inf
+sample estimates:
+odds ratio 
+  6.529133 </code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that the results of this test are the same for the transposed matrix, so if we put one or the other variable in columns or rows doesn’t affect as long as the first element of the table is the number of successes in the sample (BP+ DEGs).&nbsp;</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Matrix</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>m</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     [,1] [,2]
+[1,]    9    6
+[2,]    3   14</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Transposed matrix</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(m)     </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     [,1] [,2]
+[1,]    9    3
+[2,]    6   14</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Fisher test on t(m)</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fisher.test</span>(<span class="fu">t</span>(m), <span class="at">alternative =</span> <span class="st">"greater"</span>)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Fisher's Exact Test for Count Data
+
+data:  t(m)
+p-value = 0.01699
+alternative hypothesis: true odds ratio is greater than 1
+95 percent confidence interval:
+ 1.402791      Inf
+sample estimates:
+odds ratio 
+  6.529133 </code></pre>
+</div>
+</div>
+</div>
+</div>
+</section>
 </section>
 <section id="assessing-gene-set-depletion" class="level2">
-<h2 class="anchored" data-anchor-id="assessing-gene-set-depletion">3. Assessing gene set depletion?</h2>
+<h2 class="anchored" data-anchor-id="assessing-gene-set-depletion">Assessing gene-set depletion?</h2>
+<p>What if we are not only interested in assessing the over-representation of gene sets in our experimentally derived gene list, but also in their under-representation? There may be fewer BP+ genes in the group of DEGs than expected by chance. In such case we’d be assessing for a negative association between the variables and we need to sum the probabilities of our table and those that are less extreme:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Color in red x&lt;=9</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">'red'</span>, <span class="dv">10</span>), <span class="fu">rep</span>(<span class="st">'beige'</span>, <span class="dv">3</span>))</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>colors <span class="ot">&lt;-</span> colors</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>p, <span class="at">label=</span>p, <span class="at">fill=</span>colors)) <span class="sc">+</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>                <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>, <span class="at">fill=</span> colors, <span class="at">colour=</span><span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">geom_text</span>(<span class="at">label=</span><span class="fu">signif</span>(probabilities, <span class="dv">2</span>),</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">y=</span>probabilities, <span class="at">size=</span><span class="dv">3</span>, <span class="at">hjust=</span><span class="fl">0.5</span>, <span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>                <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Number of BP+ DEGs"</span>, <span class="at">y =</span> <span class="st">"Probability"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>In this case we use <code>fisher.test(alternative = ”less”)</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="do">## p-value:</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(probabilities[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.9980864</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Same with fisher.test(alternative = "less")</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fisher.test</span>(m, <span class="at">alternative =</span> <span class="st">"less"</span>)    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Fisher's Exact Test for Count Data
+
+data:  m
+p-value = 0.9981
+alternative hypothesis: true odds ratio is less than 1
+95 percent confidence interval:
+  0.00000 37.74069
+sample estimates:
+odds ratio 
+  6.529133 </code></pre>
+</div>
+</div>
+</section>
+<section id="two-sided-test" class="level2">
+<h2 class="anchored" data-anchor-id="two-sided-test"><strong>Two-sided test</strong></h2>
+<p>The <strong>two-sided Fisher’s exact test</strong> looks at both tails of the hypergeometric distribution and thus is used when we want to assess both enrichment and depletion, if there’s any association between the variables irrespective of the sign.</p>
+<p>accounts for both enrichment and depletion.</p>
+<p>An approach to account for extreme values on both sides is just to multiply by two the sum of the extreme tables’ probabilities at one side (one-sided&nbsp;<em>p</em>-value):</p>
+<p>❓&nbsp;<strong>What’s the odds ratio?</strong></p>
+<p>The odds ratio is defined as:</p>
+<p>There may be cases in which you have some genes in your functional set that are not present in the gene universe; exclude them. Since they were not tested for DGE we cannot categorize them as DEGs or non-DEGs. There’s no good reason to consider them as non-DEGs (except for the fact that most genes are and we often assume that).</p>
 </section>
 </section>
 <section id="conclusion" class="level1">

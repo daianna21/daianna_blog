@@ -10,7 +10,7 @@
 <atom:link href="https://daianna21.github.io/daianna_blog/blog.xml" rel="self" type="application/rss+xml"/>
 <description>Daianna&#39;s personal scientific blog</description>
 <generator>quarto-1.4.555</generator>
-<lastBuildDate>Tue, 13 Aug 2024 06:00:00 GMT</lastBuildDate>
+<lastBuildDate>Wed, 14 Aug 2024 06:00:00 GMT</lastBuildDate>
 <item>
   <title>Fisher’s exact test for enrichment analysis of gene sets</title>
   <dc:creator>Daianna Gonzalez-Padilla</dc:creator>
@@ -1232,18 +1232,19 @@ What’s the odds ratio?
 <ul>
 <li><p>Odds of being <strong><span style="color: #00C5CD">BP+</span></strong> in <strong><span style="color: #EE3A8C">DEGs</span></strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D"></p></li>
 <li><p>Odds of being <strong><span style="color: #00C5CD">BP+</span></strong> in <strong><span style="color: #D8BFD8">non-DEGs</span></strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"></p></li>
-<li><p><strong>Odds ratio (OR) = odds of being <span style="color: #00C5CD">BP+</span> in <span style="color: #EE3A8C">DEGs</span> vs.&nbsp;<span style="color: #D8BFD8">non-DEGs</span></strong>: <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D%20/%20%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"> =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D"></p></li>
+<li><p><strong>Odds ratio (OR) =</strong> odds of being <span style="color: #00C5CD"><strong>BP+</strong></span> in <span style="color: #EE3A8C"><strong>DEGs</strong></span> vs.&nbsp;<strong><span style="color: #D8BFD8">non-DEGs</span></strong>: <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D%20/%20%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"> =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D"></p></li>
 </ul>
-<p>If <strong>OR&gt;1</strong> then it is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span>gene among the group of <span style="color: #EE3A8C"><strong>DEGs</strong></span>→ <strong>positive association</strong> between the two variables.</p>
-<p>If <strong>OR&lt;1</strong> then is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span>gene among the group of <span style="color: #D8BFD8"><strong>non-DEGs</strong></span>→ <strong>negative association</strong> between the two variables.</p>
-<p>If <strong>OR≠1</strong> then is either more or less likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span>gene among the group of <span style="color: #EE3A8C"><strong>DEGs</strong></span> → there is an <strong>association</strong> between the two variables.</p>
+<p>If OR&gt;1 then it is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span> gene among the group of <span style="color: #EE3A8C"><strong>DEGs</strong></span>→ <strong>positive association</strong> between the two variables.</p>
+<p>If OR&lt;1 then is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span> gene among the group of <span style="color: #D8BFD8"><strong>non-DEGs</strong></span>→ <strong>negative association</strong> between the two variables.</p>
+<p>If OR≠1 then is either more or less likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span> gene among the group of <span style="color: #EE3A8C"><strong>DEGs</strong></span> → there is an <strong>association</strong> between the two variables.</p>
+<p>The OR returned by <code>fisher.test()</code> differs slightly from this formula as they are calculated based on the conditional maximum-likelihood estimate.</p>
 </div>
 </div>
 </section>
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
-<p>The one-sided Fisher’s exact test is a broadly used test in genomics to assess the <strong>enrichment</strong> of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:</p>
+<p>The one-sided Fisher’s exact test is a broadly used test in genomics to assess the enrichment of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:</p>
 <ol type="1">
 <li><p>Even though here we focused on the Fisher’s exact test, there are plenty of other methodological and statistical strategies to assess functional enrichment and gene-set enrichment more globally [<a href="https://academic.oup.com/bib/article/22/1/545/5722384" class="uri">https://academic.oup.com/bib/article/22/1/545/5722384</a>]. (IS IT FUNCTIONAL SPECIFICALLY OR GSEA)</p></li>
 <li><p>Here we exemplified the performance of this test with DEGs and functional gene sets, but this over-representation approach doesn’t restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features. The design and interpretation of your analysis will vary from case to case tho.</p></li>
@@ -1286,7 +1287,7 @@ Subramanian, Aravind, Pablo Tamayo, Vamsi K. Mootha, Sayan Mukherjee, Benjamin L
   <category>KEGG</category>
   <category>Functional enrichment</category>
   <guid>https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/</guid>
-  <pubDate>Tue, 13 Aug 2024 06:00:00 GMT</pubDate>
+  <pubDate>Wed, 14 Aug 2024 06:00:00 GMT</pubDate>
   <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test" medium="image"/>
 </item>
 <item>

@@ -4,7 +4,7 @@ description: |
  A complete and interpretable explanation of the Fisher's exact test in the context of gene set-based enrichment analysis. The genomic applicability of this test is exemplified with a functional enrichment analysis for DEGs. 
 author:
   - name: Daianna Gonzalez-Padilla
-date: 2024-08-13
+date: 2024-08-14
 categories:
   - "Fisher's exact test"
   - "overrepresentation"
@@ -358,18 +358,20 @@ Same thing if we interchange the columns and rows:
 
 -   Odds of being **[BP+]{style="color: #00C5CD"}** in **[non-DEGs]{style="color: #D8BFD8"}** = $\frac{a_{21}}{a_{22}}$
 
--   **Odds ratio (OR) = odds of being [BP+]{style="color: #00C5CD"} in [DEGs]{style="color: #EE3A8C"} vs. [non-DEGs]{style="color: #D8BFD8"}**: $\frac{a_{11}}{a_{12}} / \frac{a_{21}}{a_{22}}$ =$\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$
+-   **Odds ratio (OR) =** odds of being [**BP+**]{style="color: #00C5CD"} in [**DEGs**]{style="color: #EE3A8C"} vs. **[non-DEGs]{style="color: #D8BFD8"}**: $\frac{a_{11}}{a_{12}} / \frac{a_{21}}{a_{22}}$ =$\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$
 
-If **OR\>1** then it is more likely to be a [**BP+**]{style="color: #00C5CD"}gene among the group of [**DEGs**]{style="color: #EE3A8C"}→ **positive association** between the two variables.
+If OR\>1 then it is more likely to be a [**BP+**]{style="color: #00C5CD"} gene among the group of [**DEGs**]{style="color: #EE3A8C"}→ **positive association** between the two variables.
 
-If **OR\<1** then is more likely to be a [**BP+**]{style="color: #00C5CD"}gene among the group of [**non-DEGs**]{style="color: #D8BFD8"}→ **negative association** between the two variables.
+If OR\<1 then is more likely to be a [**BP+**]{style="color: #00C5CD"} gene among the group of [**non-DEGs**]{style="color: #D8BFD8"}→ **negative association** between the two variables.
 
-If **OR≠1** then is either more or less likely to be a [**BP+**]{style="color: #00C5CD"}gene among the group of [**DEGs**]{style="color: #EE3A8C"} → there is an **association** between the two variables.
+If OR≠1 then is either more or less likely to be a [**BP+**]{style="color: #00C5CD"} gene among the group of [**DEGs**]{style="color: #EE3A8C"} → there is an **association** between the two variables.
+
+The OR returned by `fisher.test()` differs slightly from this formula as they are calculated based on the conditional maximum-likelihood estimate.
 :::
 
 # Conclusion
 
-The one-sided Fisher's exact test is a broadly used test in genomics to assess the **enrichment** of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:
+The one-sided Fisher's exact test is a broadly used test in genomics to assess the enrichment of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:
 
 1.  Even though here we focused on the Fisher's exact test, there are plenty of other methodological and statistical strategies to assess functional enrichment and gene-set enrichment more globally \[<https://academic.oup.com/bib/article/22/1/545/5722384>\]. (IS IT FUNCTIONAL SPECIFICALLY OR GSEA)
 
@@ -381,7 +383,7 @@ The one-sided Fisher's exact test is a broadly used test in genomics to assess t
 
     ii\) When analyzing genes, which is usually the case, we assume they are independent features but that's not necessarily true. Fisher's test doesn't take into account gene correlations.
 
-1.  Last reminder, Fisher's exact test works to test enrichment but also depletion, careful with what you are looking to assess, how you run this analysis and how you interpret your results!
+4.  Last reminder, Fisher's exact test works to test enrichment but also depletion, careful with what you are looking to assess, how you run this analysis and how you interpret your results!
 
 Hopefully at this point you have a clearer understanding around this test and feel more prepared to decide if this is appropriate to test your hypothesis based on your data.
 

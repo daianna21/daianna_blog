@@ -65,6 +65,19 @@ How to find my gene universe?
 <li><p><span style="color: #00C5CD"><strong>Functional gene set</strong></span>: a set of genes with shared biological attributes (e.g.&nbsp;participation in a pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via databases such as <a href="https://geneontology.org">Gene Ontology (GO)</a> <span class="citation" data-cites="ashburner2000">(Ashburner et al. 2000)</span> and the <a href="https://www.kegg.jp">Kyoto encyclopedia of genes and genomes (KEGG)</a> <span class="citation" data-cites="kanehisa2000">(Kanehisa 2000)</span>.</p>
 <p>→ Let’s denote as “BP” the variable determining if a gene is involved in the biological process (<span style="color: #00C5CD"><strong>BP+</strong></span>) or not (<span style="color: #C1CDCD"><strong>BP-</strong></span>).</p></li>
 </ul>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There may be cases where you have some genes in your functional set that are not present in the gene universe. Since they were not tested for DGE we can’t categorize them as DEGs or non-DEGs. Despite this, given that most genes are non-DEGs and we often assume that, you can either consider them non-DEGs or exclude them from the analysis to avoid introducing ambiguous information.</p>
+</div>
+</div>
 <p>Fisher’s exact test aims to detect functional gene sets whose genes are unusually represented (<strong>enriched</strong>/<strong>over-represented</strong> or <strong>under-represented</strong>) in our set of interest genes. That is, if there’s a large (or small) overlap between the genes of the functional set (BP+ genes in this case) and the genes we classified as relevant from our data (DEGs in this case).</p>
 <p>Following our hypothetical example, let’s suppose we have analyzed DGE for a total of 32 genes and of these 15 were <span style="color: #EE3A8C"><strong>DEGs</strong></span>. Suppose we have a functional gene set containing 12 genes involved in a biological process (<span style="color: #00C5CD"><strong>BP+</strong></span>) and of these 9 were DEGs. Having identified such gene sets, we proceed to create a <strong>2x2 contingency table</strong> showing the number of genes that belong to each category for each variable.</p>
 <div class="quarto-figure quarto-figure-center">
@@ -647,7 +660,7 @@ font-style: inherit;">13</span>])</span></code></pre></div>
 </div>
 </div>
 <p>Since <em>p</em>&lt;0.05 we reject the null hypothesis and accept that there’s an enrichment of <span style="color: #00C5CD"><strong>BP+</strong></span> genes amongst our <span style="color: #EE3A8C"><strong>DEGs</strong></span>, and hence the biological process has a significant positive association with differential gene expression.</p>
-<p>This is called a <strong>one-sided Fisher’s exact test</strong> since we are evaluating probabilities of extreme values at only one side of the density curve (values <img src="https://latex.codecogs.com/png.latex?%E2%89%A5a_%7B11%7D">=9 for enrichment; see plot below).</p>
+<p>This is called a <strong>one-sided Fisher’s exact test</strong> as we are evaluating probabilities of extreme values at only one side of the density curve (values <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">≥9 for enrichment; see plot below).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -843,7 +856,7 @@ odds ratio
 </section>
 <section id="assessing-gene-set-depletion" class="level2">
 <h2 class="anchored" data-anchor-id="assessing-gene-set-depletion">Assessing gene-set depletion?</h2>
-<p>What if we are not only interested in assessing the over-representation of gene sets in our experimentally-derived gene list, but also in their under-representation? There may be fewer BP+ genes in the group of DEGs than expected by chance. In such case we’d be assessing for a negative association between the variables and we need to sum the probabilities of our table and those that are less extreme:</p>
+<p>What if we are not only interested in assessing the over-representation of gene sets in our experimentally-derived gene list, but also in their under-representation? There may be fewer <span style="color: #00C5CD"><strong>BP+</strong></span> genes in the group of <span style="color: #EE3A8C"><strong>DEGs</strong></span> than expected by chance. In such case we’d be assessing for a negative association between the variables and we need to sum the probabilities of our table and those that are less extreme.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -997,8 +1010,8 @@ odds ratio
 </section>
 <section id="two-sided-test" class="level2">
 <h2 class="anchored" data-anchor-id="two-sided-test"><strong>Two-sided test</strong></h2>
-<p>The <strong>two-sided Fisher’s exact test</strong> considers both tails of the hypergeometric distribution and thus is used when we are interested in both enrichment and depletion: if there’s any association between the variables irrespective of the sign.</p>
-<p>An approach to account for extreme values on both sides is to double the sum of the extreme tables’ probabilities at one side (one-sided <em>p</em>-value):</p>
+<p>The <strong>two-sided Fisher’s exact test</strong> is based on both tails of the hypergeometric distribution and thus is used when we are interested in both enrichment and depletion, i.e., if there’s any association between the variables irrespective of the sign.</p>
+<p>One approach to account for extreme values on both sides is to double the sum of the extreme tables’ probabilities at one side (one-sided <em>p</em>-value):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -1020,7 +1033,7 @@ font-style: inherit;">13</span>])</span></code></pre></div>
 <pre><code>[1] 0.03397334</code></pre>
 </div>
 </div>
-<p>A second approach is to add the one-sided <em>p</em>-value + all the probabilities that are less than or equal to the one for the observed table (probabilities for <img src="https://latex.codecogs.com/png.latex?x"> = 0,1, and 2 in this example).</p>
+<p>A second approach is to add the one-sided <em>p</em>-value + all the probabilities that are less than or equal to the one for the observed table (probabilities for <img src="https://latex.codecogs.com/png.latex?x"> = 0,1, and 2 in this example; see plot below).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -1187,52 +1200,45 @@ odds ratio
   6.529133 </code></pre>
 </div>
 </div>
-<p>❓ <strong>What’s the odds ratio?</strong></p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 7%">
-<col style="width: 22%">
-<col style="width: 25%">
-<col style="width: 43%">
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th>Marker genes for astrocytes</th>
-<th>Non-marker genes for astrocytes</th>
-<th>Total</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>DEGs</td>
-<td>$a_{11}$</td>
-<td>$a_{12}$</td>
-<td>$a_{11} $ + $a_{12}$</td>
-</tr>
-<tr class="even">
-<td>Non-DEGs</td>
-<td>$a_{21}$</td>
-<td>$a_{22}$</td>
-<td>$a_{21}$ + $a_{22}$</td>
-</tr>
-<tr class="odd">
-<td>Total</td>
-<td>$a_{11}$ + $a_{21}$</td>
-<td>$a_{12}$ + $a_{22}$</td>
-<td>$a_{11} $ + $a_{12}$ + $a_{21}$ + $a_{22}$</td>
-</tr>
-</tbody>
-</table>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+What’s the odds ratio?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/odds_m.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="334"></p>
+</figure>
+</div>
 <ul>
-<li><p>Odds of DE in BP+ genes = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D"> (how many times it is more likely to be a DEG than a non-DEG among the markers)</p></li>
-<li><p>Odds of DE in BP- genes =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%7D%7B%7D">$\frac{a_{12}}{a_{22}}$ (how many times it is more likely to be a DEG than a non-DEG among the non-markers)</p></li>
+<li><p>Odds of <strong><span style="color: #EE3A8C">DE</span></strong> in <strong><span style="color: #00C5CD">BP+</span></strong> genes = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D">: how many times it is more likely to be a <span style="color: #EE3A8C"><strong>DEG</strong></span> than a <span style="color: #D8BFD8"><strong>non-DEG</strong></span> among the genes in the functional set.</p></li>
+<li><p>Odds of <span style="color: #EE3A8C"><strong>DE</strong></span> in <span style="color: #C1CDCD"><strong>BP-</strong></span> genes =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B12%7D%7D%7Ba_%7B22%7D%7D">: how many times it is more likely to be a <span style="color: #EE3A8C"><strong>DEG</strong></span> than a <span style="color: #D8BFD8"><strong>non-DEG</strong></span> among the genes outside the functional set.</p></li>
 </ul>
 <p>Then,</p>
 <ul>
-<li>Odds of DE in markers vs non-markers = $\frac{a_{11}}{a_{21}} / \frac{a_{12}}{a_{22}}$ =$\frac{}{}$$\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$ (how many times it is more probable to be a DEG among the marker genes than among non-markers)</li>
+<li><strong>Odds of <span style="color: #EE3A8C">DE</span> in <span style="color: #00C5CD">BP+</span> vs.&nbsp;<span style="color: #C1CDCD">BP-</span> genes</strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D%20/%20%5Cfrac%7Ba_%7B12%7D%7D%7Ba_%7B22%7D%7D"> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D">: how many times it is more probable to be a <span style="color: #EE3A8C"><strong>DEG</strong></span> among the <span style="color: #00C5CD"><strong>BP+</strong></span> genes than among <span style="color: #C1CDCD"><strong>BP-</strong></span> genes.</li>
 </ul>
-<p>There may be cases in which you have some genes in your functional set that are not present in the gene universe; exclude them. Since they were not tested for DGE we cannot categorize them as DEGs or non-DEGs. There’s no good reason to consider them as non-DEGs (except for the fact that most genes are and we often assume that).</p>
+<p>Same thing if we interchange the columns and rows:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/odds_tm.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="331"></p>
+</figure>
+</div>
+<ul>
+<li><p>Odds of being <strong><span style="color: #00C5CD">BP+</span></strong> in <strong><span style="color: #EE3A8C">DEGs</span></strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D"></p></li>
+<li><p>Odds of being <strong><span style="color: #00C5CD">BP+</span></strong> in <strong><span style="color: #D8BFD8">non-DEGs</span></strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"></p></li>
+<li><p><strong>Odds ratio (OR) = odds of being <span style="color: #00C5CD">BP+</span> in <span style="color: #EE3A8C">DEGs</span> vs.&nbsp;<span style="color: #D8BFD8">non-DEGs</span></strong>: <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D%20/%20%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"> =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D"></p></li>
+</ul>
+<p>If <strong>OR&gt;1</strong> then it is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span>gene among the group of <span style="color: #EE3A8C"><strong>DEGs</strong></span>→ <strong>positive association</strong> between the two variables.</p>
+<p>If <strong>OR&lt;1</strong> then is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span>gene among the group of <span style="color: #D8BFD8"><strong>non-DEGs</strong></span>→ <strong>negative association</strong> between the two variables.</p>
+<p>If <strong>OR≠1</strong> then is either more or less likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span>gene among the group of <span style="color: #EE3A8C"><strong>DEGs</strong></span> → there is an <strong>association</strong> between the two variables.</p>
+</div>
+</div>
 </section>
 </section>
 <section id="conclusion" class="level1">

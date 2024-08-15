@@ -64,6 +64,10 @@ The following are the required gene sets and their specifications. Please note t
 
     → Let's denote as "BP" the variable determining if a gene is involved in the biological process ([**BP+**]{style="color: #00C5CD"}) or not ([**BP-**]{style="color: #C1CDCD"}).
 
+::: callout-important
+There may be cases where you have some genes in your functional set that are not present in the gene universe. Since they were not tested for DGE we can't categorize them as DEGs or non-DEGs. Despite this, given that most genes are non-DEGs and we often assume that, you can either consider them non-DEGs or exclude them from the analysis to avoid introducing ambiguous information.
+:::
+
 Fisher's exact test aims to detect functional gene sets whose genes are unusually represented (**enriched**/**over-represented** or **under-represented**) in our set of interest genes. That is, if there's a large (or small) overlap between the genes of the functional set (BP+ genes in this case) and the genes we classified as relevant from our data (DEGs in this case).
 
 Following our hypothetical example, let's suppose we have analyzed DGE for a total of 32 genes and of these 15 were [**DEGs**]{style="color: #EE3A8C"}. Suppose we have a functional gene set containing 12 genes involved in a biological process ([**BP+**]{style="color: #00C5CD"}) and of these 9 were DEGs. Having identified such gene sets, we proceed to create a **2x2 contingency table** showing the number of genes that belong to each category for each variable.
@@ -234,7 +238,7 @@ sum(probabilities[10:13])
 
 Since *p*\<0.05 we reject the null hypothesis and accept that there's an enrichment of [**BP+**]{style="color: #00C5CD"} genes amongst our [**DEGs**]{style="color: #EE3A8C"}, and hence the biological process has a significant positive association with differential gene expression.
 
-This is called a **one-sided Fisher's exact test** since we are evaluating probabilities of extreme values at only one side of the density curve (values $≥a_{11}$=9 for enrichment; see plot below).
+This is called a **one-sided Fisher's exact test** as we are evaluating probabilities of extreme values at only one side of the density curve (values $a_{11}$≥9 for enrichment; see plot below).
 
 ```{r}
 ## Color in red those x>=9
@@ -270,7 +274,7 @@ fisher.test(t(m), alternative = "greater")
 
 ## Assessing gene-set depletion?
 
-What if we are not only interested in assessing the over-representation of gene sets in our experimentally-derived gene list, but also in their under-representation? There may be fewer BP+ genes in the group of DEGs than expected by chance. In such case we'd be assessing for a negative association between the variables and we need to sum the probabilities of our table and those that are less extreme:
+What if we are not only interested in assessing the over-representation of gene sets in our experimentally-derived gene list, but also in their under-representation? There may be fewer [**BP+**]{style="color: #00C5CD"} genes in the group of [**DEGs**]{style="color: #EE3A8C"} than expected by chance. In such case we'd be assessing for a negative association between the variables and we need to sum the probabilities of our table and those that are less extreme.
 
 ```{r}
 ## Color in red x<=9
@@ -297,16 +301,16 @@ fisher.test(m, alternative = "less")
 
 ## **Two-sided test**
 
-The **two-sided Fisher’s exact test** considers both tails of the hypergeometric distribution and thus is used when we are interested in both enrichment and depletion: if there's any association between the variables irrespective of the sign.
+The **two-sided Fisher’s exact test** is based on both tails of the hypergeometric distribution and thus is used when we are interested in both enrichment and depletion, i.e., if there's any association between the variables irrespective of the sign.
 
-An approach to account for extreme values on both sides is to double the sum of the extreme tables' probabilities at one side (one-sided *p*-value):
+One approach to account for extreme values on both sides is to double the sum of the extreme tables' probabilities at one side (one-sided *p*-value):
 
 ```{r}
 ## p-value
 2*sum(probabilities[10:13])
 ```
 
-A second approach is to add the one-sided *p*-value + all the probabilities that are less than or equal to the one for the observed table (probabilities for $x$ = 0,1, and 2 in this example).
+A second approach is to add the one-sided *p*-value + all the probabilities that are less than or equal to the one for the observed table (probabilities for $x$ = 0,1, and 2 in this example; see plot below).
 
 ```{r}
 ## p-value
@@ -333,23 +337,35 @@ We get the same result using `fisher.test(alternative = ”two.sided”)`:
 fisher.test(m, alternative = "two.sided")	
 ```
 
-❓ **What's the odds ratio?**
+::: callout-tip
+## What's the odds ratio?
 
-|          | Marker genes for astrocytes | Non-marker genes for astrocytes | Total                                                  |
-|----------|-----------------------------|---------------------------------|--------------------------------------------------------|
-| DEGs     | \$a\_{11}\$                 | \$a\_{12}\$                     | \$a\_{11} \$ + \$a\_{12}\$                             |
-| Non-DEGs | \$a\_{21}\$                 | \$a\_{22}\$                     | \$a\_{21}\$ + \$a\_{22}\$                              |
-| Total    | \$a\_{11}\$ + \$a\_{21}\$   | \$a\_{12}\$ + \$a\_{22}\$       | \$a\_{11} \$ + \$a\_{12}\$ + \$a\_{21}\$ + \$a\_{22}\$ |
+![](images/odds_m.png){style="margin: 0px" fig-align="center" width="334"}
 
--   Odds of DE in BP+ genes = $\frac{a_{11}}{a_{21}}$ (how many times it is more likely to be a DEG than a non-DEG among the markers)
+-   Odds of **[DE]{style="color: #EE3A8C"}** in **[BP+]{style="color: #00C5CD"}** genes = $\frac{a_{11}}{a_{21}}$: how many times it is more likely to be a [**DEG**]{style="color: #EE3A8C"} than a [**non-DEG**]{style="color: #D8BFD8"} among the genes in the functional set.
 
--   Odds of DE in BP- genes =$\frac{}{}$\$\\frac{a\_{12}}{a\_{22}}\$ (how many times it is more likely to be a DEG than a non-DEG among the non-markers)
+-   Odds of [**DE**]{style="color: #EE3A8C"} in [**BP-**]{style="color: #C1CDCD"} genes =$\frac{a_{12}}{a_{22}}$: how many times it is more likely to be a [**DEG**]{style="color: #EE3A8C"} than a [**non-DEG**]{style="color: #D8BFD8"} among the genes outside the functional set.
 
 Then,
 
--   Odds of DE in markers vs non-markers = \$\\frac{a\_{11}}{a\_{21}} / \\frac{a\_{12}}{a\_{22}}\$ =\$\\frac{}{}\$\$\\frac{a\_{11}\\times a\_{22}}{a\_{12} \\times a\_{21}}\$ (how many times it is more probable to be a DEG among the marker genes than among non-markers)
+-   **Odds of [DE]{style="color: #EE3A8C"} in [BP+]{style="color: #00C5CD"} vs. [BP-]{style="color: #C1CDCD"} genes** = $\frac{a_{11}}{a_{21}} / \frac{a_{12}}{a_{22}}$ = $\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$: how many times it is more probable to be a [**DEG**]{style="color: #EE3A8C"} among the [**BP+**]{style="color: #00C5CD"} genes than among [**BP-**]{style="color: #C1CDCD"} genes.
 
-There may be cases in which you have some genes in your functional set that are not present in the gene universe; exclude them. Since they were not tested for DGE we cannot categorize them as DEGs or non-DEGs. There's no good reason to consider them as non-DEGs (except for the fact that most genes are and we often assume that).
+Same thing if we interchange the columns and rows:
+
+![](images/odds_tm.png){style="margin: 0px" fig-align="center" width="331"}
+
+-   Odds of being **[BP+]{style="color: #00C5CD"}** in **[DEGs]{style="color: #EE3A8C"}** = $\frac{a_{11}}{a_{12}}$
+
+-   Odds of being **[BP+]{style="color: #00C5CD"}** in **[non-DEGs]{style="color: #D8BFD8"}** = $\frac{a_{21}}{a_{22}}$
+
+-   **Odds ratio (OR) = odds of being [BP+]{style="color: #00C5CD"} in [DEGs]{style="color: #EE3A8C"} vs. [non-DEGs]{style="color: #D8BFD8"}**: $\frac{a_{11}}{a_{12}} / \frac{a_{21}}{a_{22}}$ =$\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$
+
+If **OR\>1** then it is more likely to be a [**BP+**]{style="color: #00C5CD"}gene among the group of [**DEGs**]{style="color: #EE3A8C"}→ **positive association** between the two variables.
+
+If **OR\<1** then is more likely to be a [**BP+**]{style="color: #00C5CD"}gene among the group of [**non-DEGs**]{style="color: #D8BFD8"}→ **negative association** between the two variables.
+
+If **OR≠1** then is either more or less likely to be a [**BP+**]{style="color: #00C5CD"}gene among the group of [**DEGs**]{style="color: #EE3A8C"} → there is an **association** between the two variables.
+:::
 
 # Conclusion
 

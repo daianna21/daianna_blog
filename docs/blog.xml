@@ -22,32 +22,32 @@
 
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p>Imagine you have analyzed high-throughput omics data and have ended up with a list of candidate/interest genes (because everything is more interpretable at the gene level, isn’t?). These genes could be, for instance, differently expressed genes (DEGs), genes associated with a certain disease, genes affected by risk SNPs, markers for cell types, etc. Any list of <strong>experimentally-derived genes</strong> with biological or clinical relevance applies.</p>
+<p>Imagine you have analyzed high-throughput omics data and have ended up with a list of candidate/interest genes. These genes could be, for instance, differently expressed genes (DEGs), genes associated with a certain disease, genes affected by risk SNPs, markers for cell types, etc. Any list of <strong>experimentally-derived genes</strong> with biological or clinical relevance applies.</p>
 <p>Now, what comes after that? If you found a few genes, you can do a little of research about them and make sense of your results, but what if you got thousands of genes? That’s not an easy task anymore and becomes unscalable. Moreover, despite each individual found gene providing valuable information, we can reveal more definite insights by studying all genes at the same time.</p>
 <p>So what’s to do? We need to start thinking of these <strong>genes as a unique <u>set</u></strong> with its own properties, and ask questions such as <em>what do these genes have in common?</em> <em>what makes them being involved or affected by the condition under study</em>, and <em>what does that imply for cell functionality?</em></p>
-<p><strong>Functional enrichment analysis</strong> based on the <span style="background-color: #FFF68F"><strong>one-sided Fisher’s exact test</strong></span> aims to test whether <span style="color: #FF4500"><strong>our genes <u>as a set</u></strong></span> are associated with certain cellular properties or functions by assessing if <em>sets of known genes that share biological activities or attributes</em> (<span style="color: #1C86EE"><strong>functional gene sets</strong></span>), have a statistically significant <strong>large overlap</strong> with our genes, i.e., if such functional gene sets are, what we call <u><strong>over-represented</strong></u> (or <u><strong>enriched</strong></u>, which is the same), among our genes. Stay on this post to learn more about how this test operates and how to understand and apply it to analyze sets of genes.</p>
+<p><strong>Functional enrichment analysis</strong> based on the <span style="background-color: #FFF68F"><strong>one-sided Fisher’s exact test</strong></span> aims to test whether <span style="color: #EE3A8C"><strong>our genes <u>as a set</u></strong></span> are associated with certain cellular properties or functions by assessing if <em>sets of known genes that share biological activities or attributes</em> (<span style="color: #00C5CD"><strong>functional gene sets</strong></span>), have a statistically significant <strong>large overlap</strong> with our genes, i.e., if such functional gene sets are, what we call <u><strong>over-represented</strong></u> (or <u><strong>enriched</strong></u>, which is the same), among our genes. Stay on this post to learn more about how this test operates and how to understand and apply it to analyze sets of genes.</p>
 </section>
 <section id="what-youll-learn-here" class="level1">
 <h1>What you’ll learn here</h1>
 <ol type="1">
-<li>Comprehend the purpose and the basic operation of a functional enrichment analysis based on gene sets.</li>
-<li>Understand the probabilistic and statistic foundations of the Fisher’s exact test and interpret it with genes and gene sets.</li>
-<li>Clarify the required input data to correctly perform this analysis.</li>
+<li>Comprehend the purpose and the basics of a functional enrichment analysis based on gene sets.</li>
+<li>Understand the probabilistic and statistic foundations of the Fisher’s exact test and interpret it with gene sets.</li>
+<li>Clarify the required input gene sets to correctly perform this analysis.</li>
 <li>Learn how to run this test using R.</li>
 <li>Differentiate <strong>enrichment</strong> vs.&nbsp;<strong>depletion</strong> when performing this test.</li>
 </ol>
 </section>
 <section id="the-fishers-exact-test" class="level1">
 <h1>The Fisher’s exact test</h1>
-<p>This is a classical statistical test based on the hypergeometric distribution (thus also called <strong>hypergeometric test</strong>) used to assess if there is a significant association between two categorical binary variables, such as differential expression of the genes and their involvement in a specific biological process. The association of the two variables is calculated in terms of the intersection size between their elements.</p>
-<p>For illustrative purposes to show the application of this test for gene set-based functional enrichment analysis, imagine we have run a differential gene expression analysis (DGE) for a condition and have obtained a list of DEGs. As part of downstream analyses, we want to know how many of such DEGs participate in a specific biological process of interest and if that number is significantly greater than the number of non-DEGs that are also involved in the process, and DEGs that don’t participate. This is what it means to test for enrichment.</p>
+<p>This is a classical statistical test based on the hypergeometric distribution (thus also called <strong>hypergeometric test</strong>) used to assess if there is a significant association between two categorical binary variables, such as differential expression of the genes and their involvement in a specific biological process. The association of the two variables is calculated in terms of the <strong>intersection size</strong> between their elements.</p>
+<p>For illustrative purposes to show the application of this test for gene set-based functional enrichment analysis, imagine we have run a differential gene expression analysis (DGE) for a condition and have obtained a list of DEGs. As part of downstream analyses, we want to know how many of such DEGs participate in a specific biological process of interest and if that number significantly deviates from what is expected by chance.</p>
 <p>In the next sections we’ll go into more detail on how to demarcate the required sets of genes, represent them in contingency tables, assess enrichment (or depletion) in R, and how to interpret this test and its results.</p>
 <section id="creating-and-understanding-contingency-tables" class="level2">
 <h2 class="anchored" data-anchor-id="creating-and-understanding-contingency-tables">1. Creating and understanding contingency tables</h2>
 <p>The following are the required gene sets and their specifications. Please note that when referring to a set of genes, we are specifically referring to the set of gene IDs; that all we need to run this test!</p>
 <ul>
-<li><p><span style="color: #595959"><strong>Gene universe/back</strong></span><span style="color: #595959"><strong>gro</strong></span><span style="color: #595959"><strong>und</strong></span>: these are all the genes that were experimentally measured and interrogated to generate the list of interest genes (<span style="color: #FF4500"><strong>our gene set</strong></span>). In our hypothetical scenario this is given by all genes that were assessed for DGE: all genes that can be classified as either DEG or non-DEG.</p>
-<p>→ Let’s denote as “DE” the variable defining if a gene is differentially expressed (DEG) or not (non-DEG).</p>
+<li><p><span style="color: #595959"><strong>Gene universe/back</strong></span><span style="color: #595959"><strong>gro</strong></span><span style="color: #595959"><strong>und</strong></span>: these are all the genes that were experimentally measured and interrogated to generate the list of interest genes (our gene set). In our hypothetical scenario this is given by all genes that were assessed for DGE.</p>
+<p>→ Let’s denote as “DE” the variable defining if a gene is differentially expressed (<span style="color: #EE3A8C"><strong>DEG</strong></span>) or not (<span style="color: #D8BFD8"><strong>non-DEG</strong></span>).</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -61,18 +61,18 @@ How to find my gene universe?
 <p>Since we are testing enrichment of functional gene sets among our DEGs, and not the other way around, our “gene universe” must correspond to the total number of genes for which we assessed DGE. Within those genes, categorized by DE, we search for genes contained in a functional set.</p>
 </div>
 </div></li>
-<li><p><span style="color: #FF4500"><strong>Our gene set</strong></span>: a list of interest genes derived from our experimental measurements and analyses, and to which we want to assign biological meanings. In our hypothetical case this is the list of DEGs from the <span style="color: #595959"><strong>gene universe</strong></span>.</p></li>
-<li><p><span style="color: #1C86EE"><strong>Functional gene set</strong></span>: a set of genes with shared biological attributes (e.g.&nbsp;participation in a pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via databases such as <a href="https://geneontology.org">Gene Ontology (GO)</a> <span class="citation" data-cites="ashburner2000">(Ashburner et al. 2000)</span> and the <a href="https://www.kegg.jp">Kyoto encyclopedia of genes and genomes (KEGG)</a> <span class="citation" data-cites="kanehisa2000">(Kanehisa 2000)</span>.</p>
-<p>→ Let’s denote as “BP” the variable determining if a gene is involved in a particular biological process (BP+) or not (BP-).</p></li>
+<li><p><span style="color: #EE3A8C"><strong>Experimentally-derived gene set</strong></span> (our gene set): a list of interest genes derived from our experimental measurements and analyses, and to which we want to assign biological meanings. In our example case this is the list of DEGs from the <span style="color: #595959"><strong>gene universe</strong></span>.</p></li>
+<li><p><span style="color: #00C5CD"><strong>Functional gene set</strong></span>: a set of genes with shared biological attributes (e.g.&nbsp;participation in a pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via databases such as <a href="https://geneontology.org">Gene Ontology (GO)</a> <span class="citation" data-cites="ashburner2000">(Ashburner et al. 2000)</span> and the <a href="https://www.kegg.jp">Kyoto encyclopedia of genes and genomes (KEGG)</a> <span class="citation" data-cites="kanehisa2000">(Kanehisa 2000)</span>.</p>
+<p>→ Let’s denote as “BP” the variable determining if a gene is involved in the biological process (<span style="color: #00C5CD"><strong>BP+</strong></span>) or not (<span style="color: #C1CDCD"><strong>BP-</strong></span>).</p></li>
 </ul>
-<p>Fisher’s exact test aims to detect functional gene sets whose genes are unusually represented (enriched/over-represented or under-represented) in our set of interest genes. That is, if there’s a large (or small) overlap between the genes of the functional set (BP+ genes in this case) and the genes we classified as relevant from our data (DEGs in this case).</p>
-<p>Following our hypothetical example, let’s suppose we have analyzed DGE for a total of 32 genes and of these 15 were DEGs. Suppose we have a functional gene set containing 12 genes involved in a biological process (BP+) and of these 9 were DEGs. Having identified such gene sets, we proceed to create a <strong>2x2 contingency table</strong> showing the number of genes that belong to each category for each variable.</p>
+<p>Fisher’s exact test aims to detect functional gene sets whose genes are unusually represented (<strong>enriched</strong>/<strong>over-represented</strong> or <strong>under-represented</strong>) in our set of interest genes. That is, if there’s a large (or small) overlap between the genes of the functional set (BP+ genes in this case) and the genes we classified as relevant from our data (DEGs in this case).</p>
+<p>Following our hypothetical example, let’s suppose we have analyzed DGE for a total of 32 genes and of these 15 were <span style="color: #EE3A8C"><strong>DEGs</strong></span>. Suppose we have a functional gene set containing 12 genes involved in a biological process (<span style="color: #00C5CD"><strong>BP+</strong></span>) and of these 9 were DEGs. Having identified such gene sets, we proceed to create a <strong>2x2 contingency table</strong> showing the number of genes that belong to each category for each variable.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/contingency_table_2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="365"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/contingency_table_3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="421"></p>
 </figure>
 </div>
-<p>The numbers of DEGs, non-DEGs, BP+ genes, and BP- genes are called the <em>marginal values</em>, as they lie on the periphery of this 2x2 table. The middle cells (<img src="https://latex.codecogs.com/png.latex?a">’s) are the <em>joint values</em>, as they contain the overlap between the categories of the two variables.</p>
+<p>The numbers of <span style="color: #EE3A8C"><strong>DEGs</strong></span>, <span style="color: #D8BFD8"><strong>non-DEG</strong></span>, <span style="color: #00C5CD"><strong>BP+</strong></span> genes, and <span style="color: #C1CDCD"><strong>BP-</strong></span> genes are called the <em>marginal values</em>, as they lie on the periphery of this 2x2 table. The middle cells (<img src="https://latex.codecogs.com/png.latex?a">’s) are the <em>joint values</em>, as they contain the overlap between the categories of the two variables.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -214,7 +214,7 @@ font-style: inherit;">%in%</span> DEGs]</span>
 <span id="cb7-3"></span>
 <span id="cb7-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## Example functional set of 12 BP+ genes (with 9 being DEGs)</span></span>
+font-style: italic;">## Functional set of 12 BP+ genes (with 9 being DEGs)</span></span>
 <span id="cb7-5">funct_gene_set <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
@@ -339,16 +339,16 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When we test for “association” between DE and BP it could be either <strong>positive</strong> or <strong>negative</strong>, with the former implying a larger overlap between DEGs and BP+ genes, and thus corresponding to enrichment, and the latter implying a smaller overlap and thus meaning depletion. We’ll also delve into the statistical implications of each type of association in the next section.</p>
+<p>When we test for “association” between DE and BP note that it could be either <strong>positive</strong> or <strong>negative</strong>, with the former implying a larger overlap between DEGs and BP+ genes, and thus corresponding to <strong>enrichment</strong>, and the latter implying a smaller overlap and thus meaning <strong>depletion</strong>. We’ll also delve into the statistical implications of each type of association in the next section.</p>
 </div>
 </div>
 </section>
 <section id="testing-for-gene-set-enrichment" class="level2">
 <h2 class="anchored" data-anchor-id="testing-for-gene-set-enrichment">2. Testing for gene-set enrichment</h2>
-<p>The Fisher’s exact test is used to determine the probability of observing the joint value <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> in our table or a more extreme value (for contingency tables with the same fixed marginal totals) under the null hypothesis (<img src="https://latex.codecogs.com/png.latex?H_0">) that there’s no association between the categorical variables, i.e., that they are independent. These probabilities are referred to as <em>p</em>-values. Smaller probabilities offer strong evidence against the null hypothesis, which is translated into statistical evidence to accept the alternative hypothesis (<img src="https://latex.codecogs.com/png.latex?H_A">) of association between the two variables.</p>
+<p>The Fisher’s exact test is used to determine the <span style="background-color: #FFFFE0">probability of observing the joint value <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> in our table or a more extreme value</span> (for contingency tables with the same fixed marginal totals) under the <strong>null hypothesis (</strong><img src="https://latex.codecogs.com/png.latex?H_0"><strong>)</strong> that there’s <u>no association between the categorical variables</u>, i.e., that they are independent. These probabilities are referred to as <em>p</em>-values. Smaller probabilities offer strong evidence against the null hypothesis, which is translated into statistical evidence to accept the <strong>alternative hypothesis (</strong><img src="https://latex.codecogs.com/png.latex?H_A"><strong>)</strong> of <u>association between the two variables</u>.</p>
 <p>This is how it operates:</p>
 <ol type="1">
-<li>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">: in this case from 0 to 12, which are the min. and max. numbers of DEGs that can be in BP+, respectively.</li>
+<li>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">: in this case from 0 to 12, which are the min. and max. numbers of genes that can be both <span style="color: #EE3A8C"><strong>DEGs</strong></span> and <span style="color: #00C5CD"><strong>BP+</strong></span>, respectively.</li>
 </ol>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -356,11 +356,11 @@ Important
 </figure>
 </div>
 <div style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px">
-<div class="line-block">❗️ The top left cell (<img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">) of each table always corresponds to the joint value positive for both variables under examination (DEGs and BP+ genes).</div>
+<div class="line-block">❗️ The top left cell (<img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">) of each table always corresponds to the joint value positive for both variables under examination (<span style="color: #EE3A8C"><strong>DEG</strong></span> <span style="color: #00C5CD"><strong>BP+</strong></span> genes).</div>
 </div>
 <p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/white_space.png" style="margin: 0px" width="30" height="4"></p>
 <ol start="2" type="1">
-<li><p>Then we estimate the probability of having such joint values in each contingency table under the null hypothesis. To do that we need to calculate the number of ways of obtaining the joint values by randomness in the gene selection process. Only 3 values have to be estimated for that:</p>
+<li><p>Then we estimate the probability of having such joint values in each contingency table under the null hypothesis. To do that we need to calculate the number of ways of obtaining the joint values by randomness in the gene selection process. Only 3 values need to be estimated for that:</p>
 <ol type="1">
 <li><p>The ways of selecting <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B12%7D"> = 15 genes (corresponding to the number of DEGs) without replacement from the total genes in the gene universe: <img src="https://latex.codecogs.com/png.latex?%7Ba_%7B11%7D%20+%20a_%7B12%7D%20+%20a_%7B21%7D%20+%20a_%7B22%7D%7D%20%5Cchoose%20a_%7B11%7D%20+%20a_%7B12%7D"></p>
 <div class="quarto-figure quarto-figure-center">
@@ -382,7 +382,7 @@ Important
 </figure>
 </div></li>
 </ol>
-<p>With these 3 values we define the probability of each table arrangement:</p>
+<p>With these 3 values we define the probability of each table arrangement by:</p>
 <p><img src="https://latex.codecogs.com/png.latex?%0Ap=%5Cfrac%7B%7B%7Ba_%7B11%7D+a_%7B21%7D%7D%5Cchoose%20a_%7B11%7D%7D%20%5Ctimes%20%7B%7Ba_%7B12%7D+a_%7B22%7D%7D%5Cchoose%7Ba_%7B12%7D%7D%7D%20%7D%7B%7Ba_%7B11%7D+a_%7B12%7D+a_%7B21%7D+a_%7B22%7D%7D%5Cchoose%7Ba_%7B11%7D+a_%7B12%7D%7D%7D%0A"></p>
 <p>This is precisely the probability function for the hypergeometric distribution, used for sampling <em>without</em> replacement and which we use to test the null hypothesis.</p>
 <p><img src="https://latex.codecogs.com/png.latex?%0Ap(x)=%5Cfrac%7B%7Bm%20%5Cchoose%20x%7D%20%7Bn%20%5Cchoose%20%7Bk-x%7D%7D%7D%7B%7Bm+n%7D%5Cchoose%20k%7D"></p>
@@ -394,34 +394,80 @@ Important
 <li><p><img src="https://latex.codecogs.com/png.latex?k-x"> is the number of failures in the sample (number of BP- among DEGs) = <img src="https://latex.codecogs.com/png.latex?a_%7B12%7D"> = 6</p></li>
 <li><p><img src="https://latex.codecogs.com/png.latex?m+n"> is the population size (size of gene universe) = <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B12%7D%20+%20a_%7B21%7D%20+%20a_%7B22%7D"> = 32</p></li>
 </ul>
-<div style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px">
-<div class="line-block">💡 Basically, we are quantifying the number of ways of obtaining a sample of size <img src="https://latex.codecogs.com/png.latex?k"> composed of <img src="https://latex.codecogs.com/png.latex?x"> successes from a total of <img src="https://latex.codecogs.com/png.latex?m"> successes in the population (<img src="https://latex.codecogs.com/png.latex?m+n">) AND the remaining <img src="https://latex.codecogs.com/png.latex?k-x"> elements as failures from a total of <img src="https://latex.codecogs.com/png.latex?n"> failures in the population; of all possible ways of randomly selecting <img src="https://latex.codecogs.com/png.latex?k"> elements from the population.</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
 </div>
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/white_space.png" style="margin: 0px" width="19"></p>
-<p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both BP+ and BP- genes. Repeat the experiment multiple times and count the times 9 of the 15 genes were BP+ (out of 12 BP+ genes in total) and the remaining 6 genes BP- (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (9 BP+ and 6 BP- genes in the sample) just by chance.</p>
-<p>Let’s see the density function for the hypergeometric distribution with the above parameters.</p>
+<div class="callout-title-container flex-fill">
+How to interpret the above formula?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Basically, we are quantifying the number of ways of obtaining a sample of size <img src="https://latex.codecogs.com/png.latex?k"> composed of <img src="https://latex.codecogs.com/png.latex?x"> successes from a total of <img src="https://latex.codecogs.com/png.latex?m"> successes in the population (<img src="https://latex.codecogs.com/png.latex?m+n">) AND the remaining <img src="https://latex.codecogs.com/png.latex?k-x"> elements as failures from a total of <img src="https://latex.codecogs.com/png.latex?n"> failures in the population; of all possible ways of randomly selecting <img src="https://latex.codecogs.com/png.latex?k"> elements from the population.</p>
+</div>
+</div>
+<p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both BP+ and BP- genes. Repeat the experiment multiple times and count the times that 9 of the 15 genes you selected were BP+ (out of 12 BP+ genes in total) and the remaining 6 genes BP- (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (9 BP+ and 6 BP- genes in the sample of 15 DEGs) just by chance.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/experiment.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="547"></p>
+</figure>
+</div>
+<p>For our actual contingency table <img src="https://latex.codecogs.com/png.latex?p(x=9)=%5Cfrac%7B%7B12%20%5Cchoose%209%7D%20%5Ctimes%20%7B20%5Cchoose6%7D%7D%7B32%5Cchoose15%7D">:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Calculate manually</span></span>
+<span id="cb11-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">choose</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">9</span>)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">choose</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">choose</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">32</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">15</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.01507311</code></pre>
+</div>
+</div>
+<p>Let’s use <code>dhyper()</code> to see the density function for the hypergeometric distribution with the above parameters and confirm we obtain the same probability for <img src="https://latex.codecogs.com/png.latex?x"> = 9.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">library</span>(ggplot2)</span>
-<span id="cb11-2"></span>
-<span id="cb11-3"><span class="do" style="color: #5E5E5E;
+<span id="cb13-2"></span>
+<span id="cb13-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Hypergeometric distribution parameters:</span></span>
-<span id="cb11-4"><span class="do" style="color: #5E5E5E;
+<span id="cb13-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">##  -x = 0:12 (a11 for all possible tables)</span></span>
-<span id="cb11-5"><span class="do" style="color: #5E5E5E;
+<span id="cb13-5"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">##  -m = 12 </span></span>
-<span id="cb11-6"><span class="do" style="color: #5E5E5E;
+<span id="cb13-6"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">##  -n = 20</span></span>
-<span id="cb11-7"><span class="do" style="color: #5E5E5E;
+<span id="cb13-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">##  -k = 15</span></span>
-<span id="cb11-8"></span>
-<span id="cb11-9">probabilities <span class="ot" style="color: #003B4F;
+<span id="cb13-8"></span>
+<span id="cb13-9">probabilities <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -452,7 +498,7 @@ background-color: null;
 font-style: inherit;">log =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">FALSE</span>)</span>
-<span id="cb11-10">xs <span class="ot" style="color: #003B4F;
+<span id="cb13-10">xs <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -463,7 +509,7 @@ background-color: null;
 font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">12</span>)</span>
-<span id="cb11-11">df <span class="ot" style="color: #003B4F;
+<span id="cb13-11">df <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -472,7 +518,7 @@ background-color: null;
 font-style: inherit;">x=</span>xs, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">p=</span>probabilities)</span>
-<span id="cb11-12">df </span></code></pre></div>
+<span id="cb13-12">df </span></code></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    x            p
 1   0 2.740565e-05
@@ -489,10 +535,10 @@ font-style: inherit;">p=</span>probabilities)</span>
 12 11 1.027712e-04
 13 12 2.015121e-06</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="co" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Bar plot</span></span>
-<span id="cb13-2"><span class="fu" style="color: #4758AB;
+<span id="cb15-2"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">ggplot</span>(df, <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -505,12 +551,12 @@ background-color: null;
 font-style: inherit;">label=</span>p)) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb13-3">     <span class="fu" style="color: #4758AB;
+<span id="cb15-3">     <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme_classic</span>() <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb13-4">     <span class="fu" style="color: #4758AB;
+<span id="cb15-4">     <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_bar</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -527,7 +573,7 @@ background-color: null;
 font-style: inherit;">"black"</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb13-5">     <span class="fu" style="color: #4758AB;
+<span id="cb15-5">     <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_text</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -536,7 +582,7 @@ background-color: null;
 font-style: inherit;">signif</span>(probabilities, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2</span>), </span>
-<span id="cb13-6">                             <span class="at" style="color: #657422;
+<span id="cb15-6">                             <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">y=</span>probabilities, <span class="at" style="color: #657422;
 background-color: null;
@@ -555,7 +601,7 @@ background-color: null;
 font-style: inherit;">1</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb13-7">     <span class="fu" style="color: #4758AB;
+<span id="cb15-7">     <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -569,45 +615,10 @@ font-style: inherit;">"Probability"</span>)</span></code></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-</div>
-<p>For our actual contingency table <img src="https://latex.codecogs.com/png.latex?p(x=9)=%5Cfrac%7B%7B12%20%5Cchoose%209%7D%20%5Ctimes%20%7B20%5Cchoose6%7D%7D%7B32%5Cchoose15%7D">:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><span class="do" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">## Calculate manually</span></span>
-<span id="cb14-2"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">choose</span>(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">12</span>,<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">9</span>)<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">choose</span>(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">20</span>,<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">6</span>) <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">choose</span>(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">32</span>,<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">15</span>)</span></code></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.01507311</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># [1] 0.001334633</span></span></code></pre></div>
 </div>
 <section id="one-sided-test" class="level3">
 <h3 class="anchored" data-anchor-id="one-sided-test"><strong>One-sided test</strong></h3>
@@ -617,9 +628,12 @@ font-style: inherit;"># [1] 0.001334633</span></span></code></pre></div>
 <p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/all_tables_extreme.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="494"></p>
 </figure>
 </div>
-<p>We add the probabilities of the actual table + the probabilities for such more extreme tables in order to get the probability of having 9 or more DEGs that are BP+ under the null hypothesis:</p>
+<p>We add the probability of the actual table + the probabilities for such more extreme tables in order to get the probability of observing 9 or more DEGs that are BP+ under the null hypothesis:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## p(x&gt;=9)</span></span>
+<span id="cb16-2"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">sum</span>(probabilities[<span class="dv" style="color: #AD0000;
 background-color: null;
@@ -632,13 +646,13 @@ font-style: inherit;">13</span>])</span></code></pre></div>
 <pre><code>[1] 0.01698667</code></pre>
 </div>
 </div>
-<p>Since it is &lt;0.05, we reject the null hypothesis and accept that there’s an enrichment of BP+ genes amongst our DEGs.</p>
-<p>This is called a <strong>one-sided Fisher’s exact test</strong> since we are evaluating probabilities of extreme values at only one side of the density curve (for values equal or greater than <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">=9; see plot below).</p>
+<p>Since <em>p</em>&lt;0.05, we reject the null hypothesis and accept that there’s an enrichment of BP+ genes amongst our DEGs, and hence the biological process has a significant positive association with differential gene expression.</p>
+<p>This is called a <strong>one-sided Fisher’s exact test</strong> since we are evaluating probabilities of extreme values at only one side of the density curve; in case of enrichment, for values equal or greater than <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">=9 (see plot below).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><span class="do" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Color in red those x&gt;=9</span></span>
-<span id="cb19-2">colors <span class="ot" style="color: #003B4F;
+<span id="cb18-2">colors <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -655,12 +669,12 @@ background-color: null;
 font-style: inherit;">'red'</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">4</span>))</span>
-<span id="cb19-3">df<span class="sc" style="color: #5E5E5E;
+<span id="cb18-3">df<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>colors <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> colors</span>
-<span id="cb19-4"><span class="fu" style="color: #4758AB;
+<span id="cb18-4"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">ggplot</span>(df, <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -675,12 +689,12 @@ background-color: null;
 font-style: inherit;">fill=</span>colors)) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb19-5">                <span class="fu" style="color: #4758AB;
+<span id="cb18-5">                <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme_classic</span>() <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb19-6">                <span class="fu" style="color: #4758AB;
+<span id="cb18-6">                <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_bar</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -695,7 +709,7 @@ background-color: null;
 font-style: inherit;">"black"</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb19-7">                <span class="fu" style="color: #4758AB;
+<span id="cb18-7">                <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_text</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -704,7 +718,7 @@ background-color: null;
 font-style: inherit;">signif</span>(probabilities, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2</span>),</span>
-<span id="cb19-8">                                    <span class="at" style="color: #657422;
+<span id="cb18-8">                                    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">y=</span>probabilities, <span class="at" style="color: #657422;
 background-color: null;
@@ -723,7 +737,7 @@ background-color: null;
 font-style: inherit;">1</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb19-9">                <span class="fu" style="color: #4758AB;
+<span id="cb18-9">                <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -744,7 +758,7 @@ font-style: inherit;">"Probability"</span>)</span></code></pre></div>
 </div>
 <p>We obtain the same result with <code>fisher.test(alternative = ”greater”)</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">fisher.test</span>(m, <span class="at" style="color: #657422;
 background-color: null;
@@ -777,19 +791,19 @@ Note
 <div class="callout-body-container callout-body">
 <p>Note that the results of this test are the same for the transposed matrix, so if we put one or the other variable in columns or rows doesn’t affect as long as the first element of the table is the number of successes in the sample (BP+ DEGs).&nbsp;</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><span class="do" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Matrix</span></span>
-<span id="cb22-2">m</span></code></pre></div>
+<span id="cb21-2">m</span></code></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     [,1] [,2]
 [1,]    9    6
 [2,]    3   14</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><span class="do" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Transposed matrix</span></span>
-<span id="cb24-2"><span class="fu" style="color: #4758AB;
+<span id="cb23-2"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">t</span>(m)     </span></code></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -797,10 +811,10 @@ font-style: inherit;">t</span>(m)     </span></code></pre></div>
 [1,]    9    3
 [2,]    6   14</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><span class="do" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Fisher test on t(m)</span></span>
-<span id="cb26-2"><span class="fu" style="color: #4758AB;
+<span id="cb25-2"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">fisher.test</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
@@ -829,12 +843,12 @@ odds ratio
 </section>
 <section id="assessing-gene-set-depletion" class="level2">
 <h2 class="anchored" data-anchor-id="assessing-gene-set-depletion">Assessing gene-set depletion?</h2>
-<p>What if we are not only interested in assessing the over-representation of gene sets in our experimentally derived gene list, but also in their under-representation? There may be fewer BP+ genes in the group of DEGs than expected by chance. In such case we’d be assessing for a negative association between the variables and we need to sum the probabilities of our table and those that are less extreme:</p>
+<p>What if we are not only interested in assessing the over-representation of gene sets in our experimentally-derived gene list, but also in their under-representation? There may be fewer BP+ genes in the group of DEGs than expected by chance. In such case we’d be assessing for a negative association between the variables and we need to sum the probabilities of our table and those that are less extreme:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><span class="do" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Color in red x&lt;=9</span></span>
-<span id="cb28-2">colors <span class="ot" style="color: #003B4F;
+<span id="cb27-2">colors <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -851,13 +865,13 @@ background-color: null;
 font-style: inherit;">'beige'</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">3</span>))</span>
-<span id="cb28-3">df<span class="sc" style="color: #5E5E5E;
+<span id="cb27-3">df<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>colors <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> colors</span>
-<span id="cb28-4"></span>
-<span id="cb28-5"><span class="fu" style="color: #4758AB;
+<span id="cb27-4"></span>
+<span id="cb27-5"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">ggplot</span>(df, <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -872,12 +886,12 @@ background-color: null;
 font-style: inherit;">fill=</span>colors)) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb28-6">                <span class="fu" style="color: #4758AB;
+<span id="cb27-6">                <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme_classic</span>() <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb28-7">                <span class="fu" style="color: #4758AB;
+<span id="cb27-7">                <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_bar</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -892,7 +906,7 @@ background-color: null;
 font-style: inherit;">"black"</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb28-8">                <span class="fu" style="color: #4758AB;
+<span id="cb27-8">                <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_text</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -901,7 +915,7 @@ background-color: null;
 font-style: inherit;">signif</span>(probabilities, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2</span>),</span>
-<span id="cb28-9">                                    <span class="at" style="color: #657422;
+<span id="cb27-9">                                    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">y=</span>probabilities, <span class="at" style="color: #657422;
 background-color: null;
@@ -920,7 +934,7 @@ background-color: null;
 font-style: inherit;">1</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb28-10">                <span class="fu" style="color: #4758AB;
+<span id="cb27-10">                <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -941,10 +955,10 @@ font-style: inherit;">"Probability"</span>)</span></code></pre></div>
 </div>
 <p>In this case we use <code>fisher.test(alternative = ”less”)</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><span class="do" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## p-value:</span></span>
-<span id="cb29-2"><span class="fu" style="color: #4758AB;
+<span id="cb28-2"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">sum</span>(probabilities[<span class="dv" style="color: #AD0000;
 background-color: null;
@@ -956,10 +970,10 @@ font-style: inherit;">10</span>])</span></code></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.9980864</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><span class="do" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Same with fisher.test(alternative = "less")</span></span>
-<span id="cb31-2"><span class="fu" style="color: #4758AB;
+<span id="cb30-2"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">fisher.test</span>(m, <span class="at" style="color: #657422;
 background-color: null;
@@ -983,20 +997,256 @@ odds ratio
 </section>
 <section id="two-sided-test" class="level2">
 <h2 class="anchored" data-anchor-id="two-sided-test"><strong>Two-sided test</strong></h2>
-<p>The <strong>two-sided Fisher’s exact test</strong> considers both tails of the hypergeometric distribution and thus is used when we are interested in both enrichment and depletion, just if there’s any association between the variables irrespective of the sign.</p>
-<p>accounts for both enrichment and depletion.</p>
-<p>An approach to account for extreme values on both sides is just to multiply by two the sum of the extreme tables’ probabilities at one side (one-sided&nbsp;<em>p</em>-value):</p>
-<p>❓&nbsp;<strong>What’s the odds ratio?</strong></p>
-<p>The odds ratio is defined as:</p>
+<p>The <strong>two-sided Fisher’s exact test</strong> considers both tails of the hypergeometric distribution and thus is used when we are interested in both enrichment and depletion: if there’s any association between the variables irrespective of the sign.</p>
+<p>An approach to account for extreme values on both sides is to double the sum of the extreme tables’ probabilities at one side (one-sided <em>p</em>-value):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## p-value</span></span>
+<span id="cb32-2"><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sum</span>(probabilities[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">13</span>])</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.03397334</code></pre>
+</div>
+</div>
+<p>A second approach is to add the one-sided <em>p</em>-value + all the probabilities that are less than or equal to the one for the observed table (probabilities for <img src="https://latex.codecogs.com/png.latex?x"> = 0,1, and 2 in this example).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## p-value</span></span>
+<span id="cb34-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sum</span>(probabilities[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">13</span>]) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sum</span>(probabilities[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>])</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.02688011</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Two-sided test</span></span>
+<span id="cb36-2">colors <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rep</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'red'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'beige'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'red'</span>), <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>))</span>
+<span id="cb36-3">df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>colors <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> colors</span>
+<span id="cb36-4"></span>
+<span id="cb36-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ggplot</span>(df, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">aes</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x=</span>x, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y=</span>p, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">label=</span>p, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fill=</span>colors)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb36-6">                <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">theme_classic</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb36-7">                <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_bar</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stat=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"identity"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fill=</span> colors, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">colour=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"black"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb36-8">                <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_text</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">label=</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">signif</span>(probabilities, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>),</span>
+<span id="cb36-9">                                    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y=</span>probabilities, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">hjust=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.5</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">vjust=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb36-10">                <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Number of BP+ DEGs"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Probability"</span>)</span></code></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We get the same result using <code>fisher.test(alternative = ”two.sided”)</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## With fisher.test(alternative = ”two.sided”)</span></span>
+<span id="cb37-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">fisher.test</span>(m, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">alternative =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"two.sided"</span>)   </span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Fisher's Exact Test for Count Data
+
+data:  m
+p-value = 0.02688
+alternative hypothesis: true odds ratio is not equal to 1
+95 percent confidence interval:
+  1.120742 51.566943
+sample estimates:
+odds ratio 
+  6.529133 </code></pre>
+</div>
+</div>
+<p>❓ <strong>What’s the odds ratio?</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 22%">
+<col style="width: 25%">
+<col style="width: 43%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Marker genes for astrocytes</th>
+<th>Non-marker genes for astrocytes</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DEGs</td>
+<td>$a_{11}$</td>
+<td>$a_{12}$</td>
+<td>$a_{11} $ + $a_{12}$</td>
+</tr>
+<tr class="even">
+<td>Non-DEGs</td>
+<td>$a_{21}$</td>
+<td>$a_{22}$</td>
+<td>$a_{21}$ + $a_{22}$</td>
+</tr>
+<tr class="odd">
+<td>Total</td>
+<td>$a_{11}$ + $a_{21}$</td>
+<td>$a_{12}$ + $a_{22}$</td>
+<td>$a_{11} $ + $a_{12}$ + $a_{21}$ + $a_{22}$</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p>Odds of DE in BP+ genes = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D"> (how many times it is more likely to be a DEG than a non-DEG among the markers)</p></li>
+<li><p>Odds of DE in BP- genes =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%7D%7B%7D">$\frac{a_{12}}{a_{22}}$ (how many times it is more likely to be a DEG than a non-DEG among the non-markers)</p></li>
+</ul>
+<p>Then,</p>
+<ul>
+<li>Odds of DE in markers vs non-markers = $\frac{a_{11}}{a_{21}} / \frac{a_{12}}{a_{22}}$ =$\frac{}{}$$\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$ (how many times it is more probable to be a DEG among the marker genes than among non-markers)</li>
+</ul>
 <p>There may be cases in which you have some genes in your functional set that are not present in the gene universe; exclude them. Since they were not tested for DGE we cannot categorize them as DEGs or non-DEGs. There’s no good reason to consider them as non-DEGs (except for the fact that most genes are and we often assume that).</p>
 </section>
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
-<p>The one-sided Fisher’s exact test is a broadly used test to assess the <strong>enrichment</strong> of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays.</p>
-<p>Even though here we focused on the Fisher’s exact test, there are plenty of other approaches to assess functional enrichment [].</p>
-<p>Secondly, I want to highlight that the use DEGs and functional gene sets to exemplify this analysis was based on the fact that this is a common scenario, but your sets don’t necessarily have to be such. Now that you have the framework around this test, I’m sure you are much more prepared to decide if this is appropiate and suitable for your data; remember, as long as you have your universe of features, have defined a subset of all features that is of interest, and a second set of features defining a functional property for which you can compute the intersection with your data, then you can use this test.</p>
-<p>Last reminder, Fisher’s exact test works to test enrichemnt but also depletion, careful with how you run this analysis!</p>
+<p>The one-sided Fisher’s exact test is a broadly used test in genomics to assess the <strong>enrichment</strong> of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:</p>
+<ol type="1">
+<li><p>Even though here we focused on the Fisher’s exact test, there are plenty of other methodological and statistical strategies to assess functional enrichment and gene-set enrichment more globally [<a href="https://academic.oup.com/bib/article/22/1/545/5722384" class="uri">https://academic.oup.com/bib/article/22/1/545/5722384</a>]. (IS IT FUNCTIONAL SPECIFICALLY OR GSEA)</p></li>
+<li><p>Here we exemplified the performance of this test with DEGs and functional gene sets, but this over-representation approach doesn’t restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features. The design and interpretation of your analysis will vary from case to case tho.</p></li>
+<li><p>Intrinsic limitations of this test have been noted:</p>
+<p>i) Even if it can be used to analyze any sets of features as mentioned previously, this test does restrict the analysis to overlaps between feature IDs (in which its simplicity lies), which means that relevant and informative feature metrics are cannot be incorporated, compared to functional class scoring (FCS) methods such as the gene set enrichment analysis (GSEA) developed in <span class="citation" data-cites="subramanian2005">(Subramanian et al. 2005)</span>.</p>
+<p>ii) When analyzing genes, which is usually the case, we assume they are independent features but that’s not necessarily true. Fisher’s test doesn’t take into account gene correlations.</p></li>
+<li><p>Last reminder, Fisher’s exact test works to test enrichment but also depletion, careful with what you are looking to assess, how you run this analysis and how you interpret your results!</p></li>
+</ol>
+<p>Hopefully at this point you have a clearer understanding around this test and feel more prepared to decide if this is appropriate to test your hypothesis based on your data.</p>
 </section>
 <section id="relevant-links" class="level1">
 <h1>Relevant links</h1>
@@ -1016,6 +1266,9 @@ Ashburner, Michael, Catherine A. Ball, Judith A. Blake, David Botstein, Heather 
 </div>
 <div id="ref-kanehisa2000" class="csl-entry">
 Kanehisa, M. 2000. <span>“KEGG: Kyoto Encyclopedia of Genes and Genomes.”</span> <em>Nucleic Acids Research</em> 28 (1): 27–30. <a href="https://doi.org/10.1093/nar/28.1.27">https://doi.org/10.1093/nar/28.1.27</a>.
+</div>
+<div id="ref-subramanian2005" class="csl-entry">
+Subramanian, Aravind, Pablo Tamayo, Vamsi K. Mootha, Sayan Mukherjee, Benjamin L. Ebert, Michael A. Gillette, Amanda Paulovich, et al. 2005. <span>“Gene Set Enrichment Analysis: A Knowledge-Based Approach for Interpreting Genome-Wide Expression Profiles.”</span> <em>Proceedings of the National Academy of Sciences</em> 102 (43): 15545–50. <a href="https://doi.org/10.1073/pnas.0506580102">https://doi.org/10.1073/pnas.0506580102</a>.
 </div>
 </div></section></div> ]]></description>
   <category>Fisher&#39;s exact test</category>

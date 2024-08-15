@@ -46,7 +46,7 @@
 <h2 class="anchored" data-anchor-id="creating-and-understanding-contingency-tables">1. Creating and understanding contingency tables</h2>
 <p>The following are the required gene sets and their specifications. Please note that when referring to a set of genes, we are specifically referring to the set of gene IDs; that all we need to run this test!</p>
 <ul>
-<li><p><span style="color: #595959"><strong>Gene universe/back</strong></span><span style="color: #595959"><strong>gro</strong></span><span style="color: #595959"><strong>und</strong></span>: these are all the genes that were experimentally measured and interrogated to generate the list of interest genes (our gene set). In our hypothetical scenario this is given by all genes that were assessed for DGE.</p>
+<li><p><span style="color: #595959"><strong>Gene universe/background</strong></span>: these are all the genes that were experimentally measured and interrogated to generate the list of interest genes (our gene set). In our hypothetical scenario this is given by all genes that were assessed for DGE.</p>
 <p>→ Let’s denote as “DE” the variable defining if a gene is differentially expressed (<span style="color: #EE3A8C"><strong>DEG</strong></span>) or not (<span style="color: #D8BFD8"><strong>non-DEG</strong></span>).</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -348,7 +348,7 @@ Important
 <p>The Fisher’s exact test is used to determine the <span style="background-color: #FFFFE0">probability of observing the joint value <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> in our table or a more extreme value</span> (for contingency tables with the same fixed marginal totals) under the <strong>null hypothesis (</strong><img src="https://latex.codecogs.com/png.latex?H_0"><strong>)</strong> that there’s <u>no association between the categorical variables</u>, i.e., that they are independent. These probabilities are referred to as <em>p</em>-values. Smaller probabilities offer strong evidence against the null hypothesis, which is translated into statistical evidence to accept the <strong>alternative hypothesis (</strong><img src="https://latex.codecogs.com/png.latex?H_A"><strong>)</strong> of <u>association between the two variables</u>.</p>
 <p>This is how it operates:</p>
 <ol type="1">
-<li>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">: in this case from 0 to 12, which are the min. and max. numbers of genes that can be both <span style="color: #EE3A8C"><strong>DEGs</strong></span> and <span style="color: #00C5CD"><strong>BP+</strong></span>, respectively.</li>
+<li>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">: in this case from 0 to 12, which are the minimum and maximum number of genes that can be both <span style="color: #EE3A8C"><strong>DEGs</strong></span> and <span style="color: #00C5CD"><strong>BP+</strong></span>, respectively.</li>
 </ol>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -356,25 +356,25 @@ Important
 </figure>
 </div>
 <div style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px">
-<div class="line-block">❗️ The top left cell (<img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">) of each table always corresponds to the joint value positive for both variables under examination (<span style="color: #EE3A8C"><strong>DEG</strong></span> <span style="color: #00C5CD"><strong>BP+</strong></span> genes).</div>
+<div class="line-block">❗️ The top left cell (<img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">) of each table always corresponds to the joint value positive for both variables under examination (<span style="color: #00C5CD"><strong>BP+</strong></span> <span style="color: #EE3A8C"><strong>DEGs</strong></span>).</div>
 </div>
 <p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/white_space.png" style="margin: 0px" width="30" height="4"></p>
 <ol start="2" type="1">
 <li><p>Then we estimate the probability of having such joint values in each contingency table under the null hypothesis. To do that we need to calculate the number of ways of obtaining the joint values by randomness in the gene selection process. Only 3 values need to be estimated for that:</p>
 <ol type="1">
-<li><p>The ways of selecting <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B12%7D"> = 15 genes (corresponding to the number of DEGs) without replacement from the total genes in the gene universe: <img src="https://latex.codecogs.com/png.latex?%7Ba_%7B11%7D%20+%20a_%7B12%7D%20+%20a_%7B21%7D%20+%20a_%7B22%7D%7D%20%5Cchoose%20a_%7B11%7D%20+%20a_%7B12%7D"></p>
+<li><p>The ways of selecting <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B12%7D"> = 15 genes (corresponding to the number of <span style="color: #EE3A8C"><strong>DEGs</strong></span>) without replacement from the total genes in the <span style="color: #595959"><strong>gene universe</strong></span>: <img src="https://latex.codecogs.com/png.latex?%7Ba_%7B11%7D%20+%20a_%7B12%7D%20+%20a_%7B21%7D%20+%20a_%7B22%7D%7D%20%5Cchoose%20a_%7B11%7D%20+%20a_%7B12%7D"></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/32_choose_15.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="451"></p>
 </figure>
 </div></li>
-<li><p>The ways of selecting <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> = 9 genes (number of BP+ DEGs) without replacement out of the <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B21%7D"> = 12 genes in the functional set (BP+ genes): <img src="https://latex.codecogs.com/png.latex?%7B%7Ba_%7B11%7D%20+%20a_%7B21%7D%7D%20%5Cchoose%20a_%7B11%7D%7D"></p>
+<li><p>The ways of selecting <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> = 9 genes (number of <span style="color: #00C5CD"><strong>BP+</strong></span> <span style="color: #EE3A8C"><strong>DEGs</strong></span>) without replacement out of the <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B21%7D"> = 12 genes in the functional set (<span style="color: #00C5CD"><strong>BP+</strong></span> genes): <img src="https://latex.codecogs.com/png.latex?%7B%7Ba_%7B11%7D%20+%20a_%7B21%7D%7D%20%5Cchoose%20a_%7B11%7D%7D"></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/12_choose_9.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="351"></p>
 </figure>
 </div></li>
-<li><p>The ways of selecting <img src="https://latex.codecogs.com/png.latex?a_%7B12%7D"> = 6 genes (number of BP- DEGs) without replacement out of the <img src="https://latex.codecogs.com/png.latex?a_%7B12%7D+a_%7B22%7D"> = 20 genes not in the functional set (BP- genes): <img src="https://latex.codecogs.com/png.latex?%7Ba_%7B12%7D+a_%7B22%7D%7D%5Cchoose%7Ba_%7B12%7D%7D"></p></li>
+<li><p>The ways of selecting <img src="https://latex.codecogs.com/png.latex?a_%7B12%7D"> = 6 genes (number of <span style="color: #C1CDCD"><strong>BP-</strong></span> <span style="color: #EE3A8C"><strong>DEGs</strong></span>) without replacement out of the <img src="https://latex.codecogs.com/png.latex?a_%7B12%7D+a_%7B22%7D"> = 20 genes not in the functional set (<span style="color: #C1CDCD"><strong>BP-</strong></span> genes): <img src="https://latex.codecogs.com/png.latex?%7Ba_%7B12%7D+a_%7B22%7D%7D%5Cchoose%7Ba_%7B12%7D%7D"></p></li>
 </ol>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -384,15 +384,15 @@ Important
 </ol>
 <p>With these 3 values we define the probability of each table arrangement by:</p>
 <p><img src="https://latex.codecogs.com/png.latex?%0Ap=%5Cfrac%7B%7B%7Ba_%7B11%7D+a_%7B21%7D%7D%5Cchoose%20a_%7B11%7D%7D%20%5Ctimes%20%7B%7Ba_%7B12%7D+a_%7B22%7D%7D%5Cchoose%7Ba_%7B12%7D%7D%7D%20%7D%7B%7Ba_%7B11%7D+a_%7B12%7D+a_%7B21%7D+a_%7B22%7D%7D%5Cchoose%7Ba_%7B11%7D+a_%7B12%7D%7D%7D%0A"></p>
-<p>This is precisely the probability function for the hypergeometric distribution, used for sampling <em>without</em> replacement and which we use to test the null hypothesis.</p>
+<p>This is precisely the probability function for the hypergeometric distribution, used for sampling without replacement and which we use to test the null hypothesis.</p>
 <p><img src="https://latex.codecogs.com/png.latex?%0Ap(x)=%5Cfrac%7B%7Bm%20%5Cchoose%20x%7D%20%7Bn%20%5Cchoose%20%7Bk-x%7D%7D%7D%7B%7Bm+n%7D%5Cchoose%20k%7D"></p>
 <ul>
-<li><p><img src="https://latex.codecogs.com/png.latex?k"> is the sample size (number of DEGs) = <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B12%7D"> = 15</p></li>
-<li><p><img src="https://latex.codecogs.com/png.latex?m"> is the number of successes in the population (number of BP+ genes) = <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B21%7D"> = 12</p></li>
-<li><p><img src="https://latex.codecogs.com/png.latex?n"> is the number of failures in the population (number of BP- genes) = <img src="https://latex.codecogs.com/png.latex?a_%7B12%7D%20+%20a_%7B22%7D"> = 20</p></li>
-<li><p><img src="https://latex.codecogs.com/png.latex?x"> is the number of successes in the sample (number of BP+ among DEGs) = <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> = 9</p></li>
-<li><p><img src="https://latex.codecogs.com/png.latex?k-x"> is the number of failures in the sample (number of BP- among DEGs) = <img src="https://latex.codecogs.com/png.latex?a_%7B12%7D"> = 6</p></li>
-<li><p><img src="https://latex.codecogs.com/png.latex?m+n"> is the population size (size of gene universe) = <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B12%7D%20+%20a_%7B21%7D%20+%20a_%7B22%7D"> = 32</p></li>
+<li><p><img src="https://latex.codecogs.com/png.latex?k"> is the sample size (number of <span style="color: #EE3A8C"><strong>DEGs</strong></span>) = <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B12%7D"> = 15</p></li>
+<li><p><img src="https://latex.codecogs.com/png.latex?m"> is the number of successes in the population (number of <span style="color: #00C5CD"><strong>BP+</strong></span> genes) = <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B21%7D"> = 12</p></li>
+<li><p><img src="https://latex.codecogs.com/png.latex?n"> is the number of failures in the population (number of <span style="color: #C1CDCD"><strong>BP-</strong></span> genes) = <img src="https://latex.codecogs.com/png.latex?a_%7B12%7D%20+%20a_%7B22%7D"> = 20</p></li>
+<li><p><img src="https://latex.codecogs.com/png.latex?x"> is the number of successes in the sample (number of <span style="color: #00C5CD"><strong>BP+</strong></span> among <span style="color: #EE3A8C"><strong>DEGs</strong></span>) = <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> = 9</p></li>
+<li><p><img src="https://latex.codecogs.com/png.latex?k-x"> is the number of failures in the sample (number of <span style="color: #C1CDCD"><strong>BP-</strong></span> among <span style="color: #EE3A8C"><strong>DEGs</strong></span>) = <img src="https://latex.codecogs.com/png.latex?a_%7B12%7D"> = 6</p></li>
+<li><p><img src="https://latex.codecogs.com/png.latex?m+n"> is the population size (size of <span style="color: #595959"><strong>gene universe</strong></span>) = <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D%20+%20a_%7B12%7D%20+%20a_%7B21%7D%20+%20a_%7B22%7D"> = 32</p></li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -407,7 +407,7 @@ How to interpret the above formula?
 <p>Basically, we are quantifying the number of ways of obtaining a sample of size <img src="https://latex.codecogs.com/png.latex?k"> composed of <img src="https://latex.codecogs.com/png.latex?x"> successes from a total of <img src="https://latex.codecogs.com/png.latex?m"> successes in the population (<img src="https://latex.codecogs.com/png.latex?m+n">) AND the remaining <img src="https://latex.codecogs.com/png.latex?k-x"> elements as failures from a total of <img src="https://latex.codecogs.com/png.latex?n"> failures in the population; of all possible ways of randomly selecting <img src="https://latex.codecogs.com/png.latex?k"> elements from the population.</p>
 </div>
 </div>
-<p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both BP+ and BP- genes. Repeat the experiment multiple times and count the times that 9 of the 15 genes you selected were BP+ (out of 12 BP+ genes in total) and the remaining 6 genes BP- (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (9 BP+ and 6 BP- genes in the sample of 15 DEGs) just by chance.</p>
+<p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both <span style="color: #00C5CD"><strong>BP+</strong></span> and <span style="color: #C1CDCD"><strong>BP-</strong></span> genes. Repeat the experiment multiple times and count the times that 9 of the 15 genes you selected were <span style="color: #00C5CD"><strong>BP+</strong></span> (out of 12 BP+ genes in total) and the remaining 6 genes <span style="color: #C1CDCD"><strong>BP-</strong></span> (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (<strong>9</strong> <span style="color: #00C5CD"><strong>BP+</strong></span> and <strong>6</strong> <span style="color: #C1CDCD"><strong>BP-</strong></span> genes in the sample of <strong>15</strong> <span style="color: #EE3A8C"><strong>DEGs</strong></span>) just by chance.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/experiment.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="547"></p>
@@ -445,7 +445,7 @@ font-style: inherit;">15</span>)</span></code></pre></div>
 <pre><code>[1] 0.01507311</code></pre>
 </div>
 </div>
-<p>Let’s use <code>dhyper()</code> to see the density function for the hypergeometric distribution with the above parameters and confirm we obtain the same probability for <img src="https://latex.codecogs.com/png.latex?x"> = 9.</p>
+<p>Let’s use <code>dhyper()</code> to check the density function for the hypergeometric distribution with the above parameters and confirm we obtain the same probability for <img src="https://latex.codecogs.com/png.latex?x"> = 9.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -628,7 +628,7 @@ font-style: inherit;">"Probability"</span>)</span></code></pre></div>
 <p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/all_tables_extreme.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="494"></p>
 </figure>
 </div>
-<p>We add the probability of the actual table + the probabilities for such more extreme tables in order to get the probability of observing 9 or more DEGs that are BP+ under the null hypothesis:</p>
+<p>We add the probability of the actual table + the probabilities for such more extreme tables in order to get the probability of observing 9 or more <span style="color: #EE3A8C"><strong>DEGs</strong></span> that are <span style="color: #00C5CD"><strong>BP+</strong></span> under the null hypothesis:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -646,8 +646,8 @@ font-style: inherit;">13</span>])</span></code></pre></div>
 <pre><code>[1] 0.01698667</code></pre>
 </div>
 </div>
-<p>Since <em>p</em>&lt;0.05, we reject the null hypothesis and accept that there’s an enrichment of BP+ genes amongst our DEGs, and hence the biological process has a significant positive association with differential gene expression.</p>
-<p>This is called a <strong>one-sided Fisher’s exact test</strong> since we are evaluating probabilities of extreme values at only one side of the density curve; in case of enrichment, for values equal or greater than <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">=9 (see plot below).</p>
+<p>Since <em>p</em>&lt;0.05 we reject the null hypothesis and accept that there’s an enrichment of <span style="color: #00C5CD"><strong>BP+</strong></span> genes amongst our <span style="color: #EE3A8C"><strong>DEGs</strong></span>, and hence the biological process has a significant positive association with differential gene expression.</p>
+<p>This is called a <strong>one-sided Fisher’s exact test</strong> since we are evaluating probabilities of extreme values at only one side of the density curve (values <img src="https://latex.codecogs.com/png.latex?%E2%89%A5a_%7B11%7D">=9 for enrichment; see plot below).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><span class="do" style="color: #5E5E5E;
 background-color: null;

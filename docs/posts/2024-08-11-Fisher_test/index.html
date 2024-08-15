@@ -320,7 +320,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="creating-and-understanding-contingency-tables">1. Creating and understanding contingency tables</h2>
 <p>The following are the required gene sets and their specifications. Please note that when referring to a set of genes, we are specifically referring to the set of gene IDs; that all we need to run this test!</p>
 <ul>
-<li><p><span style="color: #595959"><strong>Gene universe/back</strong></span><span style="color: #595959"><strong>gro</strong></span><span style="color: #595959"><strong>und</strong></span>: these are all the genes that were experimentally measured and interrogated to generate the list of interest genes (our gene set). In our hypothetical scenario this is given by all genes that were assessed for DGE.</p>
+<li><p><span style="color: #595959"><strong>Gene universe/background</strong></span>: these are all the genes that were experimentally measured and interrogated to generate the list of interest genes (our gene set). In our hypothetical scenario this is given by all genes that were assessed for DGE.</p>
 <p>→ Let’s denote as “DE” the variable defining if a gene is differentially expressed (<span style="color: #EE3A8C"><strong>DEG</strong></span>) or not (<span style="color: #D8BFD8"><strong>non-DEG</strong></span>).</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -438,7 +438,7 @@ Important
 <p>The Fisher’s exact test is used to determine the <span style="background-color: #FFFFE0">probability of observing the joint value <span class="math inline">\(a_{11}\)</span> in our table or a more extreme value</span> (for contingency tables with the same fixed marginal totals) under the <strong>null hypothesis (</strong><span class="math inline">\(H_0\)</span><strong>)</strong> that there’s <u>no association between the categorical variables</u>, i.e., that they are independent. These probabilities are referred to as <em>p</em>-values. Smaller probabilities offer strong evidence against the null hypothesis, which is translated into statistical evidence to accept the <strong>alternative hypothesis (</strong><span class="math inline">\(H_A\)</span><strong>)</strong> of <u>association between the two variables</u>.</p>
 <p>This is how it operates:</p>
 <ol type="1">
-<li>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <span class="math inline">\(a_{11}\)</span>: in this case from 0 to 12, which are the min. and max. numbers of genes that can be both <span style="color: #EE3A8C"><strong>DEGs</strong></span> and <span style="color: #00C5CD"><strong>BP+</strong></span>, respectively.</li>
+<li>Given the fixed marginal totals, we first we compute all possible contingency tables by enumerating all possible joint values <span class="math inline">\(a_{11}\)</span>: in this case from 0 to 12, which are the minimum and maximum number of genes that can be both <span style="color: #EE3A8C"><strong>DEGs</strong></span> and <span style="color: #00C5CD"><strong>BP+</strong></span>, respectively.</li>
 </ol>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -446,25 +446,25 @@ Important
 </figure>
 </div>
 <div style="background-color:#F2F2F2; padding: 15px; margin-bottom:0px">
-<div class="line-block">❗️ The top left cell (<span class="math inline">\(a_{11}\)</span>) of each table always corresponds to the joint value positive for both variables under examination (<span style="color: #EE3A8C"><strong>DEG</strong></span> <span style="color: #00C5CD"><strong>BP+</strong></span> genes).</div>
+<div class="line-block">❗️ The top left cell (<span class="math inline">\(a_{11}\)</span>) of each table always corresponds to the joint value positive for both variables under examination (<span style="color: #00C5CD"><strong>BP+</strong></span> <span style="color: #EE3A8C"><strong>DEGs</strong></span>).</div>
 </div>
 <p><img src="images/white_space.png" style="margin: 0px" width="30" height="4"></p>
 <ol start="2" type="1">
 <li><p>Then we estimate the probability of having such joint values in each contingency table under the null hypothesis. To do that we need to calculate the number of ways of obtaining the joint values by randomness in the gene selection process. Only 3 values need to be estimated for that:</p>
 <ol type="1">
-<li><p>The ways of selecting <span class="math inline">\(a_{11} + a_{12}\)</span> = 15 genes (corresponding to the number of DEGs) without replacement from the total genes in the gene universe: <span class="math inline">\({a_{11} + a_{12} + a_{21} + a_{22}} \choose a_{11} + a_{12}\)</span></p>
+<li><p>The ways of selecting <span class="math inline">\(a_{11} + a_{12}\)</span> = 15 genes (corresponding to the number of <span style="color: #EE3A8C"><strong>DEGs</strong></span>) without replacement from the total genes in the <span style="color: #595959"><strong>gene universe</strong></span>: <span class="math inline">\({a_{11} + a_{12} + a_{21} + a_{22}} \choose a_{11} + a_{12}\)</span></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/32_choose_15.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="451"></p>
 </figure>
 </div></li>
-<li><p>The ways of selecting <span class="math inline">\(a_{11}\)</span> = 9 genes (number of BP+ DEGs) without replacement out of the <span class="math inline">\(a_{11} + a_{21}\)</span> = 12 genes in the functional set (BP+ genes): <span class="math inline">\({{a_{11} + a_{21}} \choose a_{11}}\)</span></p>
+<li><p>The ways of selecting <span class="math inline">\(a_{11}\)</span> = 9 genes (number of <span style="color: #00C5CD"><strong>BP+</strong></span> <span style="color: #EE3A8C"><strong>DEGs</strong></span>) without replacement out of the <span class="math inline">\(a_{11} + a_{21}\)</span> = 12 genes in the functional set (<span style="color: #00C5CD"><strong>BP+</strong></span> genes): <span class="math inline">\({{a_{11} + a_{21}} \choose a_{11}}\)</span></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/12_choose_9.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="351"></p>
 </figure>
 </div></li>
-<li><p>The ways of selecting <span class="math inline">\(a_{12}\)</span> = 6 genes (number of BP- DEGs) without replacement out of the <span class="math inline">\(a_{12}+a_{22}\)</span> = 20 genes not in the functional set (BP- genes): <span class="math inline">\({a_{12}+a_{22}}\choose{a_{12}}\)</span></p></li>
+<li><p>The ways of selecting <span class="math inline">\(a_{12}\)</span> = 6 genes (number of <span style="color: #C1CDCD"><strong>BP-</strong></span> <span style="color: #EE3A8C"><strong>DEGs</strong></span>) without replacement out of the <span class="math inline">\(a_{12}+a_{22}\)</span> = 20 genes not in the functional set (<span style="color: #C1CDCD"><strong>BP-</strong></span> genes): <span class="math inline">\({a_{12}+a_{22}}\choose{a_{12}}\)</span></p></li>
 </ol>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -476,16 +476,16 @@ Important
 <p><span class="math display">\[
 p=\frac{{{a_{11}+a_{21}}\choose a_{11}} \times {{a_{12}+a_{22}}\choose{a_{12}}} }{{a_{11}+a_{12}+a_{21}+a_{22}}\choose{a_{11}+a_{12}}}
 \]</span></p>
-<p>This is precisely the probability function for the <a href="#0">hypergeometric distribution</a>, used for sampling <em>without</em> replacement and which we use to test the null hypothesis.</p>
+<p>This is precisely the probability function for the <a href="#0">hypergeometric distribution</a>, used for sampling without replacement and which we use to test the null hypothesis.</p>
 <p><span class="math display">\[
 p(x)=\frac{{m \choose x} {n \choose {k-x}}}{{m+n}\choose k}\]</span></p>
 <ul>
-<li><p><span class="math inline">\(k\)</span> is the sample size (number of DEGs) = <span class="math inline">\(a_{11} + a_{12}\)</span> = 15</p></li>
-<li><p><span class="math inline">\(m\)</span> is the number of successes in the population (number of BP+ genes) = <span class="math inline">\(a_{11} + a_{21}\)</span> = 12</p></li>
-<li><p><span class="math inline">\(n\)</span> is the number of failures in the population (number of BP- genes) = <span class="math inline">\(a_{12} + a_{22}\)</span> = 20</p></li>
-<li><p><span class="math inline">\(x\)</span> is the number of successes in the sample (number of BP+ among DEGs) = <span class="math inline">\(a_{11}\)</span> = 9</p></li>
-<li><p><span class="math inline">\(k-x\)</span> is the number of failures in the sample (number of BP- among DEGs) = <span class="math inline">\(a_{12}\)</span> = 6</p></li>
-<li><p><span class="math inline">\(m+n\)</span> is the population size (size of gene universe) = <span class="math inline">\(a_{11} + a_{12} + a_{21} + a_{22}\)</span> = 32</p></li>
+<li><p><span class="math inline">\(k\)</span> is the sample size (number of <span style="color: #EE3A8C"><strong>DEGs</strong></span>) = <span class="math inline">\(a_{11} + a_{12}\)</span> = 15</p></li>
+<li><p><span class="math inline">\(m\)</span> is the number of successes in the population (number of <span style="color: #00C5CD"><strong>BP+</strong></span> genes) = <span class="math inline">\(a_{11} + a_{21}\)</span> = 12</p></li>
+<li><p><span class="math inline">\(n\)</span> is the number of failures in the population (number of <span style="color: #C1CDCD"><strong>BP-</strong></span> genes) = <span class="math inline">\(a_{12} + a_{22}\)</span> = 20</p></li>
+<li><p><span class="math inline">\(x\)</span> is the number of successes in the sample (number of <span style="color: #00C5CD"><strong>BP+</strong></span> among <span style="color: #EE3A8C"><strong>DEGs</strong></span>) = <span class="math inline">\(a_{11}\)</span> = 9</p></li>
+<li><p><span class="math inline">\(k-x\)</span> is the number of failures in the sample (number of <span style="color: #C1CDCD"><strong>BP-</strong></span> among <span style="color: #EE3A8C"><strong>DEGs</strong></span>) = <span class="math inline">\(a_{12}\)</span> = 6</p></li>
+<li><p><span class="math inline">\(m+n\)</span> is the population size (size of <span style="color: #595959"><strong>gene universe</strong></span>) = <span class="math inline">\(a_{11} + a_{12} + a_{21} + a_{22}\)</span> = 32</p></li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -500,7 +500,7 @@ How to interpret the above formula?
 <p>Basically, we are quantifying the number of ways of obtaining a sample of size <span class="math inline">\(k\)</span> composed of <span class="math inline">\(x\)</span> successes from a total of <span class="math inline">\(m\)</span> successes in the population (<span class="math inline">\(m+n\)</span>) AND the remaining <span class="math inline">\(k-x\)</span> elements as failures from a total of <span class="math inline">\(n\)</span> failures in the population; of all possible ways of randomly selecting <span class="math inline">\(k\)</span> elements from the population.</p>
 </div>
 </div>
-<p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both BP+ and BP- genes. Repeat the experiment multiple times and count the times that 9 of the 15 genes you selected were BP+ (out of 12 BP+ genes in total) and the remaining 6 genes BP- (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (9 BP+ and 6 BP- genes in the sample of 15 DEGs) just by chance.</p>
+<p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both <span style="color: #00C5CD"><strong>BP+</strong></span> and <span style="color: #C1CDCD"><strong>BP-</strong></span> genes. Repeat the experiment multiple times and count the times that 9 of the 15 genes you selected were <span style="color: #00C5CD"><strong>BP+</strong></span> (out of 12 BP+ genes in total) and the remaining 6 genes <span style="color: #C1CDCD"><strong>BP-</strong></span> (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (<strong>9</strong> <span style="color: #00C5CD"><strong>BP+</strong></span> and <strong>6</strong> <span style="color: #C1CDCD"><strong>BP-</strong></span> genes in the sample of <strong>15</strong> <span style="color: #EE3A8C"><strong>DEGs</strong></span>) just by chance.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/experiment.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="547"></p>
@@ -514,7 +514,7 @@ How to interpret the above formula?
 <pre><code>[1] 0.01507311</code></pre>
 </div>
 </div>
-<p>Let’s use <code>dhyper()</code> to see the density function for the hypergeometric distribution with the above parameters and confirm we obtain the same probability for <span class="math inline">\(x\)</span> = 9.</p>
+<p>Let’s use <code>dhyper()</code> to check the density function for the hypergeometric distribution with the above parameters and confirm we obtain the same probability for <span class="math inline">\(x\)</span> = 9.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -567,7 +567,7 @@ How to interpret the above formula?
 <p><img src="images/all_tables_extreme.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="494"></p>
 </figure>
 </div>
-<p>We add the probability of the actual table + the probabilities for such more extreme tables in order to get the probability of observing 9 or more DEGs that are BP+ under the null hypothesis:</p>
+<p>We add the probability of the actual table + the probabilities for such more extreme tables in order to get the probability of observing 9 or more <span style="color: #EE3A8C"><strong>DEGs</strong></span> that are <span style="color: #00C5CD"><strong>BP+</strong></span> under the null hypothesis:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="do">## p(x&gt;=9)</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(probabilities[<span class="dv">10</span><span class="sc">:</span><span class="dv">13</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -575,8 +575,8 @@ How to interpret the above formula?
 <pre><code>[1] 0.01698667</code></pre>
 </div>
 </div>
-<p>Since <em>p</em>&lt;0.05, we reject the null hypothesis and accept that there’s an enrichment of BP+ genes amongst our DEGs, and hence the biological process has a significant positive association with differential gene expression.</p>
-<p>This is called a <strong>one-sided Fisher’s exact test</strong> since we are evaluating probabilities of extreme values at only one side of the density curve; in case of enrichment, for values equal or greater than <span class="math inline">\(a_{11}\)</span>=9 (see plot below).</p>
+<p>Since <em>p</em>&lt;0.05 we reject the null hypothesis and accept that there’s an enrichment of <span style="color: #00C5CD"><strong>BP+</strong></span> genes amongst our <span style="color: #EE3A8C"><strong>DEGs</strong></span>, and hence the biological process has a significant positive association with differential gene expression.</p>
+<p>This is called a <strong>one-sided Fisher’s exact test</strong> since we are evaluating probabilities of extreme values at only one side of the density curve (values <span class="math inline">\(≥a_{11}\)</span>=9 for enrichment; see plot below).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Color in red those x&gt;=9</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">'beige'</span>, <span class="dv">9</span>), <span class="fu">rep</span>(<span class="st">'red'</span>, <span class="dv">4</span>))</span>

@@ -1218,10 +1218,7 @@ What’s the odds ratio?
 <ul>
 <li><p>Odds of <strong><span style="color: #EE3A8C">DE</span></strong> in <strong><span style="color: #00C5CD">BP+</span></strong> genes = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D">: how many times it is more likely to be a <span style="color: #EE3A8C"><strong>DEG</strong></span> than a <span style="color: #D8BFD8"><strong>non-DEG</strong></span> among the genes in the functional set.</p></li>
 <li><p>Odds of <span style="color: #EE3A8C"><strong>DE</strong></span> in <span style="color: #C1CDCD"><strong>BP-</strong></span> genes =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B12%7D%7D%7Ba_%7B22%7D%7D">: how many times it is more likely to be a <span style="color: #EE3A8C"><strong>DEG</strong></span> than a <span style="color: #D8BFD8"><strong>non-DEG</strong></span> among the genes outside the functional set.</p></li>
-</ul>
-<p>Then,</p>
-<ul>
-<li><strong>Odds of <span style="color: #EE3A8C">DE</span> in <span style="color: #00C5CD">BP+</span> vs.&nbsp;<span style="color: #C1CDCD">BP-</span> genes</strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D%20/%20%5Cfrac%7Ba_%7B12%7D%7D%7Ba_%7B22%7D%7D"> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D">: how many times it is more probable to be a <span style="color: #EE3A8C"><strong>DEG</strong></span> among the <span style="color: #00C5CD"><strong>BP+</strong></span> genes than among <span style="color: #C1CDCD"><strong>BP-</strong></span> genes.</li>
+<li><p><strong>Odds of <span style="color: #EE3A8C">DE</span> in <span style="color: #00C5CD">BP+</span> vs.&nbsp;<span style="color: #C1CDCD">BP-</span> genes</strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D%20/%20%5Cfrac%7Ba_%7B12%7D%7D%7Ba_%7B22%7D%7D"> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D">: how many times it is more probable to be a <span style="color: #EE3A8C"><strong>DEG</strong></span> among the <span style="color: #00C5CD"><strong>BP+</strong></span> genes than among <span style="color: #C1CDCD"><strong>BP-</strong></span> genes.</p></li>
 </ul>
 <p>Same thing if we interchange the columns and rows:</p>
 <div class="quarto-figure quarto-figure-center">
@@ -1246,11 +1243,11 @@ What’s the odds ratio?
 <h1>Conclusion</h1>
 <p>The one-sided Fisher’s exact test is a broadly used test in genomics to assess the enrichment of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:</p>
 <ol type="1">
-<li><p>Even though here we focused on the Fisher’s exact test, there are plenty of other methodological and statistical strategies to assess functional enrichment and gene-set enrichment more globally [<a href="https://academic.oup.com/bib/article/22/1/545/5722384" class="uri">https://academic.oup.com/bib/article/22/1/545/5722384</a>]. (IS IT FUNCTIONAL SPECIFICALLY OR GSEA)</p></li>
-<li><p>Here we exemplified the performance of this test with DEGs and functional gene sets, but this over-representation approach doesn’t restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features. The design and interpretation of your analysis will vary from case to case tho.</p></li>
+<li><p>Even though here we focused on the Fisher’s exact test, plenty of other methodological and statistical strategies for gene set functional enrichment have been proposed <span class="citation" data-cites="khatri2012">(Khatri, Sirota, and Butte 2012)</span> &amp; <span class="citation" data-cites="khatri2012">(Khatri, Sirota, and Butte 2012)</span>.</p></li>
+<li><p>Here we exemplified the performance of this test with DEGs and functional gene sets, but this over-representation approach doesn’t restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features/molecules.</p></li>
 <li><p>Intrinsic limitations of this test have been noted:</p>
-<p>i) Even if it can be used to analyze any sets of features as mentioned previously, this test does restrict the analysis to overlaps between feature IDs (in which its simplicity lies), which means that relevant and informative feature metrics are cannot be incorporated, compared to functional class scoring (FCS) methods such as the gene set enrichment analysis (GSEA) developed in <span class="citation" data-cites="subramanian2005">(Subramanian et al. 2005)</span>.</p>
-<p>ii) When analyzing genes, which is usually the case, we assume they are independent features but that’s not necessarily true. Fisher’s test doesn’t take into account gene correlations.</p></li>
+<p>i) This test does restrict the analysis to overlaps between feature IDs and treats them all equally, without being able to incorporate relevant and informative feature metrics, compared to functional class scoring (FCS) methods such as the gene set enrichment analysis (GSEA) developed in <span class="citation" data-cites="subramanian2005">(Subramanian et al. 2005)</span>.</p>
+<p>ii) When analyzing genes we assume they are independent but that’s not necessarily true. Correlation between gene expression of functionally-related genes inflates the number of enrichment discoveries <span class="citation" data-cites="goeman2007">(Goeman and Bühlmann 2007)</span>.</p></li>
 <li><p>Last reminder, Fisher’s exact test works to test enrichment but also depletion, careful with what you are looking to assess, how you run this analysis and how you interpret your results!</p></li>
 </ol>
 <p>Hopefully at this point you have a clearer understanding around this test and feel more prepared to decide if this is appropriate to test your hypothesis based on your data.</p>
@@ -1271,8 +1268,14 @@ What’s the odds ratio?
 <div id="ref-ashburner2000" class="csl-entry">
 Ashburner, Michael, Catherine A. Ball, Judith A. Blake, David Botstein, Heather Butler, J. Michael Cherry, Allan P. Davis, et al. 2000. <span>“Gene Ontology: Tool for the Unification of Biology.”</span> <em>Nature Genetics</em> 25 (1): 25–29. <a href="https://doi.org/10.1038/75556">https://doi.org/10.1038/75556</a>.
 </div>
+<div id="ref-goeman2007" class="csl-entry">
+Goeman, Jelle J., and Peter Bühlmann. 2007. <span>“Analyzing Gene Expression Data in Terms of Gene Sets: Methodological Issues.”</span> <em>Bioinformatics</em> 23 (8): 980–87. <a href="https://doi.org/10.1093/bioinformatics/btm051">https://doi.org/10.1093/bioinformatics/btm051</a>.
+</div>
 <div id="ref-kanehisa2000" class="csl-entry">
 Kanehisa, M. 2000. <span>“KEGG: Kyoto Encyclopedia of Genes and Genomes.”</span> <em>Nucleic Acids Research</em> 28 (1): 27–30. <a href="https://doi.org/10.1093/nar/28.1.27">https://doi.org/10.1093/nar/28.1.27</a>.
+</div>
+<div id="ref-khatri2012" class="csl-entry">
+Khatri, Purvesh, Marina Sirota, and Atul J. Butte. 2012. <span>“Ten Years of Pathway Analysis: Current Approaches and Outstanding Challenges.”</span> Edited by Christos A. Ouzounis. <em>PLoS Computational Biology</em> 8 (2): e1002375. <a href="https://doi.org/10.1371/journal.pcbi.1002375">https://doi.org/10.1371/journal.pcbi.1002375</a>.
 </div>
 <div id="ref-subramanian2005" class="csl-entry">
 Subramanian, Aravind, Pablo Tamayo, Vamsi K. Mootha, Sayan Mukherjee, Benjamin L. Ebert, Michael A. Gillette, Amanda Paulovich, et al. 2005. <span>“Gene Set Enrichment Analysis: A Knowledge-Based Approach for Interpreting Genome-Wide Expression Profiles.”</span> <em>Proceedings of the National Academy of Sciences</em> 102 (43): 15545–50. <a href="https://doi.org/10.1073/pnas.0506580102">https://doi.org/10.1073/pnas.0506580102</a>.

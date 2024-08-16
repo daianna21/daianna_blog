@@ -346,8 +346,6 @@ fisher.test(m, alternative = "two.sided")
 
 -   Odds of [**DE**]{style="color: #EE3A8C"} in [**BP-**]{style="color: #C1CDCD"} genes =$\frac{a_{12}}{a_{22}}$: how many times it is more likely to be a [**DEG**]{style="color: #EE3A8C"} than a [**non-DEG**]{style="color: #D8BFD8"} among the genes outside the functional set.
 
-Then,
-
 -   **Odds of [DE]{style="color: #EE3A8C"} in [BP+]{style="color: #00C5CD"} vs. [BP-]{style="color: #C1CDCD"} genes** = $\frac{a_{11}}{a_{21}} / \frac{a_{12}}{a_{22}}$ = $\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$: how many times it is more probable to be a [**DEG**]{style="color: #EE3A8C"} among the [**BP+**]{style="color: #00C5CD"} genes than among [**BP-**]{style="color: #C1CDCD"} genes.
 
 Same thing if we interchange the columns and rows:
@@ -373,15 +371,15 @@ The OR returned by `fisher.test()` differs slightly from this formula as they ar
 
 The one-sided Fisher's exact test is a broadly used test in genomics to assess the enrichment of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:
 
-1.  Even though here we focused on the Fisher's exact test, there are plenty of other methodological and statistical strategies to assess functional enrichment and gene-set enrichment more globally \[<https://academic.oup.com/bib/article/22/1/545/5722384>\]. (IS IT FUNCTIONAL SPECIFICALLY OR GSEA)
+1.  Even though here we focused on the Fisher's exact test, plenty of other methodological and statistical strategies for gene set functional enrichment have been proposed [@khatri2012] & [@khatri2012].
 
-2.  Here we exemplified the performance of this test with DEGs and functional gene sets, but this over-representation approach doesn't restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features. The design and interpretation of your analysis will vary from case to case tho.
+2.  Here we exemplified the performance of this test with DEGs and functional gene sets, but this over-representation approach doesn't restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features/molecules.
 
 3.  Intrinsic limitations of this test have been noted:
 
-    i\) Even if it can be used to analyze any sets of features as mentioned previously, this test does restrict the analysis to overlaps between feature IDs (in which its simplicity lies), which means that relevant and informative feature metrics are cannot be incorporated, compared to functional class scoring (FCS) methods such as the gene set enrichment analysis (GSEA) developed in [@subramanian2005].
+    i\) This test does restrict the analysis to overlaps between feature IDs and treats them all equally, without being able to incorporate relevant and informative feature metrics, compared to functional class scoring (FCS) methods such as the gene set enrichment analysis (GSEA) developed in [@subramanian2005].
 
-    ii\) When analyzing genes, which is usually the case, we assume they are independent features but that's not necessarily true. Fisher's test doesn't take into account gene correlations.
+    ii\) When analyzing genes we assume they are independent but that's not necessarily true. Correlation between gene expression of functionally-related genes inflates the number of enrichment discoveries [@goeman2007].
 
 4.  Last reminder, Fisher's exact test works to test enrichment but also depletion, careful with what you are looking to assess, how you run this analysis and how you interpret your results!
 

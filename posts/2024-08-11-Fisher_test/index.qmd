@@ -14,7 +14,7 @@ categories:
   - "GO"
   - "KEGG"
   - "Functional enrichment"
-image: ""
+image: "images/Fishers_logo.png"
 bibliography: references.bib
 ---
 

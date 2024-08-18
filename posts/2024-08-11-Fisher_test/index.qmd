@@ -162,7 +162,7 @@ $$
  p=\frac{{{a_{11}+a_{21}}\choose a_{11}} \times {{a_{12}+a_{22}}\choose{a_{12}}} }{{a_{11}+a_{12}+a_{21}+a_{22}}\choose{a_{11}+a_{12}}}
 $$
 
-This is precisely the probability function for the [hypergeometric distribution](#0), used for sampling without replacement and which we use to test the null hypothesis.
+This is precisely the probability function for the [hypergeometric distribution](https://www.pathwaycommons.org/guide/primers/statistics/distributions/#hypergeometric), used for sampling without replacement and which we use to test the null hypothesis.
 
 $$
 p(x)=\frac{{m \choose x} {n \choose {k-x}}}{{m+n}\choose k}$$
@@ -187,7 +187,7 @@ Basically, we are quantifying the number of ways of obtaining a sample of size $
 
 Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both [**BP+**]{style="color: #00C5CD"} and [**BP-**]{style="color: #C1CDCD"} genes. Repeat the experiment multiple times and count the times that 9 of the 15 genes you selected were [**BP+**]{style="color: #00C5CD"} (out of 12 BP+ genes in total) and the remaining 6 genes [**BP-**]{style="color: #C1CDCD"} (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (**9** [**BP+**]{style="color: #00C5CD"} and **6** [**BP-**]{style="color: #C1CDCD"} genes in the sample of **15** [**DEGs**]{style="color: #EE3A8C"}) just by chance.
 
-![](images/experiment2.png){fig-align="center" width="491"}
+![](images/experiment2.png){fig-align="center" width="597"}
 
 For our actual contingency table $p(x=9)=\frac{{12 \choose 9} \times {20\choose6}}{32\choose15}$:
 
@@ -289,12 +289,14 @@ ggplot(df, aes(x=x, y=p, label=p, fill=colors)) +
 				labs(x = "Number of BP+ DEGs", y = "Probability")
 ```
 
-In this case we use `fisher.test(alternative = ”less”)`:
-
 ```{r}
 ## p-value:
 sum(probabilities[1:10])
+```
 
+In this case we use `fisher.test(alternative = ”less”)` and obtain the same *p*-value.
+
+```{r}
 ## Same with fisher.test(alternative = "less")
 fisher.test(m, alternative = "less")	
 ```
@@ -342,11 +344,11 @@ fisher.test(m, alternative = "two.sided")
 
 ![](images/odds_m.png){style="margin: 0px" fig-align="center" width="334"}
 
--   Odds of **[DE]{style="color: #EE3A8C"}** in **[BP+]{style="color: #00C5CD"}** genes = $\frac{a_{11}}{a_{21}}$: how many times it is more likely to be a [**DEG**]{style="color: #EE3A8C"} than a [**non-DEG**]{style="color: #D8BFD8"} among the genes in the functional set.
+-   Odds of **[DE]{style="color: #EE3A8C"}** in **[BP+]{style="color: #00C5CD"}** genes = $\frac{a_{11}}{a_{21}}$: how many times it is more likely to be a DEG than a non-DEG among the genes in the functional set.
 
--   Odds of [**DE**]{style="color: #EE3A8C"} in [**BP-**]{style="color: #C1CDCD"} genes =$\frac{a_{12}}{a_{22}}$: how many times it is more likely to be a [**DEG**]{style="color: #EE3A8C"} than a [**non-DEG**]{style="color: #D8BFD8"} among the genes outside the functional set.
+-   Odds of [**DE**]{style="color: #EE3A8C"} in [**BP-**]{style="color: #C1CDCD"} genes =$\frac{a_{12}}{a_{22}}$: how many times it is more likely to be a DEG than a non-DEG among the genes outside the functional set.
 
--   **Odds of [DE]{style="color: #EE3A8C"} in [BP+]{style="color: #00C5CD"} vs. [BP-]{style="color: #C1CDCD"} genes** = $\frac{a_{11}}{a_{21}} / \frac{a_{12}}{a_{22}}$ = $\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$: how many times it is more probable to be a [**DEG**]{style="color: #EE3A8C"} among the [**BP+**]{style="color: #00C5CD"} genes than among [**BP-**]{style="color: #C1CDCD"} genes.
+-   **Odds of [DE]{style="color: #EE3A8C"} in [BP+]{style="color: #00C5CD"} vs. [BP-]{style="color: #C1CDCD"} genes** = $\frac{a_{11}}{a_{21}} / \frac{a_{12}}{a_{22}}$ = $\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$: how many times it is more probable to be a DEG among the BP+ genes than among BP- genes.
 
 Same thing if we interchange the columns and rows:
 
@@ -356,7 +358,7 @@ Same thing if we interchange the columns and rows:
 
 -   Odds of being **[BP+]{style="color: #00C5CD"}** in **[non-DEGs]{style="color: #D8BFD8"}** = $\frac{a_{21}}{a_{22}}$
 
--   **Odds ratio (OR) =** odds of being [**BP+**]{style="color: #00C5CD"} in [**DEGs**]{style="color: #EE3A8C"} vs. **[non-DEGs]{style="color: #D8BFD8"}**: $\frac{a_{11}}{a_{12}} / \frac{a_{21}}{a_{22}}$ =$\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$
+-   **Odds ratio (OR) =** odds of being BP+ in DEGs vs. non-DEGs: $\frac{a_{11}}{a_{12}} / \frac{a_{21}}{a_{22}}$ =$\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$
 
 If OR\>1 then it is more likely to be a [**BP+**]{style="color: #00C5CD"} gene among the group of [**DEGs**]{style="color: #EE3A8C"}→ **positive association** between the two variables.
 

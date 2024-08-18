@@ -489,7 +489,7 @@ Important
 <p><span class="math display">\[
 p=\frac{{{a_{11}+a_{21}}\choose a_{11}} \times {{a_{12}+a_{22}}\choose{a_{12}}} }{{a_{11}+a_{12}+a_{21}+a_{22}}\choose{a_{11}+a_{12}}}
 \]</span></p>
-<p>This is precisely the probability function for the <a href="#0">hypergeometric distribution</a>, used for sampling without replacement and which we use to test the null hypothesis.</p>
+<p>This is precisely the probability function for the <a href="https://www.pathwaycommons.org/guide/primers/statistics/distributions/#hypergeometric">hypergeometric distribution</a>, used for sampling without replacement and which we use to test the null hypothesis.</p>
 <p><span class="math display">\[
 p(x)=\frac{{m \choose x} {n \choose {k-x}}}{{m+n}\choose k}\]</span></p>
 <ul>
@@ -516,7 +516,7 @@ How to interpret the above formula?
 <p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both <span style="color: #00C5CD"><strong>BP+</strong></span> and <span style="color: #C1CDCD"><strong>BP-</strong></span> genes. Repeat the experiment multiple times and count the times that 9 of the 15 genes you selected were <span style="color: #00C5CD"><strong>BP+</strong></span> (out of 12 BP+ genes in total) and the remaining 6 genes <span style="color: #C1CDCD"><strong>BP-</strong></span> (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (<strong>9</strong> <span style="color: #00C5CD"><strong>BP+</strong></span> and <strong>6</strong> <span style="color: #C1CDCD"><strong>BP-</strong></span> genes in the sample of <strong>15</strong> <span style="color: #EE3A8C"><strong>DEGs</strong></span>) just by chance.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/experiment2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="491"></p>
+<p><img src="images/experiment2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="597"></p>
 </figure>
 </div>
 <p>For our actual contingency table <span class="math inline">\(p(x=9)=\frac{{12 \choose 9} \times {20\choose6}}{32\choose15}\)</span>:</p>
@@ -693,13 +693,15 @@ odds ratio
 </div>
 </div>
 </div>
-<p>In this case we use <code>fisher.test(alternative = ”less”)</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="do">## p-value:</span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(probabilities[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.9980864</code></pre>
 </div>
+</div>
+<p>In this case we use <code>fisher.test(alternative = ”less”)</code> and obtain the same <em>p</em>-value.</p>
+<div class="cell">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Same with fisher.test(alternative = "less")</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fisher.test</span>(m, <span class="at">alternative =</span> <span class="st">"less"</span>)    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -750,7 +752,7 @@ odds ratio
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -789,9 +791,9 @@ What’s the odds ratio?
 </figure>
 </div>
 <ul>
-<li><p>Odds of <strong><span style="color: #EE3A8C">DE</span></strong> in <strong><span style="color: #00C5CD">BP+</span></strong> genes = <span class="math inline">\(\frac{a_{11}}{a_{21}}\)</span>: how many times it is more likely to be a <span style="color: #EE3A8C"><strong>DEG</strong></span> than a <span style="color: #D8BFD8"><strong>non-DEG</strong></span> among the genes in the functional set.</p></li>
-<li><p>Odds of <span style="color: #EE3A8C"><strong>DE</strong></span> in <span style="color: #C1CDCD"><strong>BP-</strong></span> genes =<span class="math inline">\(\frac{a_{12}}{a_{22}}\)</span>: how many times it is more likely to be a <span style="color: #EE3A8C"><strong>DEG</strong></span> than a <span style="color: #D8BFD8"><strong>non-DEG</strong></span> among the genes outside the functional set.</p></li>
-<li><p><strong>Odds of <span style="color: #EE3A8C">DE</span> in <span style="color: #00C5CD">BP+</span> vs.&nbsp;<span style="color: #C1CDCD">BP-</span> genes</strong> = <span class="math inline">\(\frac{a_{11}}{a_{21}} / \frac{a_{12}}{a_{22}}\)</span> = <span class="math inline">\(\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}\)</span>: how many times it is more probable to be a <span style="color: #EE3A8C"><strong>DEG</strong></span> among the <span style="color: #00C5CD"><strong>BP+</strong></span> genes than among <span style="color: #C1CDCD"><strong>BP-</strong></span> genes.</p></li>
+<li><p>Odds of <strong><span style="color: #EE3A8C">DE</span></strong> in <strong><span style="color: #00C5CD">BP+</span></strong> genes = <span class="math inline">\(\frac{a_{11}}{a_{21}}\)</span>: how many times it is more likely to be a DEG than a non-DEG among the genes in the functional set.</p></li>
+<li><p>Odds of <span style="color: #EE3A8C"><strong>DE</strong></span> in <span style="color: #C1CDCD"><strong>BP-</strong></span> genes =<span class="math inline">\(\frac{a_{12}}{a_{22}}\)</span>: how many times it is more likely to be a DEG than a non-DEG among the genes outside the functional set.</p></li>
+<li><p><strong>Odds of <span style="color: #EE3A8C">DE</span> in <span style="color: #00C5CD">BP+</span> vs.&nbsp;<span style="color: #C1CDCD">BP-</span> genes</strong> = <span class="math inline">\(\frac{a_{11}}{a_{21}} / \frac{a_{12}}{a_{22}}\)</span> = <span class="math inline">\(\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}\)</span>: how many times it is more probable to be a DEG among the BP+ genes than among BP- genes.</p></li>
 </ul>
 <p>Same thing if we interchange the columns and rows:</p>
 <div class="quarto-figure quarto-figure-center">
@@ -802,7 +804,7 @@ What’s the odds ratio?
 <ul>
 <li><p>Odds of being <strong><span style="color: #00C5CD">BP+</span></strong> in <strong><span style="color: #EE3A8C">DEGs</span></strong> = <span class="math inline">\(\frac{a_{11}}{a_{12}}\)</span></p></li>
 <li><p>Odds of being <strong><span style="color: #00C5CD">BP+</span></strong> in <strong><span style="color: #D8BFD8">non-DEGs</span></strong> = <span class="math inline">\(\frac{a_{21}}{a_{22}}\)</span></p></li>
-<li><p><strong>Odds ratio (OR) =</strong> odds of being <span style="color: #00C5CD"><strong>BP+</strong></span> in <span style="color: #EE3A8C"><strong>DEGs</strong></span> vs.&nbsp;<strong><span style="color: #D8BFD8">non-DEGs</span></strong>: <span class="math inline">\(\frac{a_{11}}{a_{12}} / \frac{a_{21}}{a_{22}}\)</span> =<span class="math inline">\(\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}\)</span></p></li>
+<li><p><strong>Odds ratio (OR) =</strong> odds of being BP+ in DEGs vs.&nbsp;non-DEGs: <span class="math inline">\(\frac{a_{11}}{a_{12}} / \frac{a_{21}}{a_{22}}\)</span> =<span class="math inline">\(\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}\)</span></p></li>
 </ul>
 <p>If OR&gt;1 then it is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span> gene among the group of <span style="color: #EE3A8C"><strong>DEGs</strong></span>→ <strong>positive association</strong> between the two variables.</p>
 <p>If OR&lt;1 then is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span> gene among the group of <span style="color: #D8BFD8"><strong>non-DEGs</strong></span>→ <strong>negative association</strong> between the two variables.</p>

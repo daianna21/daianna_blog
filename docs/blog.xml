@@ -423,7 +423,7 @@ How to interpret the above formula?
 <p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both <span style="color: #00C5CD"><strong>BP+</strong></span> and <span style="color: #C1CDCD"><strong>BP-</strong></span> genes. Repeat the experiment multiple times and count the times that 9 of the 15 genes you selected were <span style="color: #00C5CD"><strong>BP+</strong></span> (out of 12 BP+ genes in total) and the remaining 6 genes <span style="color: #C1CDCD"><strong>BP-</strong></span> (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (<strong>9</strong> <span style="color: #00C5CD"><strong>BP+</strong></span> and <strong>6</strong> <span style="color: #C1CDCD"><strong>BP-</strong></span> genes in the sample of <strong>15</strong> <span style="color: #EE3A8C"><strong>DEGs</strong></span>) just by chance.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/experiment.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="547"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/experiment2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="491"></p>
 </figure>
 </div>
 <p>For our actual contingency table <img src="https://latex.codecogs.com/png.latex?p(x=9)=%5Cfrac%7B%7B12%20%5Cchoose%209%7D%20%5Ctimes%20%7B20%5Cchoose6%7D%7D%7B32%5Cchoose15%7D">:</p>

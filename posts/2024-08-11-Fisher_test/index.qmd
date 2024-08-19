@@ -26,7 +26,7 @@ Now, what comes after that? If you found a few genes, you can do a little of res
 
 So what’s to do? We need to start thinking of these **genes as a unique [set]{.underline}** with its own properties, and ask questions such as *what do these genes have in common?* *what makes them being involved or affected by the condition under study*, and *what does that imply for cell functionality?*
 
-**Functional enrichment analysis** based on the [**one-sided Fisher's exact test**]{style="background-color: #FFF68F"} aims to test whether [**our genes [as a set]{.underline}**]{style="color: #EE3A8C"} are associated with certain cellular properties or functions by assessing if *sets of known genes that share biological activities or attributes* ([**functional gene sets**]{style="color: #00C5CD"}), have a statistically significant **large overlap** with our genes, i.e., if such functional gene sets are, what we call [**over-represented**]{.underline} (or [**enriched**]{.underline}, which is the same), among our genes. Stay on this post to learn more about how this test operates and how to understand and apply it to analyze sets of genes.
+**Functional enrichment analysis** based on the [**one-sided Fisher's exact test**]{style="background-color: #FFF68F"} (aka over-representation analysis (ORA) in the field) aims to test whether [**our genes [as a set]{.underline}**]{style="color: #EE3A8C"} are associated with certain cellular properties or functions by assessing if *sets of known genes that share biological activities or attributes* ([**functional gene sets**]{style="color: #00C5CD"}), have a statistically significant **large overlap** with our genes, i.e., if such functional gene sets are, what we call [**over-represented**]{.underline} (or [**enriched**]{.underline}, which is the same), among our genes. Stay on this post to learn more about how this test operates and how to understand and apply it to analyze sets of genes.
 
 # What you'll learn here
 
@@ -371,9 +371,9 @@ The OR returned by `fisher.test()` differs slightly from this formula as they ar
 
 # Conclusion
 
-The one-sided Fisher's exact test is a broadly used test in genomics to assess the enrichment of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:
+The one-sided Fisher's exact test is a popular test used in omics to assess the enrichment of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its fast running times, and simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:
 
-1.  Even though here we focused on the Fisher's exact test, plenty of other methodological and statistical strategies for gene set functional enrichment have been proposed [@khatri2012] & [@khatri2012].
+1.  Even though here we focused on the Fisher's exact test, plenty of other methodological and statistical strategies for gene set functional enrichment have been proposed [@khatri2012] & [@geistlinger2020].
 
 2.  Here we exemplified the performance of this test with DEGs and functional gene sets, but this over-representation approach doesn't restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features/molecules.
 
@@ -381,9 +381,11 @@ The one-sided Fisher's exact test is a broadly used test in genomics to assess t
 
     i\) This test does restrict the analysis to overlaps between feature IDs and treats them all equally, without being able to incorporate relevant and informative feature metrics, compared to functional class scoring (FCS) methods such as the gene set enrichment analysis (GSEA) developed in [@subramanian2005].
 
-    ii\) When analyzing genes we assume they are independent but that's not necessarily true. Correlation between gene expression of functionally-related genes inflates the number of enrichment discoveries [@goeman2007].
+    ii\) When analyzing genes we assume they are independent but that's not necessarily true. Correlation between gene expression of functionally-related genes inflates the number of false enrichment discoveries [@goeman2007].
 
-4.  Last reminder, Fisher's exact test works to test enrichment but also depletion, careful with what you are looking to assess, how you run this analysis and how you interpret your results!
+    Despite critics, ORA has proven to yield biologically relevant results and is widely recommended [@geistlinger2020].
+
+4.  Last reminder, Fisher's exact test works to test enrichment but also depletion, careful with what you are trying to answer, how you run this analysis and how you interpret your results!
 
 Hopefully at this point you have a clearer understanding around this test and feel more prepared to decide if this is appropriate to test your hypothesis based on your data.
 
@@ -394,3 +396,8 @@ Hopefully at this point you have a clearer understanding around this test and fe
     The Bioconductor 2018 Workshop Compilation, Chapter 9 <https://bioconductor.github.io/BiocWorkshops>
 
 2.  Material from Bioc2020 (4th edition): <https://github.com/waldronlab/enrichOmics> <https://www.youtube.com/watch?v=n0vVwuQSZkg>
+
+::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
+| 📑 **Bioconductor 2018 Workshop:**
+| de Leeuw, C. A., Mooij, J. M., Heskes, T., & Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data. *PLoS computational biology*, *11*(4), e1004219. [https://doi.org/10.1371/journal.pcbi.1004219](https://doi.org/10.1371/journal.pcbi.1004219https://doi.org/10.1371/journal.pcbi.1004219)
+:::

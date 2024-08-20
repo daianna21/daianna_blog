@@ -1,10 +1,10 @@
 ---
 title: "Fisher's exact test for enrichment analysis of gene sets"
 description: |
- A complete and interpretable explanation of the Fisher's exact test in the context of gene set-based enrichment analysis. The genomic applicability of this test is exemplified with a functional enrichment analysis for DEGs. 
+ A complete and interpretable explanation of the Fisher's exact test in the context of gene set-based enrichment analysis. The transcriptomic applicability of this test is exemplified with a functional enrichment analysis for DEGs. 
 author:
   - name: Daianna Gonzalez-Padilla
-date: 2024-08-14
+date: 2024-08-19
 categories:
   - "Fisher's exact test"
   - "overrepresentation"
@@ -20,7 +20,7 @@ bibliography: references.bib
 
 # Introduction
 
-Imagine you have analyzed high-throughput omics data and have ended up with a list of candidate/interest genes. These genes could be, for instance, differently expressed genes (DEGs), genes associated with a certain disease, genes affected by risk SNPs, markers for cell types, etc. Any list of **experimentally-derived genes** with biological or clinical relevance applies.
+Imagine you have analyzed high-throughput omics data and have ended up with a list of candidate/interest genes. These genes could be, for instance, differentially expressed genes (DEGs), genes associated with a certain disease, genes affected by risk SNPs, markers for cell types, etc. Any list of **experimentally-derived genes** with biological or clinical relevance applies.
 
 Now, what comes after that? If you found a few genes, you can do a little of research about them and make sense of your results, but what if you got thousands of genes? That's not an easy task anymore and becomes unscalable. Moreover, despite each individual found gene providing valuable information, we can reveal more definite insights by studying all genes at the same time.
 
@@ -33,16 +33,16 @@ So what’s to do? We need to start thinking of these **genes as a unique [set]{
 1.  Comprehend the purpose and the basics of a functional enrichment analysis based on gene sets.
 2.  Understand the probabilistic and statistic foundations of the Fisher's exact test and interpret it with gene sets.
 3.  Clarify the required input gene sets to correctly perform this analysis.
-4.  Learn how to run this test using R.
+4.  Learn how to run this test using R and understand the outputs.
 5.  Differentiate **enrichment** vs. **depletion** when performing this test.
 
 # The Fisher's exact test
 
 This is a classical statistical test based on the hypergeometric distribution (thus also called **hypergeometric test**) used to assess if there is a significant association between two categorical binary variables, such as differential expression of the genes and their involvement in a specific biological process. The association of the two variables is calculated in terms of the **intersection size** between their elements.
 
-For illustrative purposes to show the application of this test for gene set-based functional enrichment analysis, imagine we have run a differential gene expression analysis (DGE) for a condition and have obtained a list of DEGs. As part of downstream analyses, we want to know how many of such DEGs participate in a specific biological process of interest and if that number significantly deviates from what is expected by chance.
+For illustrative purposes to show the application of this test in gene set-based functional enrichment analysis, imagine we have run a differential gene expression analysis (DGE) for a condition and have obtained a list of DEGs. As part of downstream analyses, we want to know how many of such DEGs participate in a specific biological process of interest and if that number significantly deviates from what is expected by chance.
 
-In the next sections we'll go into more detail on how to demarcate the required sets of genes, represent them in contingency tables, assess enrichment (or depletion) in R, and how to interpret this test and its results.
+In the next sections we'll go into more detail on how to demarcate the required sets of genes for this test, represent them in contingency tables, assess enrichment (or depletion) in R, and how to interpret this test and its results.
 
 ## 1. Creating and understanding contingency tables
 
@@ -60,12 +60,12 @@ The following are the required gene sets and their specifications. Please note t
 
 -   [**Experimentally-derived gene set**]{style="color: #EE3A8C"} (our gene set): a list of interest genes derived from our experimental measurements and analyses, and to which we want to assign biological meanings. In our example case this is the list of DEGs from the [**gene universe**]{style="color: #595959"}.
 
--   [**Functional gene set**]{style="color: #00C5CD"}: a set of genes with shared biological attributes (e.g. participation in a pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via databases such as [Gene Ontology (GO)](https://geneontology.org) [@ashburner2000] and the [Kyoto encyclopedia of genes and genomes (KEGG)](https://www.kegg.jp) [@kanehisa2000].
+-   [**Functional gene set**]{style="color: #00C5CD"}: a set of genes with shared biological attributes (e.g. participation in a pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via knowledgebases such as [Gene Ontology (GO)](https://geneontology.org) [@ashburner2000] and the [Kyoto encyclopedia of genes and genomes (KEGG)](https://www.kegg.jp) [@kanehisa2000].
 
     → Let's denote as "BP" the variable determining if a gene is involved in the biological process ([**BP+**]{style="color: #00C5CD"}) or not ([**BP-**]{style="color: #C1CDCD"}).
 
 ::: callout-important
-There may be cases where you have some genes in your functional set that are not present in the gene universe. Since they were not tested for DGE we can't categorize them as DEGs or non-DEGs. Despite this, given that most genes are non-DEGs and we often assume that, you can either consider them non-DEGs or exclude them from the analysis to avoid introducing ambiguous information.
+There may be cases where you have some genes in your functional set that are not present in the gene universe. Since they were not tested for DGE we can't categorize them as DEGs or non-DEGs. Despite this, given that we often assume most genes are non-DEGs, you can either consider them as such or exclude them from the analysis to avoid introducing ambiguous information.
 :::
 
 Fisher's exact test aims to detect functional gene sets whose genes are unusually represented (**enriched**/**over-represented** or **under-represented**) in our set of interest genes. That is, if there's a large (or small) overlap between the genes of the functional set (BP+ genes in this case) and the genes we classified as relevant from our data (DEGs in this case).
@@ -74,10 +74,10 @@ Following our hypothetical example, let's suppose we have analyzed DGE for a tot
 
 ![](images/contingency_table_3.png){fig-align="center" width="421"}
 
-The numbers of [**DEGs**]{style="color: #EE3A8C"}, [**non-DEG**]{style="color: #D8BFD8"}, [**BP+**]{style="color: #00C5CD"} genes, and [**BP-**]{style="color: #C1CDCD"} genes are called the *marginal values*, as they lie on the periphery of this 2x2 table. The middle cells ($a$'s) are the *joint values*, as they contain the overlap between the categories of the two variables.
+The numbers of [**DEGs**]{style="color: #EE3A8C"}, [**non-DEGs**]{style="color: #D8BFD8"}, [**BP+**]{style="color: #00C5CD"} genes, and [**BP-**]{style="color: #C1CDCD"} genes are called the *marginal values*, as they lie on the periphery of this 2x2 table. The middle cells ($a$'s) are the *joint values*, as they represent the overlap between the categories of the two variables.
 
 ::: callout-note
-Note that by changing only one joint value, say $a_{11}$, all the remaining joint values will be already determined since the marginals are fixed. In that way we can describe whole contingency tables with only their $a_{11}$ corner values.
+Note that by modifying only one joint value, say $a_{11}$, all the remaining joint values will be already determined since the marginals are fixed. In that way we can describe whole contingency tables with only their $a_{11}$ corner values.
 :::
 
 ```{r}
@@ -99,7 +99,7 @@ non_DEGs <- gene_universe[!gene_universe %in% DEGs]
 ## Functional set of 12 BP+ genes (with 9 being DEGs)
 funct_gene_set <- c(sample(DEGs, 9, replace = FALSE), sample(non_DEGs, 3, replace = FALSE))
 length(unique(funct_gene_set))
-## BP- genes
+## BP- genes: genes in universe not in functional set
 genes_not_func_set <- gene_universe[!gene_universe %in% funct_gene_set]
 
 ## Intersections:
@@ -123,7 +123,7 @@ m
 ```
 
 ::: callout-important
-When we test for "association" between DE and BP note that it could be either **positive** or **negative**, with the former implying a larger overlap between DEGs and BP+ genes, and thus corresponding to **enrichment**, and the latter implying a smaller overlap and thus meaning **depletion**. We'll also delve into the statistical implications of each type of association in the next section.
+When we test for "association" between DE and BP note that it could be either **positive** or **negative**, with the former implying a larger overlap between DEGs and BP+ genes, and thus corresponding to **enrichment**, and the latter implying a smaller overlap and thus meaning **depletion**. We'll also delve into the statistical implications of each type of association in the next sections.
 :::
 
 ## 2. Testing for gene-set enrichment
@@ -182,7 +182,7 @@ p(x)=\frac{{m \choose x} {n \choose {k-x}}}{{m+n}\choose k}$$
 ::: callout-tip
 ## How to interpret the above formula?
 
-Basically, we are quantifying the number of ways of obtaining a sample of size $k$ composed of $x$ successes from a total of $m$ successes in the population ($m+n$) AND the remaining $k-x$ elements as failures from a total of $n$ failures in the population; of all possible ways of randomly selecting $k$ elements from the population.
+Basically, we are quantifying the number of ways of obtaining a sample of size $k$ composed of $x$ successes from a total of $m$ successes in the population AND the remaining $k-x$ elements as failures from a total of $n$ failures in the population; of all possible ways of randomly selecting $k$ elements from the population.
 :::
 
 Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both [**BP+**]{style="color: #00C5CD"} and [**BP-**]{style="color: #C1CDCD"} genes. Repeat the experiment multiple times and count the times that 9 of the 15 genes you selected were [**BP+**]{style="color: #00C5CD"} (out of 12 BP+ genes in total) and the remaining 6 genes [**BP-**]{style="color: #C1CDCD"} (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (**9** [**BP+**]{style="color: #00C5CD"} and **6** [**BP-**]{style="color: #C1CDCD"} genes in the sample of **15** [**DEGs**]{style="color: #EE3A8C"}) just by chance.
@@ -197,7 +197,7 @@ choose(12,9)*choose(20,6) / choose(32,15)
 
 ```
 
-Let's use `dhyper()` to check the density function for the hypergeometric distribution with the above parameters and confirm we obtain the same probability for $x$ = 9.
+Let's use `dhyper()` to obtain the density function for the hypergeometric distribution with the above parameters and confirm we get the same probability for $x$ = 9.
 
 ```{r}
 library(ggplot2)
@@ -236,9 +236,9 @@ sum(probabilities[10:13])
 
 ```
 
-Since *p*\<0.05 we reject the null hypothesis and accept that there's an enrichment of [**BP+**]{style="color: #00C5CD"} genes amongst our [**DEGs**]{style="color: #EE3A8C"}, and hence the biological process has a significant positive association with differential gene expression.
+Since *p* \<0.05 we reject the null hypothesis and accept that there's an enrichment of [**BP+**]{style="color: #00C5CD"} genes amongst our [**DEGs**]{style="color: #EE3A8C"}, and hence the biological process has a significant positive association with differential gene expression.
 
-This is called a **one-sided Fisher's exact test** as we are evaluating probabilities of extreme values at only one side of the density curve (values $a_{11}$≥9 for enrichment; see plot below).
+This is called a **one-sided Fisher's exact test** as we are evaluating probabilities of extreme values on only one side of the density curve (values $a_{11}$≥9 for enrichment; see plot below).
 
 ```{r}
 ## Color in red those x>=9
@@ -303,9 +303,9 @@ fisher.test(m, alternative = "less")
 
 ## **Two-sided test**
 
-The **two-sided Fisher’s exact test** is based on both tails of the hypergeometric distribution and thus is used when we are interested in both enrichment and depletion, i.e., if there's any association between the variables irrespective of the sign.
+The **two-sided Fisher’s exact test** is based on both tails of the hypergeometric distribution and is thus used when we want to evaluate if there's any association between the variables irrespective of the sign (assessing for both enrichment and depletion).
 
-One approach to account for extreme values on both sides is to double the sum of the extreme tables' probabilities at one side (one-sided *p*-value):
+One approach to account for extreme values on both sides is to double the sum of the extreme tables' probabilities on one side (i.e. the one-sided *p*-value):
 
 ```{r}
 ## p-value
@@ -335,7 +335,6 @@ ggplot(df, aes(x=x, y=p, label=p, fill=colors)) +
 We get the same result using `fisher.test(alternative = ”two.sided”)`:
 
 ```{r}
-## With fisher.test(alternative = ”two.sided”)
 fisher.test(m, alternative = "two.sided")	
 ```
 
@@ -348,7 +347,7 @@ fisher.test(m, alternative = "two.sided")
 
 -   Odds of [**DE**]{style="color: #EE3A8C"} in [**BP-**]{style="color: #C1CDCD"} genes =$\frac{a_{12}}{a_{22}}$: how many times it is more likely to be a DEG than a non-DEG among the genes outside the functional set.
 
--   **Odds of [DE]{style="color: #EE3A8C"} in [BP+]{style="color: #00C5CD"} vs. [BP-]{style="color: #C1CDCD"} genes** = $\frac{a_{11}}{a_{21}} / \frac{a_{12}}{a_{22}}$ = $\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$: how many times it is more probable to be a DEG among the BP+ genes than among BP- genes.
+-   **Odds ratio (OR) of [DE]{style="color: #EE3A8C"} in [BP+]{style="color: #00C5CD"} vs. [BP-]{style="color: #C1CDCD"} genes** = $\frac{a_{11}}{a_{21}} / \frac{a_{12}}{a_{22}}$ = $\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$: how many times it is more probable to be a DEG among the BP+ genes than among BP- genes.
 
 Same thing if we interchange the columns and rows:
 
@@ -358,7 +357,7 @@ Same thing if we interchange the columns and rows:
 
 -   Odds of being **[BP+]{style="color: #00C5CD"}** in **[non-DEGs]{style="color: #D8BFD8"}** = $\frac{a_{21}}{a_{22}}$
 
--   **Odds ratio (OR) =** odds of being BP+ in DEGs vs. non-DEGs: $\frac{a_{11}}{a_{12}} / \frac{a_{21}}{a_{22}}$ =$\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$
+-   **Odds ratio =** odds of being BP+ in DEGs vs. non-DEGs: $\frac{a_{11}}{a_{12}} / \frac{a_{21}}{a_{22}}$ =$\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$
 
 If OR\>1 then it is more likely to be a [**BP+**]{style="color: #00C5CD"} gene among the group of [**DEGs**]{style="color: #EE3A8C"}→ **positive association** between the two variables.
 
@@ -371,11 +370,11 @@ The OR returned by `fisher.test()` differs slightly from this formula as they ar
 
 # Conclusion
 
-The one-sided Fisher's exact test is a popular test used in omics to assess the enrichment of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its fast running times, and simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:
+The one-sided Fisher's exact test is a popular method used in omics to assess the enrichment of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications from such assays. Its fast running times, and simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:
 
 1.  Even though here we focused on the Fisher's exact test, plenty of other methodological and statistical strategies for gene set functional enrichment have been proposed [@khatri2012] & [@geistlinger2020].
 
-2.  Here we exemplified the performance of this test with DEGs and functional gene sets, but this over-representation approach doesn't restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features/molecules.
+2.  Here we exemplified the execution of this test with DEGs and functional gene sets, but this over-representation approach doesn't restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features/molecules.
 
 3.  Intrinsic limitations of this test have been noted:
 
@@ -383,21 +382,20 @@ The one-sided Fisher's exact test is a popular test used in omics to assess the 
 
     ii\) When analyzing genes we assume they are independent but that's not necessarily true. Correlation between gene expression of functionally-related genes inflates the number of false enrichment discoveries [@goeman2007].
 
-    Despite critics, ORA has proven to yield biologically relevant results and is widely recommended [@geistlinger2020].
+    In spite of critics, ORA has proven to yield biologically relevant results and is widely recommended [@geistlinger2020].
 
-4.  Last reminder, Fisher's exact test works to test enrichment but also depletion, careful with what you are trying to answer, how you run this analysis and how you interpret your results!
+4.  Last reminder, Fisher's exact test works to test enrichment but also depletion. Careful with what you are trying to answer, how you run this analysis and how you interpret your results!
 
 Hopefully at this point you have a clearer understanding around this test and feel more prepared to decide if this is appropriate to test your hypothesis based on your data.
 
 # Relevant links
 
-1.  Functional enrichment analysis of omics data
-
-    The Bioconductor 2018 Workshop Compilation, Chapter 9 <https://bioconductor.github.io/BiocWorkshops>
-
-2.  Material from Bioc2020 (4th edition): <https://github.com/waldronlab/enrichOmics> <https://www.youtube.com/watch?v=n0vVwuQSZkg>
+::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
+| 📑 **Bioconductor 2018 Functional Enrichment Analysis Workshop:**
+| Ludwig Geistlinger & Levi Waldron. [Chapter 9: Functional enrichment analysis of high-throughput omics data](https://bioconductor.github.io/BiocWorkshops/functional-enrichment-analysis-of-high-throughput-omics-data.html).
+:::
 
 ::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
-| 📑 **Bioconductor 2018 Workshop:**
-| de Leeuw, C. A., Mooij, J. M., Heskes, T., & Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data. *PLoS computational biology*, *11*(4), e1004219. [https://doi.org/10.1371/journal.pcbi.1004219](https://doi.org/10.1371/journal.pcbi.1004219https://doi.org/10.1371/journal.pcbi.1004219)
+| 📑 **Bioconductor 2020 Functional Enrichment Analysis Workshop:**
+| Ludwig Geistlinger & Levi Waldron. [Functional enrichment analysis of high-throughput omics data](https://waldronlab.io/enrichOmics/articles/Geistlinger_enrichOmics.html).
 :::

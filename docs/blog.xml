@@ -10,7 +10,7 @@
 <atom:link href="https://daianna21.github.io/daianna_blog/blog.xml" rel="self" type="application/rss+xml"/>
 <description>Daianna&#39;s personal scientific blog</description>
 <generator>quarto-1.4.555</generator>
-<lastBuildDate>Wed, 14 Aug 2024 06:00:00 GMT</lastBuildDate>
+<lastBuildDate>Mon, 19 Aug 2024 06:00:00 GMT</lastBuildDate>
 <item>
   <title>Fisher’s exact test for enrichment analysis of gene sets</title>
   <dc:creator>Daianna Gonzalez-Padilla</dc:creator>
@@ -22,7 +22,7 @@
 
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p>Imagine you have analyzed high-throughput omics data and have ended up with a list of candidate/interest genes. These genes could be, for instance, differently expressed genes (DEGs), genes associated with a certain disease, genes affected by risk SNPs, markers for cell types, etc. Any list of <strong>experimentally-derived genes</strong> with biological or clinical relevance applies.</p>
+<p>Imagine you have analyzed high-throughput omics data and have ended up with a list of candidate/interest genes. These genes could be, for instance, differentially expressed genes (DEGs), genes associated with a certain disease, genes affected by risk SNPs, markers for cell types, etc. Any list of <strong>experimentally-derived genes</strong> with biological or clinical relevance applies.</p>
 <p>Now, what comes after that? If you found a few genes, you can do a little of research about them and make sense of your results, but what if you got thousands of genes? That’s not an easy task anymore and becomes unscalable. Moreover, despite each individual found gene providing valuable information, we can reveal more definite insights by studying all genes at the same time.</p>
 <p>So what’s to do? We need to start thinking of these <strong>genes as a unique <u>set</u></strong> with its own properties, and ask questions such as <em>what do these genes have in common?</em> <em>what makes them being involved or affected by the condition under study</em>, and <em>what does that imply for cell functionality?</em></p>
 <p><strong>Functional enrichment analysis</strong> based on the <span style="background-color: #FFF68F"><strong>one-sided Fisher’s exact test</strong></span> (aka over-representation analysis (ORA) in the field) aims to test whether <span style="color: #EE3A8C"><strong>our genes <u>as a set</u></strong></span> are associated with certain cellular properties or functions by assessing if <em>sets of known genes that share biological activities or attributes</em> (<span style="color: #00C5CD"><strong>functional gene sets</strong></span>), have a statistically significant <strong>large overlap</strong> with our genes, i.e., if such functional gene sets are, what we call <u><strong>over-represented</strong></u> (or <u><strong>enriched</strong></u>, which is the same), among our genes. Stay on this post to learn more about how this test operates and how to understand and apply it to analyze sets of genes.</p>
@@ -33,15 +33,15 @@
 <li>Comprehend the purpose and the basics of a functional enrichment analysis based on gene sets.</li>
 <li>Understand the probabilistic and statistic foundations of the Fisher’s exact test and interpret it with gene sets.</li>
 <li>Clarify the required input gene sets to correctly perform this analysis.</li>
-<li>Learn how to run this test using R.</li>
+<li>Learn how to run this test using R and understand the outputs.</li>
 <li>Differentiate <strong>enrichment</strong> vs.&nbsp;<strong>depletion</strong> when performing this test.</li>
 </ol>
 </section>
 <section id="the-fishers-exact-test" class="level1">
 <h1>The Fisher’s exact test</h1>
 <p>This is a classical statistical test based on the hypergeometric distribution (thus also called <strong>hypergeometric test</strong>) used to assess if there is a significant association between two categorical binary variables, such as differential expression of the genes and their involvement in a specific biological process. The association of the two variables is calculated in terms of the <strong>intersection size</strong> between their elements.</p>
-<p>For illustrative purposes to show the application of this test for gene set-based functional enrichment analysis, imagine we have run a differential gene expression analysis (DGE) for a condition and have obtained a list of DEGs. As part of downstream analyses, we want to know how many of such DEGs participate in a specific biological process of interest and if that number significantly deviates from what is expected by chance.</p>
-<p>In the next sections we’ll go into more detail on how to demarcate the required sets of genes, represent them in contingency tables, assess enrichment (or depletion) in R, and how to interpret this test and its results.</p>
+<p>For illustrative purposes to show the application of this test in gene set-based functional enrichment analysis, imagine we have run a differential gene expression analysis (DGE) for a condition and have obtained a list of DEGs. As part of downstream analyses, we want to know how many of such DEGs participate in a specific biological process of interest and if that number significantly deviates from what is expected by chance.</p>
+<p>In the next sections we’ll go into more detail on how to demarcate the required sets of genes for this test, represent them in contingency tables, assess enrichment (or depletion) in R, and how to interpret this test and its results.</p>
 <section id="creating-and-understanding-contingency-tables" class="level2">
 <h2 class="anchored" data-anchor-id="creating-and-understanding-contingency-tables">1. Creating and understanding contingency tables</h2>
 <p>The following are the required gene sets and their specifications. Please note that when referring to a set of genes, we are specifically referring to the set of gene IDs; that all we need to run this test!</p>
@@ -62,7 +62,7 @@ How to find my gene universe?
 </div>
 </div></li>
 <li><p><span style="color: #EE3A8C"><strong>Experimentally-derived gene set</strong></span> (our gene set): a list of interest genes derived from our experimental measurements and analyses, and to which we want to assign biological meanings. In our example case this is the list of DEGs from the <span style="color: #595959"><strong>gene universe</strong></span>.</p></li>
-<li><p><span style="color: #00C5CD"><strong>Functional gene set</strong></span>: a set of genes with shared biological attributes (e.g.&nbsp;participation in a pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via databases such as <a href="https://geneontology.org">Gene Ontology (GO)</a> <span class="citation" data-cites="ashburner2000">(Ashburner et al. 2000)</span> and the <a href="https://www.kegg.jp">Kyoto encyclopedia of genes and genomes (KEGG)</a> <span class="citation" data-cites="kanehisa2000">(Kanehisa 2000)</span>.</p>
+<li><p><span style="color: #00C5CD"><strong>Functional gene set</strong></span>: a set of genes with shared biological attributes (e.g.&nbsp;participation in a pathway, implication in the same biological process, sharing a molecular activity, or if their gene products are located in a certain cell compartment). Conveniently, functional gene sets are accessible via knowledgebases such as <a href="https://geneontology.org">Gene Ontology (GO)</a> <span class="citation" data-cites="ashburner2000">(Ashburner et al. 2000)</span> and the <a href="https://www.kegg.jp">Kyoto encyclopedia of genes and genomes (KEGG)</a> <span class="citation" data-cites="kanehisa2000">(Kanehisa 2000)</span>.</p>
 <p>→ Let’s denote as “BP” the variable determining if a gene is involved in the biological process (<span style="color: #00C5CD"><strong>BP+</strong></span>) or not (<span style="color: #C1CDCD"><strong>BP-</strong></span>).</p></li>
 </ul>
 <div class="callout callout-style-default callout-important callout-titled">
@@ -75,7 +75,7 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>There may be cases where you have some genes in your functional set that are not present in the gene universe. Since they were not tested for DGE we can’t categorize them as DEGs or non-DEGs. Despite this, given that most genes are non-DEGs and we often assume that, you can either consider them non-DEGs or exclude them from the analysis to avoid introducing ambiguous information.</p>
+<p>There may be cases where you have some genes in your functional set that are not present in the gene universe. Since they were not tested for DGE we can’t categorize them as DEGs or non-DEGs. Despite this, given that we often assume most genes are non-DEGs, you can either consider them as such or exclude them from the analysis to avoid introducing ambiguous information.</p>
 </div>
 </div>
 <p>Fisher’s exact test aims to detect functional gene sets whose genes are unusually represented (<strong>enriched</strong>/<strong>over-represented</strong> or <strong>under-represented</strong>) in our set of interest genes. That is, if there’s a large (or small) overlap between the genes of the functional set (BP+ genes in this case) and the genes we classified as relevant from our data (DEGs in this case).</p>
@@ -85,7 +85,7 @@ Important
 <p><img src="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/contingency_table_3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="421"></p>
 </figure>
 </div>
-<p>The numbers of <span style="color: #EE3A8C"><strong>DEGs</strong></span>, <span style="color: #D8BFD8"><strong>non-DEG</strong></span>, <span style="color: #00C5CD"><strong>BP+</strong></span> genes, and <span style="color: #C1CDCD"><strong>BP-</strong></span> genes are called the <em>marginal values</em>, as they lie on the periphery of this 2x2 table. The middle cells (<img src="https://latex.codecogs.com/png.latex?a">’s) are the <em>joint values</em>, as they contain the overlap between the categories of the two variables.</p>
+<p>The numbers of <span style="color: #EE3A8C"><strong>DEGs</strong></span>, <span style="color: #D8BFD8"><strong>non-DEGs</strong></span>, <span style="color: #00C5CD"><strong>BP+</strong></span> genes, and <span style="color: #C1CDCD"><strong>BP-</strong></span> genes are called the <em>marginal values</em>, as they lie on the periphery of this 2x2 table. The middle cells (<img src="https://latex.codecogs.com/png.latex?a">’s) are the <em>joint values</em>, as they represent the overlap between the categories of the two variables.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -96,7 +96,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Note that by changing only one joint value, say <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">, all the remaining joint values will be already determined since the marginals are fixed. In that way we can describe whole contingency tables with only their <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> corner values.</p>
+<p>Note that by modifying only one joint value, say <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">, all the remaining joint values will be already determined since the marginals are fixed. In that way we can describe whole contingency tables with only their <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D"> corner values.</p>
 </div>
 </div>
 <div class="cell">
@@ -259,7 +259,7 @@ font-style: inherit;">unique</span>(funct_gene_set))</span></code></pre></div>
 </div>
 <div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## BP- genes</span></span>
+font-style: italic;">## BP- genes: genes in universe not in functional set</span></span>
 <span id="cb9-2">genes_not_func_set <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> gene_universe[<span class="sc" style="color: #5E5E5E;
@@ -352,7 +352,7 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When we test for “association” between DE and BP note that it could be either <strong>positive</strong> or <strong>negative</strong>, with the former implying a larger overlap between DEGs and BP+ genes, and thus corresponding to <strong>enrichment</strong>, and the latter implying a smaller overlap and thus meaning <strong>depletion</strong>. We’ll also delve into the statistical implications of each type of association in the next section.</p>
+<p>When we test for “association” between DE and BP note that it could be either <strong>positive</strong> or <strong>negative</strong>, with the former implying a larger overlap between DEGs and BP+ genes, and thus corresponding to <strong>enrichment</strong>, and the latter implying a smaller overlap and thus meaning <strong>depletion</strong>. We’ll also delve into the statistical implications of each type of association in the next sections.</p>
 </div>
 </div>
 </section>
@@ -417,7 +417,7 @@ How to interpret the above formula?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Basically, we are quantifying the number of ways of obtaining a sample of size <img src="https://latex.codecogs.com/png.latex?k"> composed of <img src="https://latex.codecogs.com/png.latex?x"> successes from a total of <img src="https://latex.codecogs.com/png.latex?m"> successes in the population (<img src="https://latex.codecogs.com/png.latex?m+n">) AND the remaining <img src="https://latex.codecogs.com/png.latex?k-x"> elements as failures from a total of <img src="https://latex.codecogs.com/png.latex?n"> failures in the population; of all possible ways of randomly selecting <img src="https://latex.codecogs.com/png.latex?k"> elements from the population.</p>
+<p>Basically, we are quantifying the number of ways of obtaining a sample of size <img src="https://latex.codecogs.com/png.latex?k"> composed of <img src="https://latex.codecogs.com/png.latex?x"> successes from a total of <img src="https://latex.codecogs.com/png.latex?m"> successes in the population AND the remaining <img src="https://latex.codecogs.com/png.latex?k-x"> elements as failures from a total of <img src="https://latex.codecogs.com/png.latex?n"> failures in the population; of all possible ways of randomly selecting <img src="https://latex.codecogs.com/png.latex?k"> elements from the population.</p>
 </div>
 </div>
 <p>Transferred to our scenario, think of it as having 15 chances to select genes without replacement from the universe that contains both <span style="color: #00C5CD"><strong>BP+</strong></span> and <span style="color: #C1CDCD"><strong>BP-</strong></span> genes. Repeat the experiment multiple times and count the times that 9 of the 15 genes you selected were <span style="color: #00C5CD"><strong>BP+</strong></span> (out of 12 BP+ genes in total) and the remaining 6 genes <span style="color: #C1CDCD"><strong>BP-</strong></span> (out of 20 BP- genes in total), over the number of experiments; that approximates your probability. This probability describes how likely it is to observe your table numbers (<strong>9</strong> <span style="color: #00C5CD"><strong>BP+</strong></span> and <strong>6</strong> <span style="color: #C1CDCD"><strong>BP-</strong></span> genes in the sample of <strong>15</strong> <span style="color: #EE3A8C"><strong>DEGs</strong></span>) just by chance.</p>
@@ -458,7 +458,7 @@ font-style: inherit;">15</span>)</span></code></pre></div>
 <pre><code>[1] 0.01507311</code></pre>
 </div>
 </div>
-<p>Let’s use <code>dhyper()</code> to check the density function for the hypergeometric distribution with the above parameters and confirm we obtain the same probability for <img src="https://latex.codecogs.com/png.latex?x"> = 9.</p>
+<p>Let’s use <code>dhyper()</code> to obtain the density function for the hypergeometric distribution with the above parameters and confirm we get the same probability for <img src="https://latex.codecogs.com/png.latex?x"> = 9.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -659,8 +659,8 @@ font-style: inherit;">13</span>])</span></code></pre></div>
 <pre><code>[1] 0.01698667</code></pre>
 </div>
 </div>
-<p>Since <em>p</em>&lt;0.05 we reject the null hypothesis and accept that there’s an enrichment of <span style="color: #00C5CD"><strong>BP+</strong></span> genes amongst our <span style="color: #EE3A8C"><strong>DEGs</strong></span>, and hence the biological process has a significant positive association with differential gene expression.</p>
-<p>This is called a <strong>one-sided Fisher’s exact test</strong> as we are evaluating probabilities of extreme values at only one side of the density curve (values <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">≥9 for enrichment; see plot below).</p>
+<p>Since <em>p</em> &lt;0.05 we reject the null hypothesis and accept that there’s an enrichment of <span style="color: #00C5CD"><strong>BP+</strong></span> genes amongst our <span style="color: #EE3A8C"><strong>DEGs</strong></span>, and hence the biological process has a significant positive association with differential gene expression.</p>
+<p>This is called a <strong>one-sided Fisher’s exact test</strong> as we are evaluating probabilities of extreme values on only one side of the density curve (values <img src="https://latex.codecogs.com/png.latex?a_%7B11%7D">≥9 for enrichment; see plot below).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -1012,8 +1012,8 @@ odds ratio
 </section>
 <section id="two-sided-test" class="level2">
 <h2 class="anchored" data-anchor-id="two-sided-test"><strong>Two-sided test</strong></h2>
-<p>The <strong>two-sided Fisher’s exact test</strong> is based on both tails of the hypergeometric distribution and thus is used when we are interested in both enrichment and depletion, i.e., if there’s any association between the variables irrespective of the sign.</p>
-<p>One approach to account for extreme values on both sides is to double the sum of the extreme tables’ probabilities at one side (one-sided <em>p</em>-value):</p>
+<p>The <strong>two-sided Fisher’s exact test</strong> is based on both tails of the hypergeometric distribution and is thus used when we want to evaluate if there’s any association between the variables irrespective of the sign (assessing for both enrichment and depletion).</p>
+<p>One approach to account for extreme values on both sides is to double the sum of the extreme tables’ probabilities on one side (i.e.&nbsp;the one-sided <em>p</em>-value):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -1178,10 +1178,7 @@ font-style: inherit;">"Probability"</span>)</span></code></pre></div>
 </div>
 <p>We get the same result using <code>fisher.test(alternative = ”two.sided”)</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><span class="do" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">## With fisher.test(alternative = ”two.sided”)</span></span>
-<span id="cb37-2"><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">fisher.test</span>(m, <span class="at" style="color: #657422;
 background-color: null;
@@ -1220,7 +1217,7 @@ What’s the odds ratio?
 <ul>
 <li><p>Odds of <strong><span style="color: #EE3A8C">DE</span></strong> in <strong><span style="color: #00C5CD">BP+</span></strong> genes = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D">: how many times it is more likely to be a DEG than a non-DEG among the genes in the functional set.</p></li>
 <li><p>Odds of <span style="color: #EE3A8C"><strong>DE</strong></span> in <span style="color: #C1CDCD"><strong>BP-</strong></span> genes =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B12%7D%7D%7Ba_%7B22%7D%7D">: how many times it is more likely to be a DEG than a non-DEG among the genes outside the functional set.</p></li>
-<li><p><strong>Odds of <span style="color: #EE3A8C">DE</span> in <span style="color: #00C5CD">BP+</span> vs.&nbsp;<span style="color: #C1CDCD">BP-</span> genes</strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D%20/%20%5Cfrac%7Ba_%7B12%7D%7D%7Ba_%7B22%7D%7D"> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D">: how many times it is more probable to be a DEG among the BP+ genes than among BP- genes.</p></li>
+<li><p><strong>Odds ratio (OR) of <span style="color: #EE3A8C">DE</span> in <span style="color: #00C5CD">BP+</span> vs.&nbsp;<span style="color: #C1CDCD">BP-</span> genes</strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D%20/%20%5Cfrac%7Ba_%7B12%7D%7D%7Ba_%7B22%7D%7D"> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D">: how many times it is more probable to be a DEG among the BP+ genes than among BP- genes.</p></li>
 </ul>
 <p>Same thing if we interchange the columns and rows:</p>
 <div class="quarto-figure quarto-figure-center">
@@ -1231,7 +1228,7 @@ What’s the odds ratio?
 <ul>
 <li><p>Odds of being <strong><span style="color: #00C5CD">BP+</span></strong> in <strong><span style="color: #EE3A8C">DEGs</span></strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D"></p></li>
 <li><p>Odds of being <strong><span style="color: #00C5CD">BP+</span></strong> in <strong><span style="color: #D8BFD8">non-DEGs</span></strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"></p></li>
-<li><p><strong>Odds ratio (OR) =</strong> odds of being BP+ in DEGs vs.&nbsp;non-DEGs: <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D%20/%20%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"> =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D"></p></li>
+<li><p><strong>Odds ratio =</strong> odds of being BP+ in DEGs vs.&nbsp;non-DEGs: <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D%20/%20%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"> =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D"></p></li>
 </ul>
 <p>If OR&gt;1 then it is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span> gene among the group of <span style="color: #EE3A8C"><strong>DEGs</strong></span>→ <strong>positive association</strong> between the two variables.</p>
 <p>If OR&lt;1 then is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span> gene among the group of <span style="color: #D8BFD8"><strong>non-DEGs</strong></span>→ <strong>negative association</strong> between the two variables.</p>
@@ -1243,28 +1240,27 @@ What’s the odds ratio?
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
-<p>The one-sided Fisher’s exact test is a popular test used in omics to assess the enrichment of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications of interest from such assays. Its fast running times, and simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:</p>
+<p>The one-sided Fisher’s exact test is a popular method used in omics to assess the enrichment of gene sets of interest in a list of genes resulting from high-throughput experimental measurements, drawing potential biological implications from such assays. Its fast running times, and simple input requirements and statistical basis make it user-friendly and straightforward to implement. However, there are clarifications and caveats to consider:</p>
 <ol type="1">
 <li><p>Even though here we focused on the Fisher’s exact test, plenty of other methodological and statistical strategies for gene set functional enrichment have been proposed <span class="citation" data-cites="khatri2012">(Khatri, Sirota, and Butte 2012)</span> &amp; <span class="citation" data-cites="geistlinger2020">(Geistlinger et al. 2020)</span>.</p></li>
-<li><p>Here we exemplified the performance of this test with DEGs and functional gene sets, but this over-representation approach doesn’t restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features/molecules.</p></li>
+<li><p>Here we exemplified the execution of this test with DEGs and functional gene sets, but this over-representation approach doesn’t restrict the analysis to them, not even to genes. You can conceive the enormous applicability of this test for any overlapping sets of biological features/molecules.</p></li>
 <li><p>Intrinsic limitations of this test have been noted:</p>
 <p>i) This test does restrict the analysis to overlaps between feature IDs and treats them all equally, without being able to incorporate relevant and informative feature metrics, compared to functional class scoring (FCS) methods such as the gene set enrichment analysis (GSEA) developed in <span class="citation" data-cites="subramanian2005">(Subramanian et al. 2005)</span>.</p>
 <p>ii) When analyzing genes we assume they are independent but that’s not necessarily true. Correlation between gene expression of functionally-related genes inflates the number of false enrichment discoveries <span class="citation" data-cites="goeman2007">(Goeman and Bühlmann 2007)</span>.</p>
-<p>Despite critics, ORA has proven to yield biologically relevant results and is widely recommended <span class="citation" data-cites="geistlinger2020">(Geistlinger et al. 2020)</span>.</p></li>
-<li><p>Last reminder, Fisher’s exact test works to test enrichment but also depletion, careful with what you are trying to answer, how you run this analysis and how you interpret your results!</p></li>
+<p>In spite of critics, ORA has proven to yield biologically relevant results and is widely recommended <span class="citation" data-cites="geistlinger2020">(Geistlinger et al. 2020)</span>.</p></li>
+<li><p>Last reminder, Fisher’s exact test works to test enrichment but also depletion. Careful with what you are trying to answer, how you run this analysis and how you interpret your results!</p></li>
 </ol>
 <p>Hopefully at this point you have a clearer understanding around this test and feel more prepared to decide if this is appropriate to test your hypothesis based on your data.</p>
 </section>
 <section id="relevant-links" class="level1">
 <h1>Relevant links</h1>
-<ol type="1">
-<li><p>Functional enrichment analysis of omics data</p>
-<p>The Bioconductor 2018 Workshop Compilation, Chapter 9 <a href="https://bioconductor.github.io/BiocWorkshops" class="uri">https://bioconductor.github.io/BiocWorkshops</a></p></li>
-<li><p>Material from Bioc2020 (4th edition): <a href="https://github.com/waldronlab/enrichOmics" class="uri">https://github.com/waldronlab/enrichOmics</a> <a href="https://www.youtube.com/watch?v=n0vVwuQSZkg" class="uri">https://www.youtube.com/watch?v=n0vVwuQSZkg</a></p></li>
-</ol>
 <div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
-<div class="line-block">📑 <strong>Bioconductor 2018 Workshop:</strong><br>
-de Leeuw, C. A., Mooij, J. M., Heskes, T., &amp; Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data.&nbsp;<em>PLoS computational biology</em>,&nbsp;<em>11</em>(4), e1004219. <a href="https://doi.org/10.1371/journal.pcbi.1004219https://doi.org/10.1371/journal.pcbi.1004219">https://doi.org/10.1371/journal.pcbi.1004219</a></div>
+<div class="line-block">📑 <strong>Bioconductor 2018 Functional Enrichment Analysis Workshop:</strong><br>
+Ludwig Geistlinger &amp; Levi Waldron. <a href="https://bioconductor.github.io/BiocWorkshops/functional-enrichment-analysis-of-high-throughput-omics-data.html">Chapter 9: Functional enrichment analysis of high-throughput omics data</a>.</div>
+</div>
+<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
+<div class="line-block">📑 <strong>Bioconductor 2020 Functional Enrichment Analysis Workshop:</strong><br>
+Ludwig Geistlinger &amp; Levi Waldron. <a href="https://waldronlab.io/enrichOmics/articles/Geistlinger_enrichOmics.html">Functional enrichment analysis of high-throughput omics data</a>.</div>
 </div>
 
 
@@ -1300,7 +1296,7 @@ Subramanian, Aravind, Pablo Tamayo, Vamsi K. Mootha, Sayan Mukherjee, Benjamin L
   <category>KEGG</category>
   <category>Functional enrichment</category>
   <guid>https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/</guid>
-  <pubDate>Wed, 14 Aug 2024 06:00:00 GMT</pubDate>
+  <pubDate>Mon, 19 Aug 2024 06:00:00 GMT</pubDate>
   <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/Fishers_logo.png" medium="image" type="image/png" height="78" width="144"/>
 </item>
 <item>

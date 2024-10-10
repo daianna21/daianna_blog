@@ -152,7 +152,7 @@ This is how it operates:
 
         ![](images/12_choose_9.png){fig-align="center" width="351"}
 
-    3.   The ways of selecting $a_{12}$ = 6 genes (number of [**BP-**]{style="color: #C1CDCD"} [**DEGs**]{style="color: #EE3A8C"}) without replacement out of the $a_{12}+a_{22}$ = 20 genes not in the functional set ([**BP-**]{style="color: #C1CDCD"} genes): ${a_{12}+a_{22}}\choose{a_{12}}$
+    3.  The ways of selecting $a_{12}$ = 6 genes (number of [**BP-**]{style="color: #C1CDCD"} [**DEGs**]{style="color: #EE3A8C"}) without replacement out of the $a_{12}+a_{22}$ = 20 genes not in the functional set ([**BP-**]{style="color: #C1CDCD"} genes): ${a_{12}+a_{22}}\choose{a_{12}}$
 
     ![](images/20_choose_6.png){fig-align="center" width="355"}
 
@@ -343,7 +343,7 @@ fisher.test(m, alternative = "two.sided")
 
 ![](images/odds_m.png){style="margin: 0px" fig-align="center" width="334"}
 
--   Odds of **[DE]{style="color: #EE3A8C"}** in **[BP+]{style="color: #00C5CD"}** genes = $\frac{a_{11}}{a_{21}}$: how many times it is more likely to be a DEG than a non-DEG among the genes in the functional set.
+-   Odds of [**DE**]{style="color: #EE3A8C"} in [**BP+**]{style="color: #00C5CD"} genes = $\frac{a_{11}}{a_{21}}$: how many times it is more likely to be a DEG than a non-DEG among the genes in the functional set.
 
 -   Odds of [**DE**]{style="color: #EE3A8C"} in [**BP-**]{style="color: #C1CDCD"} genes =$\frac{a_{12}}{a_{22}}$: how many times it is more likely to be a DEG than a non-DEG among the genes outside the functional set.
 
@@ -353,9 +353,9 @@ Same thing if we interchange the columns and rows:
 
 ![](images/odds_tm.png){style="margin: 0px" fig-align="center" width="331"}
 
--   Odds of being **[BP+]{style="color: #00C5CD"}** in **[DEGs]{style="color: #EE3A8C"}** = $\frac{a_{11}}{a_{12}}$
+-   Odds of being [**BP+**]{style="color: #00C5CD"} in [**DEGs**]{style="color: #EE3A8C"} = $\frac{a_{11}}{a_{12}}$
 
--   Odds of being **[BP+]{style="color: #00C5CD"}** in **[non-DEGs]{style="color: #D8BFD8"}** = $\frac{a_{21}}{a_{22}}$
+-   Odds of being [**BP+**]{style="color: #00C5CD"} in [**non-DEGs**]{style="color: #D8BFD8"} = $\frac{a_{21}}{a_{22}}$
 
 -   **Odds ratio =** odds of being BP+ in DEGs vs. non-DEGs: $\frac{a_{11}}{a_{12}} / \frac{a_{21}}{a_{22}}$ =$\frac{a_{11}\times a_{22}}{a_{12} \times a_{21}}$
 

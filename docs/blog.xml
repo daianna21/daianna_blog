@@ -10,7 +10,27 @@
 <atom:link href="https://daianna21.github.io/daianna_blog/blog.xml" rel="self" type="application/rss+xml"/>
 <description>Daianna&#39;s personal scientific blog</description>
 <generator>quarto-1.4.555</generator>
-<lastBuildDate>Mon, 19 Aug 2024 06:00:00 GMT</lastBuildDate>
+<lastBuildDate>Wed, 09 Oct 2024 23:00:00 GMT</lastBuildDate>
+<item>
+  <title>Understading coefficients in linear models fits for RNA-seq data</title>
+  <dc:creator>Daianna Gonzalez-Padilla</dc:creator>
+  <link>https://daianna21.github.io/daianna_blog/posts/2024-10-10-coeffs_linear_models/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+
+
+ ]]></description>
+  <category>coefficient</category>
+  <category>beta</category>
+  <category>interaction terms</category>
+  <guid>https://daianna21.github.io/daianna_blog/posts/2024-10-10-coeffs_linear_models/</guid>
+  <pubDate>Wed, 09 Oct 2024 23:00:00 GMT</pubDate>
+  <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-10-10-coeffs_linear_models/images/TODO" medium="image"/>
+</item>
 <item>
   <title>Fisher’s exact test for enrichment analysis of gene sets</title>
   <dc:creator>Daianna Gonzalez-Padilla</dc:creator>
@@ -1215,7 +1235,7 @@ What’s the odds ratio?
 </figure>
 </div>
 <ul>
-<li><p>Odds of <strong><span style="color: #EE3A8C">DE</span></strong> in <strong><span style="color: #00C5CD">BP+</span></strong> genes = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D">: how many times it is more likely to be a DEG than a non-DEG among the genes in the functional set.</p></li>
+<li><p>Odds of <span style="color: #EE3A8C"><strong>DE</strong></span> in <span style="color: #00C5CD"><strong>BP+</strong></span> genes = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D">: how many times it is more likely to be a DEG than a non-DEG among the genes in the functional set.</p></li>
 <li><p>Odds of <span style="color: #EE3A8C"><strong>DE</strong></span> in <span style="color: #C1CDCD"><strong>BP-</strong></span> genes =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B12%7D%7D%7Ba_%7B22%7D%7D">: how many times it is more likely to be a DEG than a non-DEG among the genes outside the functional set.</p></li>
 <li><p><strong>Odds ratio (OR) of <span style="color: #EE3A8C">DE</span> in <span style="color: #00C5CD">BP+</span> vs.&nbsp;<span style="color: #C1CDCD">BP-</span> genes</strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B21%7D%7D%20/%20%5Cfrac%7Ba_%7B12%7D%7D%7Ba_%7B22%7D%7D"> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D">: how many times it is more probable to be a DEG among the BP+ genes than among BP- genes.</p></li>
 </ul>
@@ -1226,8 +1246,8 @@ What’s the odds ratio?
 </figure>
 </div>
 <ul>
-<li><p>Odds of being <strong><span style="color: #00C5CD">BP+</span></strong> in <strong><span style="color: #EE3A8C">DEGs</span></strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D"></p></li>
-<li><p>Odds of being <strong><span style="color: #00C5CD">BP+</span></strong> in <strong><span style="color: #D8BFD8">non-DEGs</span></strong> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"></p></li>
+<li><p>Odds of being <span style="color: #00C5CD"><strong>BP+</strong></span> in <span style="color: #EE3A8C"><strong>DEGs</strong></span> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D"></p></li>
+<li><p>Odds of being <span style="color: #00C5CD"><strong>BP+</strong></span> in <span style="color: #D8BFD8"><strong>non-DEGs</strong></span> = <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"></p></li>
 <li><p><strong>Odds ratio =</strong> odds of being BP+ in DEGs vs.&nbsp;non-DEGs: <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%7D%7Ba_%7B12%7D%7D%20/%20%5Cfrac%7Ba_%7B21%7D%7D%7Ba_%7B22%7D%7D"> =<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Ba_%7B11%7D%5Ctimes%20a_%7B22%7D%7D%7Ba_%7B12%7D%20%5Ctimes%20a_%7B21%7D%7D"></p></li>
 </ul>
 <p>If OR&gt;1 then it is more likely to be a <span style="color: #00C5CD"><strong>BP+</strong></span> gene among the group of <span style="color: #EE3A8C"><strong>DEGs</strong></span>→ <strong>positive association</strong> between the two variables.</p>
@@ -1296,7 +1316,7 @@ Subramanian, Aravind, Pablo Tamayo, Vamsi K. Mootha, Sayan Mukherjee, Benjamin L
   <category>KEGG</category>
   <category>Functional enrichment</category>
   <guid>https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/</guid>
-  <pubDate>Mon, 19 Aug 2024 06:00:00 GMT</pubDate>
+  <pubDate>Sun, 18 Aug 2024 23:00:00 GMT</pubDate>
   <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/images/Fishers_logo.png" medium="image" type="image/png" height="78" width="144"/>
 </item>
 <item>
@@ -2130,7 +2150,7 @@ Sun, Lei, Zhong Wang, Tianyuan Lu, Teri A. Manolio, and Andrew D. Paterson. 2023
   <category>Gene Set Analysis</category>
   <category>SNP summary statistics</category>
   <guid>https://daianna21.github.io/daianna_blog/posts/2024-07-16-MAGMA/</guid>
-  <pubDate>Tue, 16 Jul 2024 06:00:00 GMT</pubDate>
+  <pubDate>Mon, 15 Jul 2024 23:00:00 GMT</pubDate>
   <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-07-16-MAGMA/images/MAGMA_logo.png" medium="image" type="image/png" height="76" width="144"/>
 </item>
 </channel>

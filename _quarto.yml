@@ -27,7 +27,7 @@ website:
         href: blog.xml
   comments:
     giscus: 
-      repo: lahuuki/lahuuki.github.io
+      repo: https://github.com/daianna21/daianna_blog
 
 format:
   html:

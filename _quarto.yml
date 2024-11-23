@@ -13,8 +13,6 @@ website:
         file: index.qmd
       - text: "Blog"
         file: blog.qmd
-      - text: "Other materials"
-        file: materials.qmd
       - icon: github
         href: https://daianna21.github.io
       - icon: linkedin
@@ -27,7 +25,7 @@ website:
         href: blog.xml
   comments:
     giscus: 
-      repo: https://github.com/daianna21/daianna_blog
+      repo: lahuuki/lahuuki.github.io
 
 format:
   html:

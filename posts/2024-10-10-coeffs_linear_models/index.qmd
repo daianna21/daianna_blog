@@ -1,0 +1,19 @@
+---
+title: "Understading coefficients in linear models fits for RNA-seq data"
+description: |
+ . 
+author:
+  - name: Daianna Gonzalez-Padilla
+date: 2024-10-10
+categories:
+  - "coefficient"
+  - "beta"
+  - "interaction terms"
+  - "contrast"
+  - "multi-level variable"
+  
+image: "images/TODO"
+bibliography: references.bib
+---
+
+Under construction!

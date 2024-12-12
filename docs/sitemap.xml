@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://daianna21.github.io/daianna_blog/index.html</loc>
-    <lastmod>2024-11-23T22:16:21.024Z</lastmod>
+    <lastmod>2024-12-05T23:22:45.393Z</lastmod>
   </url>
   <url>
     <loc>https://daianna21.github.io/daianna_blog/blog.html</loc>
@@ -18,10 +18,14 @@
   </url>
   <url>
     <loc>https://daianna21.github.io/daianna_blog/posts/2024-08-11-Fisher_test/index.html</loc>
-    <lastmod>2024-10-10T21:28:40.491Z</lastmod>
+    <lastmod>2024-12-12T18:25:06.164Z</lastmod>
   </url>
   <url>
     <loc>https://daianna21.github.io/daianna_blog/posts/2024-10-10-coeffs_linear_models/index.html</loc>
-    <lastmod>2024-11-23T17:55:49.732Z</lastmod>
+    <lastmod>2024-12-12T19:04:20.925Z</lastmod>
+  </url>
+  <url>
+    <loc>https://daianna21.github.io/daianna_blog/posts/2024-12-12-QC_and_EDA/index.html</loc>
+    <lastmod>2024-12-12T19:07:29.042Z</lastmod>
   </url>
 </urlset>

@@ -7,10 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Daianna Gonzalez-Padilla">
-<meta name="dcterms.date" content="2024-10-10">
-<meta name="description" content=".">
+<meta name="dcterms.date" content="2024-12-12">
 
-<title>Daianna Gonzalez-Padilla - Understading coefficients in linear models fits for RNA-seq data</title>
+<title>Daianna Gonzalez-Padilla - Exploratory Data Analysis for RNA-seq data</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -57,7 +56,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -177,7 +196,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#what-youll-learn-here" id="toc-what-youll-learn-here" class="nav-link" data-scroll-target="#what-youll-learn-here">What you’ll learn here</a></li>
-  <li><a href="#an-example-data-set" id="toc-an-example-data-set" class="nav-link" data-scroll-target="#an-example-data-set">An example data set</a></li>
+  <li><a href="#an-example-data-set" id="toc-an-example-data-set" class="nav-link" data-scroll-target="#an-example-data-set">An example data set</a>
+  <ul class="collapse">
+  <li><a href="#download-data" id="toc-download-data" class="nav-link" data-scroll-target="#download-data">Download data</a></li>
+  <li><a href="#study-design-and-objectives" id="toc-study-design-and-objectives" class="nav-link" data-scroll-target="#study-design-and-objectives">Study design and objectives</a></li>
+  <li><a href="#data-variables" id="toc-data-variables" class="nav-link" data-scroll-target="#data-variables">Data variables</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -186,21 +210,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Understading coefficients in linear models fits for RNA-seq data</h1>
+<h1 class="title">Exploratory Data Analysis for RNA-seq data</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">coefficient</div>
-    <div class="quarto-category">beta</div>
-    <div class="quarto-category">interaction terms</div>
-    <div class="quarto-category">contrast</div>
-    <div class="quarto-category">multi-level variable</div>
+    <div class="quarto-category">TODO</div>
   </div>
   </div>
 
-<div>
-  <div class="description">
-    <p>.</p>
-  </div>
-</div>
 
 
 <div class="quarto-title-meta">
@@ -215,7 +230,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 10, 2024</p>
+      <p class="date">December 12, 2024</p>
     </div>
   </div>
   
@@ -233,36 +248,170 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="what-youll-learn-here" class="level1">
 <h1>What you’ll learn here</h1>
-<ol type="1">
-<li>How to interpret the coefficients in the design matrices.</li>
-<li>Understand the syntaxis of interaction coefficients and learn how to interpret and utilize them.</li>
-<li></li>
-</ol>
 </section>
 <section id="an-example-data-set" class="level1">
 <h1>An example data set</h1>
-<p>We’ll use recount3 package to download real gene expression data from a study, including sample metadata and QC metrics that will be helpful to illustrate variable associations with gene expression data.</p>
-<p>The chosen study can be found in the Sequence Read Archive (<a href="https://www.ncbi.nlm.nih.gov/sra">SRA</a>) with project ID SRP107565, and is titled “<strong>Multiomics Profiling Establishes the Polypharmacology of FDA-Approved CDK4/6 Inhibitors and the Potential for Differential Clinical Activity”.</strong></p>
+<section id="download-data" class="level2">
+<h2 class="anchored" data-anchor-id="download-data">Download data</h2>
+<p>We’ll use <a href="https://rna.recount.bio"><em>recount3</em></a> <span class="citation" data-cites="leonardocollado-torres2020 wilks2021a">(<a href="#ref-leonardocollado-torres2020" role="doc-biblioref">Leonardo Collado-Torres 2020</a>; <a href="#ref-wilks2021a" role="doc-biblioref">Wilks et al. 2021</a>)</span> package to download real gene expression data from a transcriptomic study, including sample metadata and QC metrics that will be helpful to illustrate variable associations with gene expression levels.</p>
+<p>The chosen study can be found in the Sequence Read Archive (<a href="https://www.ncbi.nlm.nih.gov/sra">SRA</a>) under ID <code>SRP107565</code>, and is titled “<strong>Multiomics Profiling Establishes the Polypharmacology of FDA-Approved CDK4/6 Inhibitors and the Potential for Differential Clinical Activity”</strong> (<a href="10.1016/j.chembiol.2019.05.005">Marc Hafner et al., 2019</a>).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(recount3)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ## Download all available projects in human in recount3</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># human_projects &lt;- available_projects()</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ## Download gene expression data and metadata from </span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># proj_info &lt;- subset(</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">#     human_projects,</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">#     project == "SRP107565" &amp; project_type == "data_sources"</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># )</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># rse_gene_SRP009615 &lt;- create_rse(project_info)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Download all available projects in human in recount3</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>human_projects <span class="ot">&lt;-</span> <span class="fu">available_projects</span>()</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Download gene expression data and metadata from </span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>proj_info <span class="ot">&lt;-</span> <span class="fu">subset</span>(</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    human_projects,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    project <span class="sc">==</span> <span class="st">"SRP107565"</span> <span class="sc">&amp;</span> project_type <span class="sc">==</span> <span class="st">"data_sources"</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">recount3_url =</span> <span class="st">"https://sciserver.org/public-data/recount3/data"</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>proj_info</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    project organism file_source     project_home project_type n_samples
+1 SRP107565    human         sra data_sources/sra data_sources       216</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Create RangedSummarizedExperiment object to handle RNA-seq and sample data </span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>rse <span class="ot">&lt;-</span> <span class="fu">create_rse</span>(proj_info)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Gene expression data in assay(rse): for first 5 genes and 5 samples</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">assay</span>(rse)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                  SRR5579425 SRR5579426 SRR5579433 SRR5579434 SRR5579435
+ENSG00000278704.1          0          0          0          0          0
+ENSG00000277400.1          0          0          0          0          0
+ENSG00000274847.1          0          0          0          0          0
+ENSG00000277428.1          0          0          0          0          0
+ENSG00000276256.1          0          0          0          0          0</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Sample metadata in colData(rse): for first 6 samples and 3 variables</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">colData</span>(rse)[, <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DataFrame with 6 rows and 3 columns
+             rail_id external_id       study
+           &lt;integer&gt; &lt;character&gt; &lt;character&gt;
+SRR5579425   1000031  SRR5579425   SRP107565
+SRR5579426   1000045  SRR5579426   SRP107565
+SRR5579433   1000255  SRR5579433   SRP107565
+SRR5579434   1000270  SRR5579434   SRP107565
+SRR5579435   1000286  SRR5579435   SRP107565
+SRR5579436   1000301  SRR5579436   SRP107565</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Gene data in rowData(rse): for first 6 genes and 3 variables</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">rowData</span>(rse)[, <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DataFrame with 6 rows and 3 columns
+                    source     type bp_length
+                  &lt;factor&gt; &lt;factor&gt; &lt;numeric&gt;
+ENSG00000278704.1  ENSEMBL     gene      2237
+ENSG00000277400.1  ENSEMBL     gene      2179
+ENSG00000274847.1  ENSEMBL     gene      1599
+ENSG00000277428.1  ENSEMBL     gene       101
+ENSG00000276256.1  ENSEMBL     gene      2195
+ENSG00000278198.1  ENSEMBL     gene      1468</code></pre>
+</div>
+</div>
+</section>
+<section id="study-design-and-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="study-design-and-objectives">Study design and objectives</h2>
+<p>In this study, the authors performed transcriptomic, proteomic, and phenotypic assays to compare the activities of 3 inhibitors of cyclin-dependent kinases 4/6 (CDK4/6): abemaciclib, palbociclib, and ribociclib, which are used to treat hormone receptor-positive breast cancer. For our purposes, only transcriptomic data have been downloaded to be explored.</p>
+<p>Specifically, in the transcriptomic experiment, 7 breast cancer human cell lines were drug-treated with <span style="color: #EE7621"><strong>0.3</strong></span>, <span style="color: #CD3700"><strong>1</strong></span> OR <span style="color: #8B2500"><strong>3</strong></span> µM of <span style="color: #0000FF"><strong>abemaciclib</strong></span>, <span style="color: #EE3B3B"><strong>palbociclib</strong></span>, OR <span style="color: #CDC673"><strong>ribociclib</strong></span> (OR untreated = <span style="color: #A6A6A6"><strong>control</strong></span> <strong>=</strong> drug concentration of <span style="color: #A6A6A6"><strong>0</strong></span> µM), and mRNA sequencing was performed after <strong>6</strong> OR <span style="color: #00CD66"><strong>24</strong></span> hrs of exposure.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/study_design.png" class="img-fluid figure-img" width="363"></p>
+<figcaption>Ilustration taken from <strong>Figure 1A</strong> in <a href="10.1016/j.chembiol.2019.05.005">Marc Hafner et al., 2019</a>.</figcaption>
+</figure>
+</div>
+<p>Exploring the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html"><em>RangedSummarizedExperiment</em></a> <span class="citation" data-cites="martinmorgan2017 huber2015">(<a href="#ref-martinmorgan2017" role="doc-biblioref">Martin Morgan 2017</a>; <a href="#ref-huber2015" role="doc-biblioref">Huber et al. 2015</a>)</span> object <code>rse</code> we just created, we can see we have raw expression data for 63,856 genes across 216 samples.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(rse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 63856   216</code></pre>
+</div>
+</div>
+<p>Processing a little the sample attributes contained in <code>sra.sample_attributes</code> variable, we can check the number of samples from each cell line, treated with each drug, at each concentration, and time. Let’s add individual columns in the sample metadata for these variables.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'tidyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:S4Vectors':
+
+    expand</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Sample attributes</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "agent;;Abemaciclib|cell line;;BT20|dose;;0.3 uM|source_name;;BT20 breast cancer cell line|time;;6 hr"
+[2] "agent;;Abemaciclib|cell line;;BT20|dose;;0.3 uM|source_name;;BT20 breast cancer cell line|time;;6 hr"
+[3] "agent;;Palbociclib|cell line;;BT20|dose;;3 uM|source_name;;BT20 breast cancer cell line|time;;6 hr"  </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Divide each string by "|" and extract drug</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Drug <span class="ot">=</span> <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">1</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples treated with each drug</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Drug)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Abemaciclib     Control Palbociclib  Ribociclib 
+         84          28          52          52 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples of each cell line</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Cell_line <span class="ot">=</span> <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Cell_line)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+   BT20   BT549 HCC1419 HCC1806  HS578T    MCF7    T47D 
+     32      32      32      32      32      24      32 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples treated with each dose</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Concentration <span class="ot">=</span>  <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">3</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Concentration)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  0 uM 0.3 uM   1 uM   3 uM 
+    28     80      4    104 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples sequenced after each time</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Time <span class="ot">=</span>  <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">5</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+24 hr  6 hr 
+  108   108 </code></pre>
+</div>
+</div>
+</section>
+<section id="data-variables" class="level2">
+<h2 class="anchored" data-anchor-id="data-variables">Data variables</h2>
+<p>The following are quality control metrics collected in recount3</p>
+
 
 
 </section>
+</section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-huber2015" class="csl-entry" role="listitem">
+Huber, Wolfgang, Vincent J Carey, Robert Gentleman, Simon Anders, Marc Carlson, Benilton S Carvalho, Hector Corrada Bravo, et al. 2015. <span>“Orchestrating High-Throughput Genomic Analysis with Bioconductor.”</span> <em>Nature Methods</em> 12 (2): 115–21. <a href="https://doi.org/10.1038/nmeth.3252">https://doi.org/10.1038/nmeth.3252</a>.
+</div>
+<div id="ref-leonardocollado-torres2020" class="csl-entry" role="listitem">
+Leonardo Collado-Torres. 2020. <span>“Recount3.”</span> <a href="https://doi.org/10.18129/B9.BIOC.RECOUNT3">https://doi.org/10.18129/B9.BIOC.RECOUNT3</a>.
+</div>
+<div id="ref-martinmorgan2017" class="csl-entry" role="listitem">
+Martin Morgan, Valerie Obenchain. 2017. <span>“SummarizedExperiment.”</span> <a href="https://doi.org/10.18129/B9.BIOC.SUMMARIZEDEXPERIMENT">https://doi.org/10.18129/B9.BIOC.SUMMARIZEDEXPERIMENT</a>.
+</div>
+<div id="ref-wilks2021a" class="csl-entry" role="listitem">
+Wilks, Christopher, Shijie C. Zheng, Feng Yong Chen, Rone Charles, Brad Solomon, Jonathan P. Ling, Eddie Luidy Imada, et al. 2021. <span>“Recount3: Summaries and Queries for Large-Scale RNA-Seq Expression and Splicing.”</span> <em>Genome Biology</em> 22 (1). <a href="https://doi.org/10.1186/s13059-021-02533-6">https://doi.org/10.1186/s13059-021-02533-6</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

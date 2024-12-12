@@ -16,4 +16,34 @@ image: "images/TODO"
 bibliography: references.bib
 ---
 
-Under construction!
+⚠️ This page is under development.
+
+# Introduction
+
+# What you'll learn here
+
+1.  How to interpret the coefficients in the design matrices.
+2.  Understand the syntaxis of interaction coefficients and learn how to interpret and utilize them.
+3.  
+
+# An example data set
+
+We'll use recount3 package to download real gene expression data from a study, including sample metadata and QC metrics that will be helpful to illustrate variable associations with gene expression data.
+
+The chosen study can be found in the Sequence Read Archive ([SRA](https://www.ncbi.nlm.nih.gov/sra)) with project ID SRP107565, and is titled "**Multiomics Profiling Establishes the Polypharmacology of FDA-Approved CDK4/6 Inhibitors and the Potential for Differential Clinical Activity".**
+
+```{r download_data, warning=FALSE, message=FALSE}
+library(recount3)
+# 
+# ## Download all available projects in human in recount3
+# human_projects <- available_projects()
+# 
+# ## Download gene expression data and metadata from 
+# proj_info <- subset(
+#     human_projects,
+#     project == "SRP107565" & project_type == "data_sources"
+# )
+# 
+# 
+# rse_gene_SRP009615 <- create_rse(project_info)
+```

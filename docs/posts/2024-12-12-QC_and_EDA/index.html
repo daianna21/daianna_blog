@@ -199,9 +199,28 @@ div.csl-indent {
   <li><a href="#an-example-data-set" id="toc-an-example-data-set" class="nav-link" data-scroll-target="#an-example-data-set">An example data set</a>
   <ul class="collapse">
   <li><a href="#download-data" id="toc-download-data" class="nav-link" data-scroll-target="#download-data">Download data</a></li>
-  <li><a href="#study-design-and-objectives" id="toc-study-design-and-objectives" class="nav-link" data-scroll-target="#study-design-and-objectives">Study design and objectives</a></li>
-  <li><a href="#data-variables" id="toc-data-variables" class="nav-link" data-scroll-target="#data-variables">Data variables</a></li>
+  <li><a href="#study-design-and-aims" id="toc-study-design-and-aims" class="nav-link" data-scroll-target="#study-design-and-aims">Study design and aims</a></li>
+  <li><a href="#sample-variables" id="toc-sample-variables" class="nav-link" data-scroll-target="#sample-variables">Sample variables</a>
+  <ul class="collapse">
+  <li><a href="#main-sample-attributes" id="toc-main-sample-attributes" class="nav-link" data-scroll-target="#main-sample-attributes">Main sample attributes</a></li>
+  <li><a href="#quality-control-metrics" id="toc-quality-control-metrics" class="nav-link" data-scroll-target="#quality-control-metrics">Quality-control metrics</a></li>
   </ul></li>
+  </ul></li>
+  <li><a href="#exploring-count-distribution" id="toc-exploring-count-distribution" class="nav-link" data-scroll-target="#exploring-count-distribution">1. Exploring count distribution</a></li>
+  <li><a href="#filtering-lowly-expressed-genes" id="toc-filtering-lowly-expressed-genes" class="nav-link" data-scroll-target="#filtering-lowly-expressed-genes">2. Filtering lowly-expressed genes</a></li>
+  <li><a href="#filtering-low-quality-samples" id="toc-filtering-low-quality-samples" class="nav-link" data-scroll-target="#filtering-low-quality-samples">3. Filtering low-quality samples</a>
+  <ul class="collapse">
+  <li><a href="#explore-differences-in-qc-metrics-between-sample-groups" id="toc-explore-differences-in-qc-metrics-between-sample-groups" class="nav-link" data-scroll-target="#explore-differences-in-qc-metrics-between-sample-groups">3.1 Explore differences in QC metrics between sample groups</a></li>
+  <li><a href="#explore-relationships-between-sample-variables" id="toc-explore-relationships-between-sample-variables" class="nav-link" data-scroll-target="#explore-relationships-between-sample-variables">3.2 Explore relationships between sample variables</a></li>
+  <li><a href="#identify-sample-outliers-boxplots-and-pca" id="toc-identify-sample-outliers-boxplots-and-pca" class="nav-link" data-scroll-target="#identify-sample-outliers-boxplots-and-pca">3.3 Identify sample outliers (Boxplots and PCA)</a></li>
+  </ul></li>
+  <li><a href="#variable-associations-with-gene-expression" id="toc-variable-associations-with-gene-expression" class="nav-link" data-scroll-target="#variable-associations-with-gene-expression">4. Variable associations with gene expression</a>
+  <ul class="collapse">
+  <li><a href="#dimensionality-reduction" id="toc-dimensionality-reduction" class="nav-link" data-scroll-target="#dimensionality-reduction">4.1 Dimensionality reduction</a></li>
+  <li><a href="#correlation-between-variables" id="toc-correlation-between-variables" class="nav-link" data-scroll-target="#correlation-between-variables">4.2 Correlation between variables</a></li>
+  <li><a href="#partition-of-gene-expression-variance" id="toc-partition-of-gene-expression-variance" class="nav-link" data-scroll-target="#partition-of-gene-expression-variance">4.2 Partition of gene expression variance</a></li>
+  </ul></li>
+  <li><a href="#conclusions" id="toc-conclusions" class="nav-link" data-scroll-target="#conclusions">Conclusions</a></li>
   </ul>
 </nav>
     </div>
@@ -245,15 +264,25 @@ div.csl-indent {
 <p>⚠️ This page is under development.</p>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
+<p>Saying that over 50% of biological data analysis is about exploring and cleaning data is not an exaggeration. In fact, that’s the way it’s supposed to be. Biological data are inherently noisy. Not only biological differences exist between cells and samples, but all sampling and experimental procedures for data generation, introduce variability, errors, and biases into the data.</p>
+<p>Exploratory Data Analysis (EDA) is a primordial intial step in which we get to know the overall and specific aspects of the data. This is a process where we create tons of plots to uncover and visualize the data structures, patterns, relationships, and outliers, through which we identify data issues, drive hypoteses, and guide subsequent statistical testing.</p>
+<p>EDA is not a pre-established path with ordered steps to follow. What you do, what you plot depends on the particularities of the data you have and the questions you aim to answer; it is completely context dependent. Moreover, many exploratory analyses you perform depend on what previous explorations informed, adding to the global understanding of the data. However, there are basic exploratory steps that establish a foundation to move forward in your analyses.</p>
+<p>In transcriptomic data analysis, EDA includes exploring the read count distribution, detection of lowly-expressed genes and poor-quality samples/cells, determine biological and technical sources of gene expression variation, and detect confounding factors.</p>
+<p>In this blog post, you will learn how to perform EDA by exploring an example gene expression data set, hoping to provide a methodological but flexible framework for you to guide your own data analysis.</p>
 </section>
 <section id="what-youll-learn-here" class="level1">
 <h1>What you’ll learn here</h1>
+<ul>
+<li><p>Know the type of exploratory analyses that can be done for RNA-seq data and the rationale behind them.</p></li>
+<li><p>Understand the insights that can be derived from explorations and how they inform posterior analysis decisions.</p></li>
+<li><p>Learn of helpful visualization tools to explore your data.</p></li>
+</ul>
 </section>
 <section id="an-example-data-set" class="level1">
 <h1>An example data set</h1>
 <section id="download-data" class="level2">
 <h2 class="anchored" data-anchor-id="download-data">Download data</h2>
-<p>We’ll use <a href="https://rna.recount.bio"><em>recount3</em></a> <span class="citation" data-cites="leonardocollado-torres2020 wilks2021a">(<a href="#ref-leonardocollado-torres2020" role="doc-biblioref">Leonardo Collado-Torres 2020</a>; <a href="#ref-wilks2021a" role="doc-biblioref">Wilks et al. 2021</a>)</span> package to download real gene expression data from a transcriptomic study, including sample metadata and QC metrics that will be helpful to illustrate variable associations with gene expression levels.</p>
+<p>We’ll use <a href="https://rna.recount.bio"><em>recount3</em></a> <span class="citation" data-cites="leonardocollado-torres2020 wilks2021a">(<a href="#ref-leonardocollado-torres2020" role="doc-biblioref">Leonardo Collado-Torres 2020</a>; <a href="#ref-wilks2021a" role="doc-biblioref">Wilks et al. 2021</a>)</span> package to download real gene expression data from a transcriptomic study, including sample metadata and quality-control (QC) metrics.</p>
 <p>The chosen study can be found in the Sequence Read Archive (<a href="https://www.ncbi.nlm.nih.gov/sra">SRA</a>) under ID <code>SRP107565</code>, and is titled “<strong>Multiomics Profiling Establishes the Polypharmacology of FDA-Approved CDK4/6 Inhibitors and the Potential for Differential Clinical Activity”</strong> (<a href="10.1016/j.chembiol.2019.05.005">Marc Hafner et al., 2019</a>).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(recount3)</span>
@@ -261,7 +290,7 @@ div.csl-indent {
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Download all available projects in human in recount3</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>human_projects <span class="ot">&lt;-</span> <span class="fu">available_projects</span>()</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Download gene expression data and metadata from </span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Download gene expression data and metadata from SRP107565 study</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>proj_info <span class="ot">&lt;-</span> <span class="fu">subset</span>(</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    human_projects,</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    project <span class="sc">==</span> <span class="st">"SRP107565"</span> <span class="sc">&amp;</span> project_type <span class="sc">==</span> <span class="st">"data_sources"</span>,</span>
@@ -314,10 +343,10 @@ ENSG00000278198.1  ENSEMBL     gene      1468</code></pre>
 </div>
 </div>
 </section>
-<section id="study-design-and-objectives" class="level2">
-<h2 class="anchored" data-anchor-id="study-design-and-objectives">Study design and objectives</h2>
-<p>In this study, the authors performed transcriptomic, proteomic, and phenotypic assays to compare the activities of 3 inhibitors of cyclin-dependent kinases 4/6 (CDK4/6): abemaciclib, palbociclib, and ribociclib, which are used to treat hormone receptor-positive breast cancer. For our purposes, only transcriptomic data have been downloaded to be explored.</p>
-<p>Specifically, in the transcriptomic experiment, 7 breast cancer human cell lines were drug-treated with <span style="color: #EE7621"><strong>0.3</strong></span>, <span style="color: #CD3700"><strong>1</strong></span> OR <span style="color: #8B2500"><strong>3</strong></span> µM of <span style="color: #0000FF"><strong>abemaciclib</strong></span>, <span style="color: #EE3B3B"><strong>palbociclib</strong></span>, OR <span style="color: #CDC673"><strong>ribociclib</strong></span> (OR untreated = <span style="color: #A6A6A6"><strong>control</strong></span> <strong>=</strong> drug concentration of <span style="color: #A6A6A6"><strong>0</strong></span> µM), and mRNA sequencing was performed after <strong>6</strong> OR <span style="color: #00CD66"><strong>24</strong></span> hrs of exposure.</p>
+<section id="study-design-and-aims" class="level2">
+<h2 class="anchored" data-anchor-id="study-design-and-aims">Study design and aims</h2>
+<p>In this study, the authors performed transcriptomic, proteomic, biochemical, and phenotypic assays to compare the activities of 3 inhibitors of cyclin-dependent kinases 4/6 (CDK4/6): abemaciclib, palbociclib, and ribociclib, which are used to treat hormone receptor-positive breast cancer. For our purposes, only transcriptomic data have been downloaded to be explored.</p>
+<p>Specifically, in the transcriptomic experiment, 7 breast cancer human cell lines were drug-treated with <span style="color: #EE7621"><strong>0.3</strong></span>, <span style="color: #CD3700"><strong>1</strong></span> OR <span style="color: #8B2500"><strong>3</strong></span> µM of <span style="color: #0000FF"><strong>abemaciclib</strong></span>, <span style="color: #EE3B3B"><strong>palbociclib</strong></span>, OR <span style="color: #CDC673"><strong>ribociclib</strong></span> (OR untreated = <span style="color: #A6A6A6"><strong>control</strong></span> <strong>=</strong> drug concentration of <span style="color: #A6A6A6"><strong>0</strong></span> µM), and mRNA sequencing was performed after <strong>6</strong> OR <span style="color: #00CD66"><strong>24</strong></span> hrs of exposure. Including replicates, a total of 216 samples were sequenced.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/study_design.png" class="img-fluid figure-img" width="363"></p>
@@ -331,57 +360,49 @@ ENSG00000278198.1  ENSEMBL     gene      1468</code></pre>
 <pre><code>[1] 63856   216</code></pre>
 </div>
 </div>
-<p>Processing a little the sample attributes contained in <code>sra.sample_attributes</code> variable, we can check the number of samples from each cell line, treated with each drug, at each concentration, and time. Let’s add individual columns in the sample metadata for these variables.</p>
+<p>Processing the sample attributes contained in <code>sra.sample_attributes</code>, we can check the number of samples from each cell line, treated with each drug, at each concentration, and time. Let’s add individual columns in the sample metadata for these variables.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'tidyr'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:S4Vectors':
-
-    expand</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Sample attributes</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Sample attributes</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "agent;;Abemaciclib|cell line;;BT20|dose;;0.3 uM|source_name;;BT20 breast cancer cell line|time;;6 hr"
 [2] "agent;;Abemaciclib|cell line;;BT20|dose;;0.3 uM|source_name;;BT20 breast cancer cell line|time;;6 hr"
 [3] "agent;;Palbociclib|cell line;;BT20|dose;;3 uM|source_name;;BT20 breast cancer cell line|time;;6 hr"  </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Divide each string by "|" and extract drug</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Drug <span class="ot">=</span> <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">1</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples treated with each drug</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Drug)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Divide each string by "|" and extract drug</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Drug <span class="ot">=</span> <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">1</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples treated with each drug</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Drug)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Abemaciclib     Control Palbociclib  Ribociclib 
          84          28          52          52 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples of each cell line</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Cell_line <span class="ot">=</span> <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Cell_line)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples of each cell line</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Cell_line <span class="ot">=</span> <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Cell_line)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
    BT20   BT549 HCC1419 HCC1806  HS578T    MCF7    T47D 
      32      32      32      32      32      24      32 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples treated with each dose</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Concentration <span class="ot">=</span>  <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">3</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Concentration)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples treated with each dose</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Concentration <span class="ot">=</span>  <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">3</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Concentration)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
   0 uM 0.3 uM   1 uM   3 uM 
     28     80      4    104 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples sequenced after each time</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Time <span class="ot">=</span>  <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">5</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Num of samples sequenced after each time</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>rse<span class="sc">$</span>Time <span class="ot">=</span>  <span class="fu">sapply</span>(rse<span class="sc">$</span>sra.sample_attributes, <span class="cf">function</span>(x){<span class="fu">strsplit</span>(<span class="fu">strsplit</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)[[<span class="dv">1</span>]][<span class="dv">5</span>], <span class="st">";;"</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]}) <span class="sc">%&gt;%</span> unname</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rse<span class="sc">$</span>Time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 24 hr  6 hr 
@@ -389,24 +410,128 @@ Abemaciclib     Control Palbociclib  Ribociclib
 </div>
 </div>
 </section>
-<section id="data-variables" class="level2">
-<h2 class="anchored" data-anchor-id="data-variables">Data variables</h2>
-<p>The following are quality control metrics collected in recount3</p>
-
-
-
+<section id="sample-variables" class="level2">
+<h2 class="anchored" data-anchor-id="sample-variables">Sample variables</h2>
+<p>In any EDA, we first need to understand what the sample variables in the metadata stand for in order to interpret any insights derived from them accurately. A second important consideration is that, even when there are well-established QC metrics used to filter samples, exploring a broader set of them is conveninent to find unexpected sample quality differences.</p>
+<p>We start by defining the sample-level variables we’ll explore in our EDA.</p>
+<section id="main-sample-attributes" class="level3">
+<h3 class="anchored" data-anchor-id="main-sample-attributes">Main sample attributes</h3>
+<ul>
+<li><p><code>Cell_line</code>: name of breast cancer cell line.</p></li>
+<li><p><code>Drug</code>: the drug with which a given cell line was treated.</p></li>
+<li><p><code>Concentration</code>: the concentration of the drug administered to the cell line.</p></li>
+<li><p><code>Time</code>: drug exposure time for each cell line.</p></li>
+</ul>
 </section>
+<section id="quality-control-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="quality-control-metrics">Quality-control metrics</h3>
+<p>QC metrics are measurements of a sample’s RNA composition and the mapping of its reads to a reference genome, reflecting the integrity of the cells, and the quality of the mRNA extraction, library preparation, sequencing, and read alignment steps.</p>
+<p>The following metrics were collected by <em>recount3</em> through a number of tools.</p>
+<ul>
+<li><p>Alignment-related metrics obtained through <a href="https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf">STAR</a> <span class="citation" data-cites="dobin2012">(<a href="#ref-dobin2012" role="doc-biblioref">Dobin et al. 2012</a>)</span>:</p>
+<ul>
+<li><p><strong><code>all_mapped_reads</code></strong>: total number of aligned reads aligned.</p></li>
+<li><p><strong><code>uniquely_mapped_reads_%</code></strong>: number of reads that mapped to a single locus, of the total input reads.</p></li>
+<li><p><strong><code>uniquely_mapped_reads_number</code></strong>: number of reads that mapped to a single locus.</p></li>
+<li><p><strong><code>%_of_reads_mapped_to_multiple_loci</code></strong>: number of reads that mapped to multiple loci, of the input reads.</p></li>
+<li><p><strong><code>number_of_reads_mapped_to_multiple_loci</code></strong>: number of reads that mapped to multiple loci.</p></li>
+<li><p><strong><code>%_of_reads_unmapped:_other</code></strong>: reads that didn’t map due to no acceptable seed/windows, of all input reads.</p></li>
+<li><p><strong><code>number_of_reads_unmapped:_other</code></strong>: number of reads left unmapped due to no acceptable seed/windows.</p></li>
+<li><p><strong><code>%_of_reads_unmapped:_too_many_mismatches</code></strong>: Number of reads where best alignment has more mismatches than max allowed number of mismatches divided by number of input reads</p></li>
+<li><p><strong><code>number_of_reads_unmapped:_too_many_mismatches</code></strong>: Number of reads where best alignment has more mismatches than max allowed number of mismatches</p></li>
+<li><p><strong><code>%_of_reads_unmapped:_too_short</code></strong>: Number of reads where best alignment was shorter than min allowed mapped length divided by number of input reads.</p></li>
+<li><p><strong><code>number_of_reads_unmapped:_too_short</code></strong>: Number of reads where best alignment was shorter than min allowed mapped length.</p></li>
+</ul></li>
+<li><p><a href="http://www.htslib.org">SAMtools</a> <span class="citation" data-cites="danecek2021">(<a href="#ref-danecek2021" role="doc-biblioref">Danecek et al. 2021</a>)</span> statistics for chromosome-specific mapping reads. Of special interest are the reads mapping to the mitochondrial and sex chromosomes (see explanation in Step 1 XXXXX):</p>
+<ul>
+<li><p><strong><code>aligned_reads%.chrm</code></strong>: Percent of reads aligning to the mitochondrial genome.</p></li>
+<li><p><strong><code>aligned_reads%.chrx</code></strong>: Percent of reads aligning to chromosome X.</p></li>
+<li><p><strong><code>aligned_reads%.chry</code></strong>: Precent of reads aligning to chromosome Y.</p></li>
+</ul></li>
+<li><p>Sequencing coverage summaries in gene annotations by <a href="https://github.com/ChristopherWilks/megadepth">megadepth</a> (<code>bc</code>) <span class="citation" data-cites="wilks2020">(<a href="#ref-wilks2020" role="doc-biblioref">Wilks et al. 2020</a>)</span> and <a href="https://subread.sourceforge.net/featureCounts.html"><em>featureCounts</em></a> <span class="citation" data-cites="liao2013">(<a href="#ref-liao2013" role="doc-biblioref">Liao, Smyth, and Shi 2013</a>)</span> (<code>fc</code>):</p>
+<ul>
+<li><p><strong><code>bc_auc.all_reads_all_bases</code></strong>: Area under coverage (total depth of coverage evaluated at all bases) for all alignments</p></li>
+<li><p><strong><code>bc_auc.all_reads_annotated_bases</code></strong>: Area under coverage for all alignments, but only for bases in annotated exons</p></li>
+<li><p><strong><code>bc_auc.unique_reads_all_bases</code></strong>: Area under coverage for uniquely aligned reads</p></li>
+<li><p><strong><code>bc_auc.unique_reads_annotated_bases</code></strong>: Area under coverage for uniquely aligned reads, but only for bases in annotated exons.</p></li>
+<li><p><strong><code>exon_fc_count_all.total</code></strong>: Total number of fragments, including multi-mappers, input to&nbsp;<code>featureCounts</code></p></li>
+<li><p><strong><code>exon_fc_count_all.assigned</code></strong>: Number of fragments, including multi-mappers, assigned by&nbsp;<code>featureCounts</code>&nbsp;to an exon</p></li>
+<li><p><strong><code>exon_fc_count_unique.total</code></strong>: Total number of uniquely mapping fragments input to&nbsp;<code>featureCounts</code></p></li>
+<li><p><strong><code>exon_fc_count_unique.assigned</code></strong>: Number of uniquely mapping fragments assigned by&nbsp;<code>featureCounts</code>&nbsp;to an exon.</p></li>
+<li><p><strong><code>gene_fc_count_all.total</code></strong>: Total number of fragments, including multi-mappers, input to&nbsp;<code>featureCounts</code></p></li>
+<li><p><strong><code>gene_fc_count_all.assigned</code></strong>: Number of fragments, including multi-mappers, assigned by&nbsp;<code>featureCounts</code>&nbsp;to a gene</p></li>
+<li><p><strong><code>gene_fc_count_unique.total</code></strong>: Total number of uniquely mapping fragments input to&nbsp;<code>featureCounts</code></p></li>
+<li><p><strong><code>gene_fc_count_unique.assigned</code></strong>: Number of uniquely mapping fragments assigned by&nbsp;<code>featureCounts</code>&nbsp;to a gene.</p></li>
+</ul></li>
+</ul>
+<p>For more details of the computation of these metrics please refer to <em>recount3</em> <a href="http://rna.recount.bio/docs/quality-check-fields.html">documentation</a> and each tool’s manual.</p>
+</section>
+</section>
+</section>
+<section id="exploring-count-distribution" class="level1">
+<h1>1. Exploring count distribution</h1>
+</section>
+<section id="filtering-lowly-expressed-genes" class="level1">
+<h1>2. Filtering lowly-expressed genes</h1>
+<p><a href="https://carpentries-incubator.github.io/rna-seq-data-for-ml/episode5.html" class="uri">https://carpentries-incubator.github.io/rna-seq-data-for-ml/episode5.html</a></p>
+</section>
+<section id="filtering-low-quality-samples" class="level1">
+<h1>3. Filtering low-quality samples</h1>
+<section id="explore-differences-in-qc-metrics-between-sample-groups" class="level2">
+<h2 class="anchored" data-anchor-id="explore-differences-in-qc-metrics-between-sample-groups">3.1 Explore differences in QC metrics between sample groups</h2>
+<p>Explore sex differenes: sexual chr % can be helpful in, for instance, confirming the sex of the individual sequenced based on alignments to sex chromosomes</p>
+</section>
+<section id="explore-relationships-between-sample-variables" class="level2">
+<h2 class="anchored" data-anchor-id="explore-relationships-between-sample-variables">3.2 Explore relationships between sample variables</h2>
+</section>
+<section id="identify-sample-outliers-boxplots-and-pca" class="level2">
+<h2 class="anchored" data-anchor-id="identify-sample-outliers-boxplots-and-pca">3.3 Identify sample outliers (Boxplots and PCA)</h2>
+</section>
+</section>
+<section id="variable-associations-with-gene-expression" class="level1">
+<h1>4. Variable associations with gene expression</h1>
+<p>Identify technical sources of data variability to then reduce the systematic noise from the data.</p>
+<section id="dimensionality-reduction" class="level2">
+<h2 class="anchored" data-anchor-id="dimensionality-reduction">4.1 Dimensionality reduction</h2>
+</section>
+<section id="correlation-between-variables" class="level2">
+<h2 class="anchored" data-anchor-id="correlation-between-variables">4.2 Correlation between variables</h2>
+</section>
+<section id="partition-of-gene-expression-variance" class="level2">
+<h2 class="anchored" data-anchor-id="partition-of-gene-expression-variance">4.2 Partition of gene expression variance</h2>
+</section>
+</section>
+<section id="conclusions" class="level1">
+<h1>Conclusions</h1>
+<p>After this process (and the obvious reason why this is important) you’ll have solid foundations to move forward making informed and justified decisions, test hypothesis and to draw meaningful conclusions from the analyses. At the end, all the gained insights will guide unveiling the true hidden values in the data.</p>
+<p>Answering these questions we may be able to formulate&nbsp;<strong>hypothesis</strong>&nbsp;that could guide future analysis or experiments.</p>
+<p>Very unshared is my personal excitement when performing this step. But EDA is extremely illuminating when performed comprehensively and you may find an aswer to your data issues or lack of signals by looking back to this step.</p>
+
+
+
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-danecek2021" class="csl-entry" role="listitem">
+Danecek, Petr, James K Bonfield, Jennifer Liddle, John Marshall, Valeriu Ohan, Martin O Pollard, Andrew Whitwham, et al. 2021. <span>“Twelve Years of SAMtools and BCFtools.”</span> <em>GigaScience</em> 10 (2). <a href="https://doi.org/10.1093/gigascience/giab008">https://doi.org/10.1093/gigascience/giab008</a>.
+</div>
+<div id="ref-dobin2012" class="csl-entry" role="listitem">
+Dobin, Alexander, Carrie A. Davis, Felix Schlesinger, Jorg Drenkow, Chris Zaleski, Sonali Jha, Philippe Batut, Mark Chaisson, and Thomas R. Gingeras. 2012. <span>“STAR: Ultrafast Universal RNA-Seq Aligner.”</span> <em>Bioinformatics</em> 29 (1): 15–21. <a href="https://doi.org/10.1093/bioinformatics/bts635">https://doi.org/10.1093/bioinformatics/bts635</a>.
+</div>
 <div id="ref-huber2015" class="csl-entry" role="listitem">
 Huber, Wolfgang, Vincent J Carey, Robert Gentleman, Simon Anders, Marc Carlson, Benilton S Carvalho, Hector Corrada Bravo, et al. 2015. <span>“Orchestrating High-Throughput Genomic Analysis with Bioconductor.”</span> <em>Nature Methods</em> 12 (2): 115–21. <a href="https://doi.org/10.1038/nmeth.3252">https://doi.org/10.1038/nmeth.3252</a>.
 </div>
 <div id="ref-leonardocollado-torres2020" class="csl-entry" role="listitem">
 Leonardo Collado-Torres. 2020. <span>“Recount3.”</span> <a href="https://doi.org/10.18129/B9.BIOC.RECOUNT3">https://doi.org/10.18129/B9.BIOC.RECOUNT3</a>.
 </div>
+<div id="ref-liao2013" class="csl-entry" role="listitem">
+Liao, Yang, Gordon K. Smyth, and Wei Shi. 2013. <span>“featureCounts: An Efficient General Purpose Program for Assigning Sequence Reads to Genomic Features.”</span> <em>Bioinformatics</em> 30 (7): 923–30. <a href="https://doi.org/10.1093/bioinformatics/btt656">https://doi.org/10.1093/bioinformatics/btt656</a>.
+</div>
 <div id="ref-martinmorgan2017" class="csl-entry" role="listitem">
 Martin Morgan, Valerie Obenchain. 2017. <span>“SummarizedExperiment.”</span> <a href="https://doi.org/10.18129/B9.BIOC.SUMMARIZEDEXPERIMENT">https://doi.org/10.18129/B9.BIOC.SUMMARIZEDEXPERIMENT</a>.
+</div>
+<div id="ref-wilks2020" class="csl-entry" role="listitem">
+Wilks, Christopher, Omar Ahmed, Daniel N. Baker, David Zhang, Leonardo Collado-Torres, and Ben Langmead. 2020. <span>“Megadepth: Efficient Coverage Quantification for BigWigs and BAMs.”</span> <a href="http://dx.doi.org/10.1101/2020.12.17.423317">http://dx.doi.org/10.1101/2020.12.17.423317</a>.
 </div>
 <div id="ref-wilks2021a" class="csl-entry" role="listitem">
 Wilks, Christopher, Shijie C. Zheng, Feng Yong Chen, Rone Charles, Brad Solomon, Jonathan P. Ling, Eddie Luidy Imada, et al. 2021. <span>“Recount3: Summaries and Queries for Large-Scale RNA-Seq Expression and Splicing.”</span> <em>Genome Biology</em> 22 (1). <a href="https://doi.org/10.1186/s13059-021-02533-6">https://doi.org/10.1186/s13059-021-02533-6</a>.

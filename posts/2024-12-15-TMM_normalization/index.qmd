@@ -1,0 +1,138 @@
+---
+title: "Trimmed Mean of M values"
+description: ""
+author:
+  - name: Daianna Gonzalez-Padilla
+date: 2024-12-12
+categories:
+  - "Normalization"
+  - "Trimmed Mean of M values"
+  - "Highly-expressed genes"
+  - "Differential Gene Expression"
+  - "RNA-seq"
+  
+image: "images/TODO"
+bibliography: references.bib
+---
+
+⚠️ This page is under development.
+
+# Introduction
+
+# What you'll learn here
+
+# 
+
+```{r plot_raw_expr, fig.height = 5}
+
+library(ComplexHeatmap)
+library(circlize)
+
+## 15 samples across 3 conditions 
+conditions <- rep(c("A", "B", "C"), c(4, 5, 6))
+
+## Raw counts for 30 genes across the 15 samples
+expr <- matrix(data = sample(c(1:100), replace = T, size = 450), nrow = 30)
+colnames(expr) <- conditions
+rownames(expr) <- paste("gene", 1:30)
+
+## Introduce 3 highly-expressed genes in condition A only
+expr[c("gene 5", "gene 6", "gene 7"), 1:4] <- sample(c(1000:2000), replace = T, size = 12)
+
+
+## Plot
+col_anno <- HeatmapAnnotation(
+  Condition = anno_block(gp = gpar(fill = c("orchid1", "palegreen1", "deepskyblue1"), col = "black"), show_name = T), 
+  annotation_name_gp =  gpar(fontsize = 9, fontface = "bold"))
+
+Heatmap(expr,
+        name = "Raw counts", 
+        top_annotation = col_anno, 
+        cluster_rows = FALSE,
+        cluster_columns = FALSE,
+        col = colorRamp2(c(1, 10, 100, 2000), c("linen", "mistyrose2", "rosybrown2", "darkred")),
+        column_split = conditions,
+        border = TRUE,
+        show_row_names = TRUE,
+        column_title = "Samples",
+        column_title_gp = gpar(fontsize = 10, fontface = "bold"),
+        column_names_side = "top",
+        column_names_gp = gpar(fontsize = 9, fontface = "bold"),
+        row_names_gp = gpar(fontsize = 8),
+        row_names_side = "left",
+        column_names_rot = 0,
+        heatmap_width = unit(12.5, "cm"),
+        heatmap_height = unit(12.5, "cm")
+)
+```
+
+What's clear from the plot of raw counts is that, by design, genes 5, 6, and 7 are more highly-expressed in condition A than B and C. Let's formally assess the differential expression of all genes in A vs B, A vs C, and B vs C, with Two Sample t-tests (assuming counts are aprox. normal).
+
+```{r t_test_raw_counts}
+
+
+pvals_A_vs_B <- vector()
+pvals_A_vs_C <- vector()
+pvals_B_vs_C <- vector()
+
+tstats_A_vs_B <- vector()
+tstats_A_vs_C <- vector()
+tstats_B_vs_C <- vector()
+
+for(i in 1:nrow(expr)){
+  
+## t-test for gene expr in A vs B
+A_vs_B_expr <- expr[i, colnames(expr) %in% c("A", "B")]
+formula <- A_vs_B_expr ~ Condition
+results_A_vs_B <- t.test(formula = formula, data = data.frame("Condition" = conditions[conditions %in% c("A", "B")]))
+
+## t-test for gene expr in A vs C
+A_vs_C_expr <- expr[i, colnames(expr) %in% c("A", "C")]
+formula <- A_vs_C_expr ~ Condition
+results_A_vs_C <- t.test(formula = formula, data = data.frame("Condition" = conditions[conditions %in% c("A", "C")]))
+
+## t-test for gene expr in B vs C
+B_vs_C_expr <- expr[i, colnames(expr) %in% c("B", "C")]
+formula <- B_vs_C_expr ~ Condition
+results_B_vs_C <- t.test(formula = formula, data = data.frame("Condition" = conditions[conditions %in% c("B", "C")]))
+
+
+}
+
+## Plot t-stats (expression change size)
+
+```
+
+```{r}
+library(ggplot2)
+
+## Sample library sizes
+library_sizes <- data.frame("lib_size" = apply(expr, 2, sum),
+                            "sample" = paste("sample", 1:15),
+                            "Condition" = conditions)
+
+## Order samples for plotting
+library_sizes$sample <- factor(library_sizes$sample, levels = unique(library_sizes$sample))
+
+## Bar plot
+ggplot(data = library_sizes, aes(x = sample, y = lib_size, fill = Condition)) + 
+  geom_bar(stat = "identity", colour = "black") + 
+  geom_text(aes(y = lib_size + 200, label = lib_size), size = 3) +
+  theme_bw() + 
+  labs(x = "", y = "Total read counts") + 
+  scale_fill_manual(values = c("A" = "orchid1", "B" = "palegreen1", "C" = "deepskyblue1")) +
+  theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1), 
+        legend.title = element_text(face = "bold", size = 10), 
+        legend.text = element_text(face = "bold", size = 9))
+
+
+```
+
+```{r}
+
+## Create pool of reads per gene in each sample
+reads_per_gene_per_sample <- apply(expr, 2, function(sample) {rep(rownames(expr), sample)})
+
+## Randomly select 1000 reads per sample
+reads_sample <- lapply(reads_per_gene_per_sample, function(sample) {sample(sample, size = 1000, replace = FALSE)})
+```

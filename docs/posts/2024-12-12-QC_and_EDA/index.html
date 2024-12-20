@@ -206,8 +206,12 @@ div.csl-indent {
   <li><a href="#quality-control-metrics" id="toc-quality-control-metrics" class="nav-link" data-scroll-target="#quality-control-metrics">Quality-control metrics</a></li>
   </ul></li>
   </ul></li>
-  <li><a href="#exploring-count-distribution" id="toc-exploring-count-distribution" class="nav-link" data-scroll-target="#exploring-count-distribution">1. Exploring count distribution</a></li>
-  <li><a href="#filtering-lowly-expressed-genes" id="toc-filtering-lowly-expressed-genes" class="nav-link" data-scroll-target="#filtering-lowly-expressed-genes">2. Filtering lowly-expressed genes</a></li>
+  <li><a href="#exploring-count-data-todo" id="toc-exploring-count-data-todo" class="nav-link" data-scroll-target="#exploring-count-data-todo">1. Exploring count data TODO</a>
+  <ul class="collapse">
+  <li><a href="#read-count-distribution-todo" id="toc-read-count-distribution-todo" class="nav-link" data-scroll-target="#read-count-distribution-todo">1.1 Read count distribution TODO</a></li>
+  <li><a href="#count-log-normalization-todo" id="toc-count-log-normalization-todo" class="nav-link" data-scroll-target="#count-log-normalization-todo">1.2 Count log-normalization TODO</a></li>
+  <li><a href="#filtering-lowly-expressed-genes-todo" id="toc-filtering-lowly-expressed-genes-todo" class="nav-link" data-scroll-target="#filtering-lowly-expressed-genes-todo">1.3 Filtering lowly-expressed genes TODO</a></li>
+  </ul></li>
   <li><a href="#filtering-low-quality-samples" id="toc-filtering-low-quality-samples" class="nav-link" data-scroll-target="#filtering-low-quality-samples">3. Filtering low-quality samples</a>
   <ul class="collapse">
   <li><a href="#explore-differences-in-qc-metrics-between-sample-groups" id="toc-explore-differences-in-qc-metrics-between-sample-groups" class="nav-link" data-scroll-target="#explore-differences-in-qc-metrics-between-sample-groups">3.1 Explore differences in QC metrics between sample groups</a></li>
@@ -264,18 +268,18 @@ div.csl-indent {
 <p>⚠️ This page is under development.</p>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p>Saying that over 50% of biological data analysis is about exploring and cleaning data is not an exaggeration. In fact, that’s the way it’s supposed to be. Biological data are inherently noisy. Not only biological differences exist between cells and samples, but all sampling and experimental procedures for data generation, introduce variability, errors, and biases into the data.</p>
-<p>Exploratory Data Analysis (EDA) is a primordial intial step in which we get to know the overall and specific aspects of the data. This is a process where we create tons of plots to uncover and visualize the data structures, patterns, relationships, and outliers, through which we identify data issues, drive hypoteses, and guide subsequent statistical testing.</p>
+<p>Saying that over 50% of biological data analysis is about exploring and cleaning data is not an exaggeration. In fact, that’s the way it’s supposed to be. Biological data are inherently noisy. Not only biological differences exist between cells and samples, but all sampling and experimental procedures for data generation, introduce variability, errors, and biases into the data that we have to first spot to then clean or correct.</p>
+<p>Exploratory Data Analysis (EDA) is a primordial initial step in which we get to know the overall and specific aspects of the data. This is a process where we create tons of plots to uncover and visualize the data structures, patterns, relationships, and outliers, through which we identify data issues, drive hypoteses, and guide subsequent statistical testing.</p>
 <p>EDA is not a pre-established path with ordered steps to follow. What you do, what you plot depends on the particularities of the data you have and the questions you aim to answer; it is completely context dependent. Moreover, many exploratory analyses you perform depend on what previous explorations informed, adding to the global understanding of the data. However, there are basic exploratory steps that establish a foundation to move forward in your analyses.</p>
-<p>In transcriptomic data analysis, EDA includes exploring the read count distribution, detection of lowly-expressed genes and poor-quality samples/cells, determine biological and technical sources of gene expression variation, and detect confounding factors.</p>
-<p>In this blog post, you will learn how to perform EDA by exploring an example gene expression data set, hoping to provide a methodological but flexible framework for you to guide your own data analysis.</p>
+<p>In transcriptomic data analysis, EDA includes exploring the read count distribution, filtering of lowly-expressed genes and poor-quality samples/cells, determine biological and technical sources of gene expression variation, and detect confounding factors.</p>
+<p>In this blog post, you will learn how to perform EDA by exploring an example gene expression data set, aiming to provide a methodological but flexible framework for you to guide your own exploratory analysis.</p>
 </section>
 <section id="what-youll-learn-here" class="level1">
 <h1>What you’ll learn here</h1>
 <ul>
 <li><p>Know the type of exploratory analyses that can be done for RNA-seq data and the rationale behind them.</p></li>
 <li><p>Understand the insights that can be derived from explorations and how they inform posterior analysis decisions.</p></li>
-<li><p>Learn of helpful visualization tools to explore your data.</p></li>
+<li><p>Learn of poweful visualization tools to explore your data.</p></li>
 </ul>
 </section>
 <section id="an-example-data-set" class="level1">
@@ -283,7 +287,7 @@ div.csl-indent {
 <section id="download-data" class="level2">
 <h2 class="anchored" data-anchor-id="download-data">Download data</h2>
 <p>We’ll use <a href="https://rna.recount.bio"><em>recount3</em></a> <span class="citation" data-cites="leonardocollado-torres2020 wilks2021a">(<a href="#ref-leonardocollado-torres2020" role="doc-biblioref">Leonardo Collado-Torres 2020</a>; <a href="#ref-wilks2021a" role="doc-biblioref">Wilks et al. 2021</a>)</span> package to download real gene expression data from a transcriptomic study, including sample metadata and quality-control (QC) metrics.</p>
-<p>The chosen study can be found in the Sequence Read Archive (<a href="https://www.ncbi.nlm.nih.gov/sra">SRA</a>) under ID <code>SRP107565</code>, and is titled “<strong>Multiomics Profiling Establishes the Polypharmacology of FDA-Approved CDK4/6 Inhibitors and the Potential for Differential Clinical Activity”</strong> (<a href="10.1016/j.chembiol.2019.05.005">Marc Hafner et al., 2019</a>).</p>
+<p>The chosen study can be found in the Sequence Read Archive (<a href="https://www.ncbi.nlm.nih.gov/sra">SRA</a>) under ID <code>SRP107565</code>, and it’s titled “<strong>Multiomics Profiling Establishes the Polypharmacology of FDA-Approved CDK4/6 Inhibitors and the Potential for Differential Clinical Activity”</strong> (<a href="10.1016/j.chembiol.2019.05.005">Marc Hafner et al., 2019</a>).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(recount3)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -346,14 +350,14 @@ ENSG00000278198.1  ENSEMBL     gene      1468</code></pre>
 <section id="study-design-and-aims" class="level2">
 <h2 class="anchored" data-anchor-id="study-design-and-aims">Study design and aims</h2>
 <p>In this study, the authors performed transcriptomic, proteomic, biochemical, and phenotypic assays to compare the activities of 3 inhibitors of cyclin-dependent kinases 4/6 (CDK4/6): abemaciclib, palbociclib, and ribociclib, which are used to treat hormone receptor-positive breast cancer. For our purposes, only transcriptomic data have been downloaded to be explored.</p>
-<p>Specifically, in the transcriptomic experiment, 7 breast cancer human cell lines were drug-treated with <span style="color: #EE7621"><strong>0.3</strong></span>, <span style="color: #CD3700"><strong>1</strong></span> OR <span style="color: #8B2500"><strong>3</strong></span> µM of <span style="color: #0000FF"><strong>abemaciclib</strong></span>, <span style="color: #EE3B3B"><strong>palbociclib</strong></span>, OR <span style="color: #CDC673"><strong>ribociclib</strong></span> (OR untreated = <span style="color: #A6A6A6"><strong>control</strong></span> <strong>=</strong> drug concentration of <span style="color: #A6A6A6"><strong>0</strong></span> µM), and mRNA sequencing was performed after <strong>6</strong> OR <span style="color: #00CD66"><strong>24</strong></span> hrs of exposure. Including replicates, a total of 216 samples were sequenced.</p>
+<p>Specifically, in the transcriptomic experiment, 7 breast cancer human cell lines were drug-treated with <span style="color: #EE7621"><strong>0.3</strong></span>, <span style="color: #CD3700"><strong>1</strong></span> OR <span style="color: #8B2500"><strong>3</strong></span> µM of <span style="color: #0000FF"><strong>abemaciclib</strong></span>, <span style="color: #EE3B3B"><strong>palbociclib</strong></span>, OR <span style="color: #CDC673"><strong>ribociclib</strong></span> (OR untreated = <span style="color: #A6A6A6"><strong>control</strong></span> <strong>=</strong> drug concentration of <span style="color: #A6A6A6"><strong>0</strong></span> µM), and mRNA sequencing was performed after <strong>6</strong> OR <span style="color: #00CD66"><strong>24</strong></span> hrs of exposure. Including replicates, a total of 216 bulk samples were sequenced.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/study_design.png" class="img-fluid figure-img" width="363"></p>
 <figcaption>Ilustration taken from <strong>Figure 1A</strong> in <a href="10.1016/j.chembiol.2019.05.005">Marc Hafner et al., 2019</a>.</figcaption>
 </figure>
 </div>
-<p>Exploring the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html"><em>RangedSummarizedExperiment</em></a> <span class="citation" data-cites="martinmorgan2017 huber2015">(<a href="#ref-martinmorgan2017" role="doc-biblioref">Martin Morgan 2017</a>; <a href="#ref-huber2015" role="doc-biblioref">Huber et al. 2015</a>)</span> object <code>rse</code> we just created, we can see we have raw expression data for 63,856 genes across 216 samples.</p>
+<p>Exploring the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html"><em>RangedSummarizedExperiment</em></a> <span class="citation" data-cites="martinmorgan2017 huber2015">(<a href="#ref-martinmorgan2017" role="doc-biblioref">Martin Morgan 2017</a>; <a href="#ref-huber2015" role="doc-biblioref">Huber et al. 2015</a>)</span> object (<code>rse</code>) we just created, we can see we have raw expression data for 63,856 genes across 216 samples.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(rse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -412,7 +416,7 @@ Abemaciclib     Control Palbociclib  Ribociclib
 </section>
 <section id="sample-variables" class="level2">
 <h2 class="anchored" data-anchor-id="sample-variables">Sample variables</h2>
-<p>In any EDA, we first need to understand what the sample variables in the metadata stand for in order to interpret any insights derived from them accurately. A second important consideration is that, even when there are well-established QC metrics used to filter samples, exploring a broader set of them is conveninent to find unexpected sample quality differences.</p>
+<p>In any EDA, we first need to know what the sample variables in the metadata stand for in order to interpret accurately any insights derived from them. A second important consideration is that, even when there are well-established QC metrics used to filter samples, exploring a broader set of them is convenient to find unexpected sample quality differences.</p>
 <p>We start by defining the sample-level variables we’ll explore in our EDA.</p>
 <section id="main-sample-attributes" class="level3">
 <h3 class="anchored" data-anchor-id="main-sample-attributes">Main sample attributes</h3>
@@ -442,7 +446,7 @@ Abemaciclib     Control Palbociclib  Ribociclib
 <li><p><strong><code>%_of_reads_unmapped:_too_short</code></strong>: Number of reads where best alignment was shorter than min allowed mapped length divided by number of input reads.</p></li>
 <li><p><strong><code>number_of_reads_unmapped:_too_short</code></strong>: Number of reads where best alignment was shorter than min allowed mapped length.</p></li>
 </ul></li>
-<li><p><a href="http://www.htslib.org">SAMtools</a> <span class="citation" data-cites="danecek2021">(<a href="#ref-danecek2021" role="doc-biblioref">Danecek et al. 2021</a>)</span> statistics for chromosome-specific mapping reads. Of special interest are the reads mapping to the mitochondrial and sex chromosomes (see explanation in Step 1 XXXXX):</p>
+<li><p><a href="http://www.htslib.org">SAMtools</a> <span class="citation" data-cites="danecek2021">(<a href="#ref-danecek2021" role="doc-biblioref">Danecek et al. 2021</a>)</span> statistics for chromosome-specific read mapping. Of special interest are the reads mapping to the mitochondrial and sex chromosomes (see explanation in Step X):</p>
 <ul>
 <li><p><strong><code>aligned_reads%.chrm</code></strong>: Percent of reads aligning to the mitochondrial genome.</p></li>
 <li><p><strong><code>aligned_reads%.chrx</code></strong>: Percent of reads aligning to chromosome X.</p></li>
@@ -464,22 +468,59 @@ Abemaciclib     Control Palbociclib  Ribociclib
 <li><p><strong><code>gene_fc_count_unique.assigned</code></strong>: Number of uniquely mapping fragments assigned by&nbsp;<code>featureCounts</code>&nbsp;to a gene.</p></li>
 </ul></li>
 </ul>
-<p>For more details of the computation of these metrics please refer to <em>recount3</em> <a href="http://rna.recount.bio/docs/quality-check-fields.html">documentation</a> and each tool’s manual.</p>
+<p>For more details on the computation of these metrics please refer to <em>recount3</em> <a href="http://rna.recount.bio/docs/quality-check-fields.html">documentation</a> and the manual of each tool.</p>
 </section>
 </section>
 </section>
-<section id="exploring-count-distribution" class="level1">
-<h1>1. Exploring count distribution</h1>
+<section id="exploring-count-data-todo" class="level1">
+<h1>1. Exploring count data TODO</h1>
+<section id="read-count-distribution-todo" class="level2">
+<h2 class="anchored" data-anchor-id="read-count-distribution-todo">1.1 Read count distribution TODO</h2>
+<p>A first thing to plot is the frequency of the raw counts across all genes and samples, before any transformation. This gives us an idea of how sparse the data are, i.e., if a large percentage of the counts are zero.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"ggplot2"</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Raw counts</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">raw_counts =</span> <span class="fu">as.vector</span>(<span class="fu">assays</span>(rse)<span class="sc">$</span>raw_counts))</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> raw_counts)) <span class="sc">+</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"lightgray"</span>) <span class="sc">+</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Raw counts"</span>, <span class="at">y =</span> <span class="st">"Frecuency"</span>) <span class="sc">+</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_classic</span>()</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">plot.margin =</span> <span class="fu">unit</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">4</span>), <span class="st">"cm"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/hist_raw_counts-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Percentage of counts that are zero</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">which</span>(<span class="fu">as.vector</span>(<span class="fu">assays</span>(rse)<span class="sc">$</span>raw_counts) <span class="sc">==</span> <span class="dv">0</span>)) <span class="sc">/</span> <span class="fu">length</span>(<span class="fu">as.vector</span>(<span class="fu">assays</span>(rse)<span class="sc">$</span>raw_counts)) <span class="sc">*</span> <span class="dv">100</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 61.05911</code></pre>
+</div>
+</div>
+<p>More than 60% of the total counts across all genes and bulk samples are 0. Even though this is a large fraction, it is not surprising as we don’t expect most genes to be expressed in every condition; scRNA-seq data is even more sparse. In <strong>step 1.3</strong> we’ll deal with lowly-expressed genes …</p>
 </section>
-<section id="filtering-lowly-expressed-genes" class="level1">
-<h1>2. Filtering lowly-expressed genes</h1>
+<section id="count-log-normalization-todo" class="level2">
+<h2 class="anchored" data-anchor-id="count-log-normalization-todo">1.2 Count log-normalization TODO</h2>
+</section>
+<section id="filtering-lowly-expressed-genes-todo" class="level2">
+<h2 class="anchored" data-anchor-id="filtering-lowly-expressed-genes-todo">1.3 Filtering lowly-expressed genes TODO</h2>
+<p>There are multiple approaches to remove zero- and lowly-expressed genes. Here we’ll adopt the approach of removing genes with less than X CPM in at least X % samples …</p>
 <p><a href="https://carpentries-incubator.github.io/rna-seq-data-for-ml/episode5.html" class="uri">https://carpentries-incubator.github.io/rna-seq-data-for-ml/episode5.html</a></p>
+</section>
 </section>
 <section id="filtering-low-quality-samples" class="level1">
 <h1>3. Filtering low-quality samples</h1>
 <section id="explore-differences-in-qc-metrics-between-sample-groups" class="level2">
 <h2 class="anchored" data-anchor-id="explore-differences-in-qc-metrics-between-sample-groups">3.1 Explore differences in QC metrics between sample groups</h2>
-<p>Explore sex differenes: sexual chr % can be helpful in, for instance, confirming the sex of the individual sequenced based on alignments to sex chromosomes</p>
+<p>Explore sex differences: sexual chr % can help to confirm the sex of the donors based on alignments to sex chromosomes.</p>
+<p><a href="https://frontlinegenomics.com/how-to-ngs-quality-control/" class="uri">https://frontlinegenomics.com/how-to-ngs-quality-control/</a></p>
+<p><a href="https://www.nature.com/articles/s41592-023-01946-4" class="uri">https://www.nature.com/articles/s41592-023-01946-4</a></p>
 </section>
 <section id="explore-relationships-between-sample-variables" class="level2">
 <h2 class="anchored" data-anchor-id="explore-relationships-between-sample-variables">3.2 Explore relationships between sample variables</h2>
@@ -503,9 +544,8 @@ Abemaciclib     Control Palbociclib  Ribociclib
 </section>
 <section id="conclusions" class="level1">
 <h1>Conclusions</h1>
-<p>After this process (and the obvious reason why this is important) you’ll have solid foundations to move forward making informed and justified decisions, test hypothesis and to draw meaningful conclusions from the analyses. At the end, all the gained insights will guide unveiling the true hidden values in the data.</p>
 <p>Answering these questions we may be able to formulate&nbsp;<strong>hypothesis</strong>&nbsp;that could guide future analysis or experiments.</p>
-<p>Very unshared is my personal excitement when performing this step. But EDA is extremely illuminating when performed comprehensively and you may find an aswer to your data issues or lack of signals by looking back to this step.</p>
+<p>EDA is extremely illuminating when performed comprehensively and you may find an answer to your data issues or lack of signals by looking back to this step.</p>
 
 
 

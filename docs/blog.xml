@@ -12,6 +12,1070 @@
 <generator>quarto-1.4.555</generator>
 <lastBuildDate>Thu, 12 Dec 2024 00:00:00 GMT</lastBuildDate>
 <item>
+  <title>What comes first: count normalization or gene/sample filtering?</title>
+  <dc:creator>Daianna Gonzalez-Padilla</dc:creator>
+  <link>https://daianna21.github.io/daianna_blog/posts/2024-01-20_Filtering_and_Normalization/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>⚠️ This page is under development.</p>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>One of my biggest questions while analyzing RNA-seq data has always been if I should first filter lowly-expressed genes and poor-quality samples and then normalize raw counts, or in what order these steps should be executed. Is there an order to follow irrespective of the filtering and normalization methods used? Does the order actually matter?</p>
+<p>As you can imagine, if I’m writting this post is because I haven’t found a clear answer to all these questions. In my search I have gained more doubts than answers, but I have realized this is not an unaddressed issue but a hard one to close. With this post demonstrations I can finally say the order does matter, but it depends on the methodologies applied for filtering and normalizing.</p>
+<p>In this post I will show the implications of the ordering of filtering and normalization steps, depending on the methods and metrics used for these analyses, with special attention to the TMM normalization method. I will offer warnings and practical recommendations for you to proceed with your analysis without racking you brain about it.</p>
+</section>
+<section id="what-youll-learn-here" class="level1">
+<h1>What you’ll learn here</h1>
+</section>
+<section id="an-example-data-set" class="level1">
+<h1>An example data set</h1>
+<p>Using <a href="https://rna.recount.bio"><em>recount3</em></a> <span class="citation" data-cites="leonardocollado-torres2020 wilks2021a">(<strong>leonardocollado-torres2020?</strong>; <strong>wilks2021a?</strong>)</span> we will download data from a study (<a href="10.1016/j.chembiol.2019.05.005">Marc Hafner et al., 2019</a>; SRA ID: <code>SRP107565</code>) where 216 bulk samples were sequenced to examine the transcriptomic changes induced by 3 drugs for treating breast cancer.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(recount3)</span>
+<span id="cb1-2"></span>
+<span id="cb1-3"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Download all available projects in human in recount3</span></span>
+<span id="cb1-4">human_projects <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">available_projects</span>()</span>
+<span id="cb1-5"></span>
+<span id="cb1-6"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Download gene expression data and metadata from SRP107565 study</span></span>
+<span id="cb1-7">proj_info <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">subset</span>(</span>
+<span id="cb1-8">    human_projects,</span>
+<span id="cb1-9">    project <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SRP107565"</span> <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&amp;</span> project_type <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"data_sources"</span>,</span>
+<span id="cb1-10">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">recount3_url =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://sciserver.org/public-data/recount3/data"</span></span>
+<span id="cb1-11">)</span>
+<span id="cb1-12"></span>
+<span id="cb1-13">proj_info</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    project organism file_source     project_home project_type n_samples
+1 SRP107565    human         sra data_sources/sra data_sources       216</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Create RangedSummarizedExperiment object to handle RNA-seq and sample data </span></span>
+<span id="cb3-2">rse <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">create_rse</span>(proj_info)</span>
+<span id="cb3-3"></span>
+<span id="cb3-4"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Gene expression data in assay(rse): for first 5 genes and 5 samples</span></span>
+<span id="cb3-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">assay</span>(rse)[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>]</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                  SRR5579425 SRR5579426 SRR5579433 SRR5579434 SRR5579435
+ENSG00000278704.1          0          0          0          0          0
+ENSG00000277400.1          0          0          0          0          0
+ENSG00000274847.1          0          0          0          0          0
+ENSG00000277428.1          0          0          0          0          0
+ENSG00000276256.1          0          0          0          0          0</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Sample metadata in colData(rse): for first 6 samples and 3 variables</span></span>
+<span id="cb5-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">head</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">colData</span>(rse)[, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>])</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DataFrame with 6 rows and 3 columns
+             rail_id external_id       study
+           &lt;integer&gt; &lt;character&gt; &lt;character&gt;
+SRR5579425   1000031  SRR5579425   SRP107565
+SRR5579426   1000045  SRR5579426   SRP107565
+SRR5579433   1000255  SRR5579433   SRP107565
+SRR5579434   1000270  SRR5579434   SRP107565
+SRR5579435   1000286  SRR5579435   SRP107565
+SRR5579436   1000301  SRR5579436   SRP107565</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Gene data in rowData(rse): for first 6 genes and 3 variables</span></span>
+<span id="cb7-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">head</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rowData</span>(rse)[, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>])</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DataFrame with 6 rows and 3 columns
+                    source     type bp_length
+                  &lt;factor&gt; &lt;factor&gt; &lt;numeric&gt;
+ENSG00000278704.1  ENSEMBL     gene      2237
+ENSG00000277400.1  ENSEMBL     gene      2179
+ENSG00000274847.1  ENSEMBL     gene      1599
+ENSG00000277428.1  ENSEMBL     gene       101
+ENSG00000276256.1  ENSEMBL     gene      2195
+ENSG00000278198.1  ENSEMBL     gene      1468</code></pre>
+</div>
+</div>
+<p>In the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html"><em>RangedSummarizedExperiment</em></a> <span class="citation" data-cites="martinmorgan2017 huber2015">(<strong>martinmorgan2017?</strong>; <strong>huber2015?</strong>)</span> object (<code>rse</code>) there are raw expression data for 63,856 genes across the 216 samples.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dim</span>(rse)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 63856   216</code></pre>
+</div>
+</div>
+</section>
+<section id="normalization" class="level1">
+<h1>Normalization</h1>
+<p>In order to compare gene expression measures between samples of two or more experimental groups, normalization of raw counts is required to correct for between-sample technical differences, such as sequencing depth. Various normalization methods have been proposed, each relying on specific methodological assumptions [].</p>
+<p>One of the most commonly adopted schemes is the trimmed mean of M values method.</p>
+<section id="normalization-methods-on-rna-seq" class="level4">
+<h4 class="anchored" data-anchor-id="normalization-methods-on-rna-seq"><strong>Normalization Methods on RNA-Seq:</strong></h4>
+</section>
+<section id="httpspmc.ncbi.nlm.nih.govarticlespmc4484837" class="level4">
+<h4 class="anchored" data-anchor-id="httpspmc.ncbi.nlm.nih.govarticlespmc4484837">- <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4484837/" class="uri">https://pmc.ncbi.nlm.nih.gov/articles/PMC4484837/</a></h4>
+<ul>
+<li><a href="https://academic.oup.com/bib/article/19/5/776/3056951" class="uri">https://academic.oup.com/bib/article/19/5/776/3056951</a></li>
+</ul>
+<p>Comparison of normalization methods</p>
+<ul>
+<li><a href="https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-015-2353-z" class="uri">https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-015-2353-z</a></li>
+</ul>
+</section>
+<section id="counts-per-million" class="level2">
+<h2 class="anchored" data-anchor-id="counts-per-million">Counts per million</h2>
+</section>
+<section id="tmm" class="level2">
+<h2 class="anchored" data-anchor-id="tmm">TMM</h2>
+<p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2864565/pdf/gb-2010-11-3-r25.pdf" class="uri">https://pmc.ncbi.nlm.nih.gov/articles/PMC2864565/pdf/gb-2010-11-3-r25.pdf</a></p>
+</section>
+</section>
+<section id="filtering-lowly-expressed-genes" class="level1">
+<h1>Filtering lowly-expressed genes</h1>
+<section id="cpm-cuttoff" class="level2">
+<h2 class="anchored" data-anchor-id="cpm-cuttoff">CPM cuttoff</h2>
+</section>
+<section id="filterbyexpr" class="level2">
+<h2 class="anchored" data-anchor-id="filterbyexpr">filterByExpr</h2>
+</section>
+</section>
+<section id="filtering-low-quality-samples" class="level1">
+<h1>Filtering low-quality samples</h1>
+<section id="qc-metrics-based-on-rawlog-normalized-counts" class="level2">
+<h2 class="anchored" data-anchor-id="qc-metrics-based-on-rawlog-normalized-counts">QC metrics based on raw/log-normalized counts</h2>
+</section>
+<section id="qc-metrics-based-on-allexpressed-genes" class="level2">
+<h2 class="anchored" data-anchor-id="qc-metrics-based-on-allexpressed-genes">QC metrics based on all/expressed genes</h2>
+<p>Samples are required in the filtering process and in TMM (sample vs sample comparison; in CPM library sizes are computed independently)</p>
+<p>For sample outlier detection we run PCA with normalized and filtered counts.</p>
+<p>It depends on if we have prior knowledge of the samples quality and if those QC metrics that are outliers imply that the RNA composition is atypical or problematic: we can plot that and compare. If there are few samples they are not likely to affect downstream results.</p>
+</section>
+</section>
+<section id="the-order-matters" class="level1">
+<h1>The order matters</h1>
+<p>What comes first normalization or filtering of genes and samples? Is TMM afected by filtering genes and samples?</p>
+<p>Cases:</p>
+<ol type="1">
+<li>Filtering genes –&gt; filtering samples –&gt; normalization (with librari size only OR TMM)</li>
+<li>Filtering genes –&gt; normalization –&gt; filtering samples</li>
+<li>Filtering samples –&gt; filtering genes –&gt; normalization</li>
+<li>Filtering samples –&gt; normalization –&gt; filtering genes</li>
+<li>Normalization –&gt; filtering samples –&gt; filtering genes</li>
+<li>Normalization –&gt; filtering genes –&gt; filtering samples</li>
+</ol>
+<section id="section" class="level4">
+<h4 class="anchored" data-anchor-id="section"></h4>
+<p>Order or norm and filtering:</p>
+<ul>
+<li><p><a href="https://support.bioconductor.org/p/116351/#:~:text=If%20you%20must%20filter%20on,same%20procedure%20as%20described%20above." class="uri">https://support.bioconductor.org/p/116351/#:~:text=If%20you%20must%20filter%20on,same%20procedure%20as%20described%20above.</a></p></li>
+<li><p><a href="https://support.bioconductor.org/p/123624/" class="uri">https://support.bioconductor.org/p/123624/</a></p></li>
+</ul>
+<p><strong>TMM normalization with low counts (why an initial round of filtering is required before TMM):</strong></p>
+<ul>
+<li><a href="https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html" class="uri">https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html</a></li>
+</ul>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <category>Normalization</category>
+  <category>Filtering</category>
+  <category>Trimmed Mean of M values</category>
+  <category>Lowly-expressed genes</category>
+  <category>Low-quality samples</category>
+  <category>RNA-seq</category>
+  <guid>https://daianna21.github.io/daianna_blog/posts/2024-01-20_Filtering_and_Normalization/</guid>
+  <pubDate>Thu, 12 Dec 2024 00:00:00 GMT</pubDate>
+  <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-01-20_Filtering_and_Normalization/images/TODO" medium="image"/>
+</item>
+<item>
+  <title>Trimmed Mean of M values</title>
+  <dc:creator>Daianna Gonzalez-Padilla</dc:creator>
+  <link>https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>⚠️ This page is under development.</p>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+</section>
+<section id="what-youll-learn-here" class="level1">
+<h1>What you’ll learn here</h1>
+</section>
+<section id="section" class="level1">
+<h1></h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(ComplexHeatmap)</span></code></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: grid</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>========================================
+ComplexHeatmap version 2.22.0
+Bioconductor page: http://bioconductor.org/packages/ComplexHeatmap/
+Github page: https://github.com/jokergoo/ComplexHeatmap
+Documentation: http://jokergoo.github.io/ComplexHeatmap-reference
+
+If you use it in published research, please cite either one:
+- Gu, Z. Complex Heatmap Visualization. iMeta 2022.
+- Gu, Z. Complex heatmaps reveal patterns and correlations in multidimensional 
+    genomic data. Bioinformatics 2016.
+
+
+The new InteractiveComplexHeatmap package can directly export static 
+complex heatmaps into an interactive Shiny app with zero effort. Have a try!
+
+This message can be suppressed by:
+  suppressPackageStartupMessages(library(ComplexHeatmap))
+========================================</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(circlize)</span></code></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>========================================
+circlize version 0.4.16
+CRAN page: https://cran.r-project.org/package=circlize
+Github page: https://github.com/jokergoo/circlize
+Documentation: https://jokergoo.github.io/circlize_book/book/
+
+If you use it in published research, please cite:
+Gu, Z. circlize implements and enhances circular visualization
+  in R. Bioinformatics 2014.
+
+This message can be suppressed by:
+  suppressPackageStartupMessages(library(circlize))
+========================================</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## 15 samples across 3 conditions </span></span>
+<span id="cb6-2">conditions <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rep</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"B"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"C"</span>), <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>))</span>
+<span id="cb6-3"></span>
+<span id="cb6-4"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Raw counts for 30 genes across the 15 samples</span></span>
+<span id="cb6-5">expr <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">matrix</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sample</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">replace =</span> T, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">450</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">nrow =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>)</span>
+<span id="cb6-6"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">colnames</span>(expr) <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> conditions</span>
+<span id="cb6-7"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rownames</span>(expr) <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"gene"</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>)</span>
+<span id="cb6-8"></span>
+<span id="cb6-9"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Introduce 3 highly-expressed genes in condition A only</span></span>
+<span id="cb6-10">expr[<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"gene 5"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"gene 6"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"gene 7"</span>), <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>] <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sample</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2000</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">replace =</span> T, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span>)</span>
+<span id="cb6-11"></span>
+<span id="cb6-12"></span>
+<span id="cb6-13"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Plot</span></span>
+<span id="cb6-14">col_anno <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">HeatmapAnnotation</span>(</span>
+<span id="cb6-15">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">Condition =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">anno_block</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">gp =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gpar</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fill =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"orchid1"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"palegreen1"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"deepskyblue1"</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">col =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"black"</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">show_name =</span> T), </span>
+<span id="cb6-16">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">annotation_name_gp =</span>  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gpar</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fontsize =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">9</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fontface =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bold"</span>))</span>
+<span id="cb6-17"></span>
+<span id="cb6-18"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">Heatmap</span>(expr,</span>
+<span id="cb6-19">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">name =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Raw counts"</span>, </span>
+<span id="cb6-20">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">top_annotation =</span> col_anno, </span>
+<span id="cb6-21">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cluster_rows =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">FALSE</span>,</span>
+<span id="cb6-22">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cluster_columns =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">FALSE</span>,</span>
+<span id="cb6-23">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">col =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">colorRamp2</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2000</span>), <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"linen"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mistyrose2"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rosybrown2"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"darkred"</span>)),</span>
+<span id="cb6-24">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">column_split =</span> conditions,</span>
+<span id="cb6-25">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">border =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>,</span>
+<span id="cb6-26">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">show_row_names =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>,</span>
+<span id="cb6-27">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">column_title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Samples"</span>,</span>
+<span id="cb6-28">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">column_title_gp =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gpar</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fontsize =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fontface =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bold"</span>),</span>
+<span id="cb6-29">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">column_names_side =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"top"</span>,</span>
+<span id="cb6-30">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">column_names_gp =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gpar</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fontsize =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">9</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fontface =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bold"</span>),</span>
+<span id="cb6-31">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">row_names_gp =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gpar</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fontsize =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>),</span>
+<span id="cb6-32">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">row_names_side =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"left"</span>,</span>
+<span id="cb6-33">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">column_names_rot =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,</span>
+<span id="cb6-34">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">heatmap_width =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">unit</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12.5</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cm"</span>),</span>
+<span id="cb6-35">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">heatmap_height =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">unit</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12.5</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cm"</span>)</span>
+<span id="cb6-36">)</span></code></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/plot_raw_expr-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>What’s clear from the plot of raw counts is that, by design, genes 5, 6, and 7 are more highly-expressed in condition A than B and C. Let’s formally assess the differential expression of all genes in A vs B, A vs C, and B vs C, with Two Sample t-tests (assuming counts are aprox. normal).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1">pvals_A_vs_B <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">vector</span>()</span>
+<span id="cb7-2">pvals_A_vs_C <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">vector</span>()</span>
+<span id="cb7-3">pvals_B_vs_C <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">vector</span>()</span>
+<span id="cb7-4"></span>
+<span id="cb7-5">tstats_A_vs_B <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">vector</span>()</span>
+<span id="cb7-6">tstats_A_vs_C <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">vector</span>()</span>
+<span id="cb7-7">tstats_B_vs_C <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">vector</span>()</span>
+<span id="cb7-8"></span>
+<span id="cb7-9"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span>(i <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nrow</span>(expr)){</span>
+<span id="cb7-10">  </span>
+<span id="cb7-11"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## t-test for gene expr in A vs B</span></span>
+<span id="cb7-12">A_vs_B_expr <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> expr[i, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">colnames</span>(expr) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"B"</span>)]</span>
+<span id="cb7-13">formula <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> A_vs_B_expr <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">~</span> Condition</span>
+<span id="cb7-14">results_A_vs_B <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">t.test</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">formula =</span> formula, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">data.frame</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Condition"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> conditions[conditions <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"B"</span>)]))</span>
+<span id="cb7-15"></span>
+<span id="cb7-16"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## t-test for gene expr in A vs C</span></span>
+<span id="cb7-17">A_vs_C_expr <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> expr[i, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">colnames</span>(expr) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"C"</span>)]</span>
+<span id="cb7-18">formula <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> A_vs_C_expr <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">~</span> Condition</span>
+<span id="cb7-19">results_A_vs_C <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">t.test</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">formula =</span> formula, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">data.frame</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Condition"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> conditions[conditions <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"C"</span>)]))</span>
+<span id="cb7-20"></span>
+<span id="cb7-21"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## t-test for gene expr in B vs C</span></span>
+<span id="cb7-22">B_vs_C_expr <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> expr[i, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">colnames</span>(expr) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"B"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"C"</span>)]</span>
+<span id="cb7-23">formula <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> B_vs_C_expr <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">~</span> Condition</span>
+<span id="cb7-24">results_B_vs_C <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">t.test</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">formula =</span> formula, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">data.frame</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Condition"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> conditions[conditions <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"B"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"C"</span>)]))</span>
+<span id="cb7-25"></span>
+<span id="cb7-26"></span>
+<span id="cb7-27">}</span>
+<span id="cb7-28"></span>
+<span id="cb7-29"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Plot t-stats (expression change size)</span></span></code></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(ggplot2)</span>
+<span id="cb8-2"></span>
+<span id="cb8-3"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Sample library sizes</span></span>
+<span id="cb8-4">library_sizes <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">data.frame</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"lib_size"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">apply</span>(expr, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, sum),</span>
+<span id="cb8-5">                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"sample"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"sample"</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">15</span>),</span>
+<span id="cb8-6">                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Condition"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> conditions)</span>
+<span id="cb8-7"></span>
+<span id="cb8-8"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Order samples for plotting</span></span>
+<span id="cb8-9">library_sizes<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>sample <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">factor</span>(library_sizes<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>sample, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">levels =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">unique</span>(library_sizes<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>sample))</span>
+<span id="cb8-10"></span>
+<span id="cb8-11"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Bar plot</span></span>
+<span id="cb8-12"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ggplot</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data =</span> library_sizes, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">aes</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> sample, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> lib_size, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fill =</span> Condition)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> </span>
+<span id="cb8-13">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_bar</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stat =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"identity"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">colour =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"black"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> </span>
+<span id="cb8-14">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_text</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">aes</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> lib_size <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">label =</span> lib_size), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb8-15">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">theme_bw</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> </span>
+<span id="cb8-16">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">""</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Total read counts"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> </span>
+<span id="cb8-17">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scale_fill_manual</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">values =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"orchid1"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"B"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"palegreen1"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"C"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"deepskyblue1"</span>)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb8-18">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">theme</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">axis.text.x =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">element_text</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">angle =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">45</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">hjust =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>), </span>
+<span id="cb8-19">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">legend.title =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">element_text</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">face =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bold"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>), </span>
+<span id="cb8-20">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">legend.text =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">element_text</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">face =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bold"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">9</span>))</span></code></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Create pool of reads per gene in each sample</span></span>
+<span id="cb9-2">reads_per_gene_per_sample <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">apply</span>(expr, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">function</span>(sample) {<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rep</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rownames</span>(expr), sample)})</span>
+<span id="cb9-3"></span>
+<span id="cb9-4"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Randomly select 1000 reads per sample</span></span>
+<span id="cb9-5">reads_sample <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">lapply</span>(reads_per_gene_per_sample, <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">function</span>(sample) {<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sample</span>(sample, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">replace =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">FALSE</span>)})</span></code></pre></div>
+</div>
+
+
+</section>
+
+ ]]></description>
+  <category>Normalization</category>
+  <category>Trimmed Mean of M values</category>
+  <category>Highly-expressed genes</category>
+  <category>Differential Gene Expression</category>
+  <category>RNA-seq</category>
+  <guid>https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/</guid>
+  <pubDate>Thu, 12 Dec 2024 00:00:00 GMT</pubDate>
+  <media:content url="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/images/TODO" medium="image"/>
+</item>
+<item>
   <title>Exploratory Data Analysis for RNA-seq data</title>
   <dc:creator>Daianna Gonzalez-Padilla</dc:creator>
   <link>https://daianna21.github.io/daianna_blog/posts/2024-12-12-QC_and_EDA/</link>
@@ -23,18 +1087,18 @@
 <p>⚠️ This page is under development.</p>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p>Saying that over 50% of biological data analysis is about exploring and cleaning data is not an exaggeration. In fact, that’s the way it’s supposed to be. Biological data are inherently noisy. Not only biological differences exist between cells and samples, but all sampling and experimental procedures for data generation, introduce variability, errors, and biases into the data.</p>
-<p>Exploratory Data Analysis (EDA) is a primordial intial step in which we get to know the overall and specific aspects of the data. This is a process where we create tons of plots to uncover and visualize the data structures, patterns, relationships, and outliers, through which we identify data issues, drive hypoteses, and guide subsequent statistical testing.</p>
+<p>Saying that over 50% of biological data analysis is about exploring and cleaning data is not an exaggeration. In fact, that’s the way it’s supposed to be. Biological data are inherently noisy. Not only biological differences exist between cells and samples, but all sampling and experimental procedures for data generation, introduce variability, errors, and biases into the data that we have to first spot to then clean or correct.</p>
+<p>Exploratory Data Analysis (EDA) is a primordial initial step in which we get to know the overall and specific aspects of the data. This is a process where we create tons of plots to uncover and visualize the data structures, patterns, relationships, and outliers, through which we identify data issues, drive hypoteses, and guide subsequent statistical testing.</p>
 <p>EDA is not a pre-established path with ordered steps to follow. What you do, what you plot depends on the particularities of the data you have and the questions you aim to answer; it is completely context dependent. Moreover, many exploratory analyses you perform depend on what previous explorations informed, adding to the global understanding of the data. However, there are basic exploratory steps that establish a foundation to move forward in your analyses.</p>
-<p>In transcriptomic data analysis, EDA includes exploring the read count distribution, detection of lowly-expressed genes and poor-quality samples/cells, determine biological and technical sources of gene expression variation, and detect confounding factors.</p>
-<p>In this blog post, you will learn how to perform EDA by exploring an example gene expression data set, hoping to provide a methodological but flexible framework for you to guide your own data analysis.</p>
+<p>In transcriptomic data analysis, EDA includes exploring the read count distribution, filtering of lowly-expressed genes and poor-quality samples/cells, determine biological and technical sources of gene expression variation, and detect confounding factors.</p>
+<p>In this blog post, you will learn how to perform EDA by exploring an example gene expression data set, aiming to provide a methodological but flexible framework for you to guide your own exploratory analysis.</p>
 </section>
 <section id="what-youll-learn-here" class="level1">
 <h1>What you’ll learn here</h1>
 <ul>
 <li><p>Know the type of exploratory analyses that can be done for RNA-seq data and the rationale behind them.</p></li>
 <li><p>Understand the insights that can be derived from explorations and how they inform posterior analysis decisions.</p></li>
-<li><p>Learn of helpful visualization tools to explore your data.</p></li>
+<li><p>Learn of poweful visualization tools to explore your data.</p></li>
 </ul>
 </section>
 <section id="an-example-data-set" class="level1">
@@ -42,7 +1106,7 @@
 <section id="download-data" class="level2">
 <h2 class="anchored" data-anchor-id="download-data">Download data</h2>
 <p>We’ll use <a href="https://rna.recount.bio"><em>recount3</em></a> <span class="citation" data-cites="leonardocollado-torres2020 wilks2021a">(Leonardo Collado-Torres 2020; Wilks et al. 2021)</span> package to download real gene expression data from a transcriptomic study, including sample metadata and quality-control (QC) metrics.</p>
-<p>The chosen study can be found in the Sequence Read Archive (<a href="https://www.ncbi.nlm.nih.gov/sra">SRA</a>) under ID <code>SRP107565</code>, and is titled “<strong>Multiomics Profiling Establishes the Polypharmacology of FDA-Approved CDK4/6 Inhibitors and the Potential for Differential Clinical Activity”</strong> (<a href="10.1016/j.chembiol.2019.05.005">Marc Hafner et al., 2019</a>).</p>
+<p>The chosen study can be found in the Sequence Read Archive (<a href="https://www.ncbi.nlm.nih.gov/sra">SRA</a>) under ID <code>SRP107565</code>, and it’s titled “<strong>Multiomics Profiling Establishes the Polypharmacology of FDA-Approved CDK4/6 Inhibitors and the Potential for Differential Clinical Activity”</strong> (<a href="10.1016/j.chembiol.2019.05.005">Marc Hafner et al., 2019</a>).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -179,14 +1243,14 @@ ENSG00000278198.1  ENSEMBL     gene      1468</code></pre>
 <section id="study-design-and-aims" class="level2">
 <h2 class="anchored" data-anchor-id="study-design-and-aims">Study design and aims</h2>
 <p>In this study, the authors performed transcriptomic, proteomic, biochemical, and phenotypic assays to compare the activities of 3 inhibitors of cyclin-dependent kinases 4/6 (CDK4/6): abemaciclib, palbociclib, and ribociclib, which are used to treat hormone receptor-positive breast cancer. For our purposes, only transcriptomic data have been downloaded to be explored.</p>
-<p>Specifically, in the transcriptomic experiment, 7 breast cancer human cell lines were drug-treated with <span style="color: #EE7621"><strong>0.3</strong></span>, <span style="color: #CD3700"><strong>1</strong></span> OR <span style="color: #8B2500"><strong>3</strong></span> µM of <span style="color: #0000FF"><strong>abemaciclib</strong></span>, <span style="color: #EE3B3B"><strong>palbociclib</strong></span>, OR <span style="color: #CDC673"><strong>ribociclib</strong></span> (OR untreated = <span style="color: #A6A6A6"><strong>control</strong></span> <strong>=</strong> drug concentration of <span style="color: #A6A6A6"><strong>0</strong></span> µM), and mRNA sequencing was performed after <strong>6</strong> OR <span style="color: #00CD66"><strong>24</strong></span> hrs of exposure. Including replicates, a total of 216 samples were sequenced.</p>
+<p>Specifically, in the transcriptomic experiment, 7 breast cancer human cell lines were drug-treated with <span style="color: #EE7621"><strong>0.3</strong></span>, <span style="color: #CD3700"><strong>1</strong></span> OR <span style="color: #8B2500"><strong>3</strong></span> µM of <span style="color: #0000FF"><strong>abemaciclib</strong></span>, <span style="color: #EE3B3B"><strong>palbociclib</strong></span>, OR <span style="color: #CDC673"><strong>ribociclib</strong></span> (OR untreated = <span style="color: #A6A6A6"><strong>control</strong></span> <strong>=</strong> drug concentration of <span style="color: #A6A6A6"><strong>0</strong></span> µM), and mRNA sequencing was performed after <strong>6</strong> OR <span style="color: #00CD66"><strong>24</strong></span> hrs of exposure. Including replicates, a total of 216 bulk samples were sequenced.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-12-QC_and_EDA/images/study_design.png" class="img-fluid figure-img" width="363"></p>
 <figcaption>Ilustration taken from <strong>Figure 1A</strong> in <a href="10.1016/j.chembiol.2019.05.005">Marc Hafner et al., 2019</a>.</figcaption>
 </figure>
 </div>
-<p>Exploring the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html"><em>RangedSummarizedExperiment</em></a> <span class="citation" data-cites="martinmorgan2017 huber2015">(Martin Morgan 2017; Huber et al. 2015)</span> object <code>rse</code> we just created, we can see we have raw expression data for 63,856 genes across 216 samples.</p>
+<p>Exploring the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html"><em>RangedSummarizedExperiment</em></a> <span class="citation" data-cites="martinmorgan2017 huber2015">(Martin Morgan 2017; Huber et al. 2015)</span> object (<code>rse</code>) we just created, we can see we have raw expression data for 63,856 genes across 216 samples.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -411,7 +1475,7 @@ font-style: inherit;">$</span>Time)</span></code></pre></div>
 </section>
 <section id="sample-variables" class="level2">
 <h2 class="anchored" data-anchor-id="sample-variables">Sample variables</h2>
-<p>In any EDA, we first need to understand what the sample variables in the metadata stand for in order to interpret any insights derived from them accurately. A second important consideration is that, even when there are well-established QC metrics used to filter samples, exploring a broader set of them is conveninent to find unexpected sample quality differences.</p>
+<p>In any EDA, we first need to know what the sample variables in the metadata stand for in order to interpret accurately any insights derived from them. A second important consideration is that, even when there are well-established QC metrics used to filter samples, exploring a broader set of them is convenient to find unexpected sample quality differences.</p>
 <p>We start by defining the sample-level variables we’ll explore in our EDA.</p>
 <section id="main-sample-attributes" class="level3">
 <h3 class="anchored" data-anchor-id="main-sample-attributes">Main sample attributes</h3>
@@ -441,7 +1505,7 @@ font-style: inherit;">$</span>Time)</span></code></pre></div>
 <li><p><strong><code>%_of_reads_unmapped:_too_short</code></strong>: Number of reads where best alignment was shorter than min allowed mapped length divided by number of input reads.</p></li>
 <li><p><strong><code>number_of_reads_unmapped:_too_short</code></strong>: Number of reads where best alignment was shorter than min allowed mapped length.</p></li>
 </ul></li>
-<li><p><a href="http://www.htslib.org">SAMtools</a> <span class="citation" data-cites="danecek2021">(Danecek et al. 2021)</span> statistics for chromosome-specific mapping reads. Of special interest are the reads mapping to the mitochondrial and sex chromosomes (see explanation in Step 1 XXXXX):</p>
+<li><p><a href="http://www.htslib.org">SAMtools</a> <span class="citation" data-cites="danecek2021">(Danecek et al. 2021)</span> statistics for chromosome-specific read mapping. Of special interest are the reads mapping to the mitochondrial and sex chromosomes (see explanation in Step X):</p>
 <ul>
 <li><p><strong><code>aligned_reads%.chrm</code></strong>: Percent of reads aligning to the mitochondrial genome.</p></li>
 <li><p><strong><code>aligned_reads%.chrx</code></strong>: Percent of reads aligning to chromosome X.</p></li>
@@ -463,22 +1527,163 @@ font-style: inherit;">$</span>Time)</span></code></pre></div>
 <li><p><strong><code>gene_fc_count_unique.assigned</code></strong>: Number of uniquely mapping fragments assigned by&nbsp;<code>featureCounts</code>&nbsp;to a gene.</p></li>
 </ul></li>
 </ul>
-<p>For more details of the computation of these metrics please refer to <em>recount3</em> <a href="http://rna.recount.bio/docs/quality-check-fields.html">documentation</a> and each tool’s manual.</p>
+<p>For more details on the computation of these metrics please refer to <em>recount3</em> <a href="http://rna.recount.bio/docs/quality-check-fields.html">documentation</a> and the manual of each tool.</p>
 </section>
 </section>
 </section>
-<section id="exploring-count-distribution" class="level1">
-<h1>1. Exploring count distribution</h1>
+<section id="exploring-count-data-todo" class="level1">
+<h1>1. Exploring count data TODO</h1>
+<section id="read-count-distribution-todo" class="level2">
+<h2 class="anchored" data-anchor-id="read-count-distribution-todo">1.1 Read count distribution TODO</h2>
+<p>A first thing to plot is the frequency of the raw counts across all genes and samples, before any transformation. This gives us an idea of how sparse the data are, i.e., if a large percentage of the counts are zero.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ggplot2"</span>)</span>
+<span id="cb21-2"></span>
+<span id="cb21-3"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Raw counts</span></span>
+<span id="cb21-4">data <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">data.frame</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">raw_counts =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">as.vector</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">assays</span>(rse)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>raw_counts))</span>
+<span id="cb21-5">plot <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ggplot</span>(data, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">aes</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> raw_counts)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb21-6">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_histogram</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">colour =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"black"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fill =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"lightgray"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb21-7">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Raw counts"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Frecuency"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb21-8">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">theme_classic</span>()</span>
+<span id="cb21-9">plot <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">theme</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">plot.margin =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">unit</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>), <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cm"</span>))</span></code></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-12-QC_and_EDA/index_files/figure-html/hist_raw_counts-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Percentage of counts that are zero</span></span>
+<span id="cb23-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">length</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">which</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">as.vector</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">assays</span>(rse)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>raw_counts) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">length</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">as.vector</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">assays</span>(rse)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>raw_counts)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span></span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 61.05911</code></pre>
+</div>
+</div>
+<p>More than 60% of the total counts across all genes and bulk samples are 0. Even though this is a large fraction, it is not surprising as we don’t expect most genes to be expressed in every condition; scRNA-seq data is even more sparse. In <strong>step 1.3</strong> we’ll deal with lowly-expressed genes …</p>
 </section>
-<section id="filtering-lowly-expressed-genes" class="level1">
-<h1>2. Filtering lowly-expressed genes</h1>
+<section id="count-log-normalization-todo" class="level2">
+<h2 class="anchored" data-anchor-id="count-log-normalization-todo">1.2 Count log-normalization TODO</h2>
+</section>
+<section id="filtering-lowly-expressed-genes-todo" class="level2">
+<h2 class="anchored" data-anchor-id="filtering-lowly-expressed-genes-todo">1.3 Filtering lowly-expressed genes TODO</h2>
+<p>There are multiple approaches to remove zero- and lowly-expressed genes. Here we’ll adopt the approach of removing genes with less than X CPM in at least X % samples …</p>
 <p><a href="https://carpentries-incubator.github.io/rna-seq-data-for-ml/episode5.html" class="uri">https://carpentries-incubator.github.io/rna-seq-data-for-ml/episode5.html</a></p>
+</section>
 </section>
 <section id="filtering-low-quality-samples" class="level1">
 <h1>3. Filtering low-quality samples</h1>
 <section id="explore-differences-in-qc-metrics-between-sample-groups" class="level2">
 <h2 class="anchored" data-anchor-id="explore-differences-in-qc-metrics-between-sample-groups">3.1 Explore differences in QC metrics between sample groups</h2>
-<p>Explore sex differenes: sexual chr % can be helpful in, for instance, confirming the sex of the individual sequenced based on alignments to sex chromosomes</p>
+<p>Explore sex differences: sexual chr % can help to confirm the sex of the donors based on alignments to sex chromosomes.</p>
+<p><a href="https://frontlinegenomics.com/how-to-ngs-quality-control/" class="uri">https://frontlinegenomics.com/how-to-ngs-quality-control/</a></p>
+<p><a href="https://www.nature.com/articles/s41592-023-01946-4" class="uri">https://www.nature.com/articles/s41592-023-01946-4</a></p>
 </section>
 <section id="explore-relationships-between-sample-variables" class="level2">
 <h2 class="anchored" data-anchor-id="explore-relationships-between-sample-variables">3.2 Explore relationships between sample variables</h2>
@@ -502,9 +1707,8 @@ font-style: inherit;">$</span>Time)</span></code></pre></div>
 </section>
 <section id="conclusions" class="level1">
 <h1>Conclusions</h1>
-<p>After this process (and the obvious reason why this is important) you’ll have solid foundations to move forward making informed and justified decisions, test hypothesis and to draw meaningful conclusions from the analyses. At the end, all the gained insights will guide unveiling the true hidden values in the data.</p>
 <p>Answering these questions we may be able to formulate&nbsp;<strong>hypothesis</strong>&nbsp;that could guide future analysis or experiments.</p>
-<p>Very unshared is my personal excitement when performing this step. But EDA is extremely illuminating when performed comprehensively and you may find an aswer to your data issues or lack of signals by looking back to this step.</p>
+<p>EDA is extremely illuminating when performed comprehensively and you may find an answer to your data issues or lack of signals by looking back to this step.</p>
 
 
 

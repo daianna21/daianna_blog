@@ -2,6 +2,8 @@
   {
     "listing": "/blog.html",
     "items": [
+      "/posts/2024-01-20_Filtering_and_Normalization/index.html",
+      "/posts/2024-12-15-TMM_normalization/index.html",
       "/posts/2024-12-12-QC_and_EDA/index.html",
       "/posts/2024-10-10-coeffs_linear_models/index.html",
       "/posts/2024-08-11-Fisher_test/index.html",

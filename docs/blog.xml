@@ -627,39 +627,93 @@ font-style: inherit;">"cm"</span>)</span>
 </div>
 <p>What’s clear from the plot of raw counts is that, by design, genes 5, 6, and 7 are more highly-expressed in condition A than B and C. Let’s formally assess the differential expression of all genes in A vs B, A vs C, and B vs C, with Two Sample t-tests (assuming counts are aprox. normal).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1">pvals_A_vs_B <span class="ot" style="color: #003B4F;
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(reshape2)</span>
+<span id="cb7-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(ggplot2)</span>
+<span id="cb7-3"></span>
+<span id="cb7-4"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Matrices to save gene p-values and t-stats</span></span>
+<span id="cb7-5">pvals <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">vector</span>()</span>
-<span id="cb7-2">pvals_A_vs_C <span class="ot" style="color: #003B4F;
+font-style: inherit;">matrix</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">NA</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">nrow =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nrow</span>(expr), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ncol =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>)</span>
+<span id="cb7-6">tstats <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">vector</span>()</span>
-<span id="cb7-3">pvals_B_vs_C <span class="ot" style="color: #003B4F;
+font-style: inherit;">matrix</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">NA</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">nrow =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nrow</span>(expr), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ncol =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>)</span>
+<span id="cb7-7"></span>
+<span id="cb7-8"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">colnames</span>(pvals) <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">vector</span>()</span>
-<span id="cb7-4"></span>
-<span id="cb7-5">tstats_A_vs_B <span class="ot" style="color: #003B4F;
+font-style: inherit;">colnames</span>(tstats)  <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">vector</span>()</span>
-<span id="cb7-6">tstats_A_vs_C <span class="ot" style="color: #003B4F;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A_vs_B"</span>,  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A_vs_C"</span>,  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"B_vs_C"</span>)</span>
+<span id="cb7-9"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rownames</span>(pvals) <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">vector</span>()</span>
-<span id="cb7-7">tstats_B_vs_C <span class="ot" style="color: #003B4F;
+font-style: inherit;">rownames</span>(tstats) <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">vector</span>()</span>
-<span id="cb7-8"></span>
-<span id="cb7-9"><span class="cf" style="color: #003B4F;
+font-style: inherit;">paste0</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"gene"</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>)</span>
+<span id="cb7-10"></span>
+<span id="cb7-11"></span>
+<span id="cb7-12"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Iterate over genes</span></span>
+<span id="cb7-13"><span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">for</span>(i <span class="cf" style="color: #003B4F;
 background-color: null;
@@ -670,125 +724,75 @@ background-color: null;
 font-style: inherit;">:</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">nrow</span>(expr)){</span>
-<span id="cb7-10">  </span>
-<span id="cb7-11"><span class="do" style="color: #5E5E5E;
+<span id="cb7-14">  </span>
+<span id="cb7-15">  <span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## t-test for gene expr in A vs B</span></span>
-<span id="cb7-12">A_vs_B_expr <span class="ot" style="color: #003B4F;
+font-style: italic;">## t-test for gene expr in condition1 vs condition2</span></span>
+<span id="cb7-16">  <span class="cf" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">&lt;-</span> expr[i, <span class="fu" style="color: #4758AB;
+font-style: inherit;">for</span>(condition_pair <span class="cf" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">colnames</span>(expr) <span class="sc" style="color: #5E5E5E;
+font-style: inherit;">in</span> <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"A"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"B"</span>)]</span>
-<span id="cb7-13">formula <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> A_vs_B_expr <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">~</span> Condition</span>
-<span id="cb7-14">results_A_vs_B <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">t.test</span>(<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">formula =</span> formula, <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">data =</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">data.frame</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Condition"</span> <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">=</span> conditions[conditions <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+font-style: inherit;">list</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"A"</span>, <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"B"</span>)]))</span>
-<span id="cb7-15"></span>
-<span id="cb7-16"><span class="do" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">## t-test for gene expr in A vs C</span></span>
-<span id="cb7-17">A_vs_C_expr <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> expr[i, <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">colnames</span>(expr) <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+font-style: inherit;">"B"</span>),  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"A"</span>, <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"C"</span>)]</span>
-<span id="cb7-18">formula <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> A_vs_C_expr <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">~</span> Condition</span>
-<span id="cb7-19">results_A_vs_C <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">t.test</span>(<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">formula =</span> formula, <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">data =</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">data.frame</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Condition"</span> <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">=</span> conditions[conditions <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"A"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"C"</span>)]))</span>
-<span id="cb7-20"></span>
-<span id="cb7-21"><span class="do" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">## t-test for gene expr in B vs C</span></span>
-<span id="cb7-22">B_vs_C_expr <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> expr[i, <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">colnames</span>(expr) <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+font-style: inherit;">"C"</span>),  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"B"</span>, <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"C"</span>)]</span>
-<span id="cb7-23">formula <span class="ot" style="color: #003B4F;
+font-style: inherit;">"C"</span>))){</span>
+<span id="cb7-17">    </span>
+<span id="cb7-18">    comparison <span class="ot" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">&lt;-</span> B_vs_C_expr <span class="sc" style="color: #5E5E5E;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">paste0</span>(condition_pair[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>], <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"_vs_"</span>, condition_pair[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>])</span>
+<span id="cb7-19">    gene <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">paste0</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"gene"</span>, i)</span>
+<span id="cb7-20">    </span>
+<span id="cb7-21">    gene_expr <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> expr[i, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">colnames</span>(expr) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%in%</span> condition_pair]</span>
+<span id="cb7-22">    formula <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> gene_expr <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">~</span> Condition</span>
-<span id="cb7-24">results_B_vs_C <span class="ot" style="color: #003B4F;
+<span id="cb7-23">    results <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">t.test</span>(<span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">formula =</span> formula, <span class="at" style="color: #657422;
+font-style: inherit;">formula =</span> formula, </span>
+<span id="cb7-24">                      <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">data =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -798,20 +802,242 @@ font-style: inherit;">"Condition"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> conditions[conditions <span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+font-style: inherit;">%in%</span> condition_pair]))</span>
+<span id="cb7-25">    </span>
+<span id="cb7-26">    pvals[gene, comparison] <span class="ot" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+font-style: inherit;">&lt;-</span> results<span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">"B"</span>, <span class="st" style="color: #20794D;
+font-style: inherit;">$</span>p.value</span>
+<span id="cb7-27">    tstats[gene, comparison] <span class="ot" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">"C"</span>)]))</span>
-<span id="cb7-25"></span>
-<span id="cb7-26"></span>
-<span id="cb7-27">}</span>
+font-style: inherit;">&lt;-</span> results<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>statistic</span>
 <span id="cb7-28"></span>
-<span id="cb7-29"><span class="do" style="color: #5E5E5E;
+<span id="cb7-29">  }</span>
+<span id="cb7-30">  </span>
+<span id="cb7-31">}</span>
+<span id="cb7-32"></span>
+<span id="cb7-33"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## Plot t-stats (expression change size)</span></span></code></pre></div>
+font-style: italic;">## Plot t-stats (expression change size)</span></span>
+<span id="cb7-34">melted_pvals <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">melt</span>(pvals)</span>
+<span id="cb7-35">melted_tstats <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">melt</span>(tstats)</span>
+<span id="cb7-36"></span>
+<span id="cb7-37">data <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">cbind</span>(melted_pvals, melted_tstats<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>value)</span>
+<span id="cb7-38"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">colnames</span>(data) <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"gene"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"comparison"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"p"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"t"</span>)</span>
+<span id="cb7-39"></span>
+<span id="cb7-40"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ggplot</span>(data, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">aes</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> gene, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> t, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fill =</span> comparison)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> </span>
+<span id="cb7-41">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_bar</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stat =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"identity"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">position=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dodge"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">colour =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"black"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">width =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.65</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">linewidth =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.3</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb7-42">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">theme_bw</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> </span>
+<span id="cb7-43">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">""</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Change in expression"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fill =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Comparison"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> </span>
+<span id="cb7-44">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scale_fill_manual</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">values =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A_vs_B"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"purple1"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A_vs_C"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"yellow2"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"B_vs_C"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"orangered1"</span>), </span>
+<span id="cb7-45">                               <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">labels =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A vs B"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"A vs C"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"B vs C"</span>)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb7-46">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">theme</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">axis.text.x =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">element_text</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">angle =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">45</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">hjust =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>), </span>
+<span id="cb7-47">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">axis.title.y =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">element_text</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>), </span>
+<span id="cb7-48">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">axis.text.y =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">element_text</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>), </span>
+<span id="cb7-49">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">legend.title =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">element_text</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">face =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bold"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">7</span>), </span>
+<span id="cb7-50">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">legend.text =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">element_text</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>), </span>
+<span id="cb7-51">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">legend.key.width =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">unit</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.3</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cm"</span>),</span>
+<span id="cb7-52">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">legend.key.height =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">unit</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.3</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cm"</span>))</span></code></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_test_raw_counts-1.png" class="img-fluid figure-img" width="624"></p>
+</figure>
+</div>
+</div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><span class="fu" style="color: #4758AB;

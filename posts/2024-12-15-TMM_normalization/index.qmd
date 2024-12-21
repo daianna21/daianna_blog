@@ -32,7 +32,8 @@ library(circlize)
 conditions <- rep(c("A", "B", "C"), c(4, 5, 6))
 
 ## Raw counts for 30 genes across the 15 samples
-expr <- matrix(data = sample(c(1:100), replace = T, size = 450), nrow = 30)
+set.seed(12242024)
+expr <- matrix(data = sample(c(10:100), replace = T, size = 450), nrow = 30)
 colnames(expr) <- conditions
 rownames(expr) <- paste("gene", 1:30)
 
@@ -66,40 +67,69 @@ Heatmap(expr,
 )
 ```
 
-What's clear from the plot of raw counts is that, by design, genes 5, 6, and 7 are more highly-expressed in condition A than B and C. Let's formally assess the differential expression of all genes in A vs B, A vs C, and B vs C, with Two Sample t-tests (assuming counts are aprox. normal).
+What's clear from the plot of raw counts is that, by design, genes 5, 6, and 7 are more highly-expressed in condition A than B and C. Let's formally assess the differential expression of all genes in A vs B, A vs C, and B vs C, with two sample t-tests (assuming counts are aprox. normal).
 
-```{r t_test_raw_counts}
+```{r t_test_raw_counts, fig.width=6.5, fig.height=4}
+library(reshape2)
+library(ggplot2)
+library(ggrepel)
+
+## Matrices to save gene p-values and t-stats
+pvals <- matrix(data = NA, nrow = nrow(expr), ncol = 3)
+tstats <- matrix(data = NA, nrow = nrow(expr), ncol = 3)
+
+colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
+rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
 
 
-pvals_A_vs_B <- vector()
-pvals_A_vs_C <- vector()
-pvals_B_vs_C <- vector()
-
-tstats_A_vs_B <- vector()
-tstats_A_vs_C <- vector()
-tstats_B_vs_C <- vector()
-
+## Iterate over genes
 for(i in 1:nrow(expr)){
   
-## t-test for gene expr in A vs B
-A_vs_B_expr <- expr[i, colnames(expr) %in% c("A", "B")]
-formula <- A_vs_B_expr ~ Condition
-results_A_vs_B <- t.test(formula = formula, data = data.frame("Condition" = conditions[conditions %in% c("A", "B")]))
+  ## t-test for gene expr in condition1 vs condition2
+  for(condition_pair in list(c("A", "B"),  c("A", "C"),  c("B", "C"))){
+    
+    comparison <- paste0(condition_pair[1], "_vs_", condition_pair[2])
+    gene <- paste0("gene", i)
+    
+    gene_expr <- expr[i, colnames(expr) %in% condition_pair]
+    formula <- gene_expr ~ Condition
+    results <- t.test(formula = formula, 
+                      data = data.frame("Condition" = conditions[conditions %in% condition_pair]))
+    
+    pvals[gene, comparison] <- results$p.value
+    tstats[gene, comparison] <- results$statistic
 
-## t-test for gene expr in A vs C
-A_vs_C_expr <- expr[i, colnames(expr) %in% c("A", "C")]
-formula <- A_vs_C_expr ~ Condition
-results_A_vs_C <- t.test(formula = formula, data = data.frame("Condition" = conditions[conditions %in% c("A", "C")]))
-
-## t-test for gene expr in B vs C
-B_vs_C_expr <- expr[i, colnames(expr) %in% c("B", "C")]
-formula <- B_vs_C_expr ~ Condition
-results_B_vs_C <- t.test(formula = formula, data = data.frame("Condition" = conditions[conditions %in% c("B", "C")]))
-
-
+  }
+  
 }
 
 ## Plot t-stats (expression change size)
+melted_pvals = melt(pvals)
+melted_tstats = melt(tstats)
+
+data = cbind(melted_pvals, melted_tstats$value)
+colnames(data) <- c("gene", "comparison", "p", "t")
+data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
+
+ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
+  geom_bar(stat = "identity", position="dodge", colour = "black", width = 0.65, linewidth = 0.3) +
+  geom_text(aes(x = gene, y = t + (sign(t)), label = signif, group = comparison, color = comparison), 
+            position = position_dodge(0.9), hjust = 0.5,
+            show.legend = F) +
+  theme_bw() + 
+  labs(x = "", y = "Change in expression", fill = "Comparison") + 
+  scale_fill_manual(values = c("A_vs_B" = "purple1", "A_vs_C" = "yellow3", "B_vs_C" = "orangered1"), 
+                               labels = c("A vs B", "A vs C", "B vs C")) +
+  scale_color_manual(values = c("A_vs_B" = "purple1", "A_vs_C" = "yellow3", "B_vs_C" = "orangered1")) +
+  theme(axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
+        axis.title.y = element_text(size = 8), 
+        axis.text.y = element_text(size = 6), 
+        legend.title = element_text(face = "bold", size = 7), 
+        legend.text = element_text(size = 6), 
+        legend.key.width = unit(0.3, "cm"),
+        legend.key.height = unit(0.3, "cm"))
+
+
 
 ```
 

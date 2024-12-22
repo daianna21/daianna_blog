@@ -118,9 +118,9 @@ ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) +
             show.legend = F) +
   theme_bw() + 
   labs(x = "", y = "Change in expression", fill = "Comparison") + 
-  scale_fill_manual(values = c("A_vs_B" = "purple1", "A_vs_C" = "yellow3", "B_vs_C" = "orangered1"), 
+  scale_fill_manual(values = c("A_vs_B" = "hotpink1", "A_vs_C" = "greenyellow", "B_vs_C" = "cyan1"), 
                                labels = c("A vs B", "A vs C", "B vs C")) +
-  scale_color_manual(values = c("A_vs_B" = "purple1", "A_vs_C" = "yellow3", "B_vs_C" = "orangered1")) +
+  scale_color_manual(values = c("A_vs_B" = "hotpink1", "A_vs_C" = "greenyellow", "B_vs_C" = "cyan1")) +
   theme(axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
         axis.title.y = element_text(size = 8), 
         axis.text.y = element_text(size = 6), 
@@ -158,11 +158,143 @@ ggplot(data = library_sizes, aes(x = sample, y = lib_size, fill = Condition)) +
 
 ```
 
-```{r}
+\
+
+```{r plot_gene_props}
+library(Polychrome)
+
 
 ## Create pool of reads per gene in each sample
+colnames(expr) <- library_sizes$sample
 reads_per_gene_per_sample <- apply(expr, 2, function(sample) {rep(rownames(expr), sample)})
 
 ## Randomly select 1000 reads per sample
+set.seed(12242024)
 reads_sample <- lapply(reads_per_gene_per_sample, function(sample) {sample(sample, size = 1000, replace = FALSE)})
+
+## Read counts per gene after sampling
+rna_seq_expr <- lapply(reads_sample, function(sample){table(sample)[rownames(expr)]})
+# lapply(rna_seq_expr, function(x){which(is.na(names(x)))})
+
+rna_seq_expr <- do.call(cbind, lapply(reads_sample, table))
+rna_seq_expr <- rna_seq_expr[rownames(expr), ]
+rna_seq_expr_melted <- melt(rna_seq_expr)
+colnames(rna_seq_expr_melted) <- c("gene", "sample", "count")
+rna_seq_expr_melted <- merge(rna_seq_expr_melted, library_sizes[, c("sample", "Condition")], by = "sample")
+
+## Order genes for plotting
+rna_seq_expr_melted$gene <- factor(rna_seq_expr_melted$gene, levels = paste("gene", 1:30))
+
+## Color palette for genes
+set.seed(12212024)
+col_palette <- sample(c(hcl.colors(30, palette = "Pastel 1"), 
+                        hcl.colors(30, palette = "PinkYl"),
+                        hcl.colors(30, palette = "Cyan-Magenta")), 30, replace = F)
+names(col_palette) <- rownames(expr)
+col_palette[paste("gene", 5:7)] <- c("orangered", "yellow3", "mediumpurple1")
+  
+## Bar plot
+ggplot(data = rna_seq_expr_melted, aes(x = sample, y = count, fill = gene, alpha = gene)) + 
+  geom_bar(stat = "identity", colour = "black", linewidth = 0.2) +
+  theme_bw() + 
+  labs(x = "", y = "Read counts per gene after sampling", fill = "Gene") + 
+  scale_fill_manual(values = col_palette) +
+  scale_alpha_manual(values = rep(c(0.7, 1, 0.7), c(4, 3, 23))) +
+  guides(alpha = "none") +
+  theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1), 
+        legend.title = element_text(face = "bold", size = 10), 
+        legend.text = element_text(size = 8), 
+        legend.key.width = unit(0.35, "cm"),
+        legend.key.height = unit(0.35, "cm"))
+
+```
+
+```{r plot_RNAseq_expr, fig.height = 5}
+
+colnames(rna_seq_expr) <- conditions
+
+## Plot
+col_anno <- HeatmapAnnotation(
+  Condition = anno_block(gp = gpar(fill = c("orchid1", "palegreen1", "deepskyblue1"), col = "black"), show_name = T), 
+  annotation_name_gp =  gpar(fontsize = 9, fontface = "bold"))
+
+Heatmap(rna_seq_expr,
+        name = "RNA-seq counts", 
+        top_annotation = col_anno, 
+        cluster_rows = FALSE,
+        cluster_columns = FALSE,
+        col = colorRamp2(c(1, 10, 100, 2000), c("linen", "mistyrose2", "rosybrown2", "darkred")),
+        column_split = conditions,
+        border = TRUE,
+        show_row_names = TRUE,
+        column_title = "Samples",
+        column_title_gp = gpar(fontsize = 10, fontface = "bold"),
+        column_names_side = "top",
+        column_names_gp = gpar(fontsize = 9, fontface = "bold"),
+        row_names_gp = gpar(fontsize = 8),
+        row_names_side = "left",
+        column_names_rot = 0,
+        heatmap_width = unit(12.5, "cm"),
+        heatmap_height = unit(12.5, "cm")
+)
+```
+
+```{r}
+## Matrices to save gene p-values and t-stats
+pvals <- matrix(data = NA, nrow = nrow(rna_seq_expr), ncol = 3)
+tstats <- matrix(data = NA, nrow = nrow(rna_seq_expr), ncol = 3)
+
+colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
+rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
+
+
+## Iterate over genes
+for(i in 1:nrow(rna_seq_expr)){
+  
+  ## t-test for gene expr in condition1 vs condition2
+  for(condition_pair in list(c("A", "B"),  c("A", "C"),  c("B", "C"))){
+    
+    comparison <- paste0(condition_pair[1], "_vs_", condition_pair[2])
+    gene <- paste0("gene", i)
+    
+    gene_expr <- rna_seq_expr[i, colnames(rna_seq_expr) %in% condition_pair]
+    formula <- gene_expr ~ Condition
+    results <- t.test(formula = formula, 
+                      data = data.frame("Condition" = conditions[conditions %in% condition_pair]))
+    
+    pvals[gene, comparison] <- results$p.value
+    tstats[gene, comparison] <- results$statistic
+
+  }
+  
+}
+
+## Plot t-stats (expression change size)
+melted_pvals = melt(pvals)
+melted_tstats = melt(tstats)
+
+data = cbind(melted_pvals, melted_tstats$value)
+colnames(data) <- c("gene", "comparison", "p", "t")
+data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
+
+ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
+  geom_bar(stat = "identity", position="dodge", colour = "black", width = 0.65, linewidth = 0.3) +
+  geom_text(aes(x = gene, y = t + (sign(t)), label = signif, group = comparison, color = comparison), 
+            position = position_dodge(0.9), hjust = 0.5,
+            show.legend = F) +
+  theme_bw() + 
+  labs(x = "", y = "Change in expression", fill = "Comparison") + 
+  scale_fill_manual(values = c("A_vs_B" = "hotpink1", "A_vs_C" = "greenyellow", "B_vs_C" = "cyan1"), 
+                               labels = c("A vs B", "A vs C", "B vs C")) +
+  scale_color_manual(values = c("A_vs_B" = "hotpink1", "A_vs_C" = "greenyellow", "B_vs_C" = "cyan1")) +
+  theme(axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
+        axis.title.y = element_text(size = 8), 
+        axis.text.y = element_text(size = 6), 
+        legend.title = element_text(face = "bold", size = 7), 
+        legend.text = element_text(size = 6), 
+        legend.key.width = unit(0.3, "cm"),
+        legend.key.height = unit(0.3, "cm"))
+
+
+
 ```

@@ -290,7 +290,7 @@ font-style: inherit;">dim</span>(rse)</span></code></pre></div>
 <p>Of the 15 genes, 12 have similar expression levels in all 3 conditions, and 3 are highly-expressed in condition A only (genes <img src="https://latex.codecogs.com/png.latex?g_5">, <img src="https://latex.codecogs.com/png.latex?g_6">, and <img src="https://latex.codecogs.com/png.latex?g_7">).</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/images/read_pools.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="13000"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/images/read_pools.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="9000"></p>
 </figure>
 </div>
 <div class="callout callout-style-default callout-caution callout-titled">

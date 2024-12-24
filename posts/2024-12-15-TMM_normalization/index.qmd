@@ -6,7 +6,7 @@ author:
 date: 2024-12-12
 categories:
   - "Normalization"
-  - "Trimmed Mean of M values"
+  - "Trimmed Mean of M-values"
   - "Highly-expressed genes"
   - "Differential Gene Expression"
   - "RNA-seq"
@@ -19,11 +19,35 @@ bibliography: references.bib
 
 # Introduction
 
+Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples for the study of transcriptome dynamics.
+
+Varying sequencing depth in the samples is usually accounted for in normalization methods, where gene counts are scaled by sample library size (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression across samples, but is not the only factor at play, specially when the samples are expected to have very diverse transcriptomes between experimental conditions.
+
+In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. Robinson and Alicia Oshlack introduced the issue of the **RNA composition bias** in RNA-seq data, and developed the **Trimmed Mean of M-values (TMM)** method to adjust for it [@robinson2010]. As a widely-implemented normalization scheme, it is important to understand why the RNA population of the samples is a concern for normalization and how TMM accounts for it.
+
 # What you'll learn here
 
-# 
+-   Visualize how RNA-seq gene expression estimates result from sampling effects and the implications of it in downstream differential gene expression (DGE) analysis.
 
-```{r plot_raw_expr, fig.height = 5}
+-   Understand the RNA composition bias: visualize how highly-expressed genes specific to one condition increase the false positive rate in DGE.
+
+-   Learn how the TMM method works to eliminate the RNA composition bias.
+
+# RNA-seq counts: a sampling artifact?
+
+Let's imagine a simple scenario with 15 samples across 3 experimental conditions (A, B, and C), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression values.
+
+Of the 15 genes, 12 have similar expression levels in all 3 conditions, and 3 are highly-expressed in condition A only (genes $g_5$, $g_6$, and $g_7$).
+
+![](images/read_pools.png){fig-align="center" width="13000"}
+
+::: callout-caution
+The number of reads mapping to a given gene depends on gene expression (number of gene transcripts), but also gene length: larger genes will have more mapping reads. Thus, read counts are not direct estimations of gene expression. In this example, however, we assumed all genes have the same length so reads counts reflect expression.
+:::
+
+Below we create a matrix of these raw read counts (ranging from 10 to 100) for all 30 genes across the 15 samples. Then, let's introduce 3 highly-expressed genes (genes 5,6, and 7 with counts from 1,000 to 2,000) in condition A only.
+
+```{r plot_raw_expr, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
 library(ComplexHeatmap)
 library(circlize)
@@ -41,7 +65,7 @@ rownames(expr) <- paste("gene", 1:30)
 expr[c("gene 5", "gene 6", "gene 7"), 1:4] <- sample(c(1000:2000), replace = T, size = 12)
 
 
-## Plot
+## Heat map
 col_anno <- HeatmapAnnotation(
   Condition = anno_block(gp = gpar(fill = c("orchid1", "palegreen1", "deepskyblue1"), col = "black"), show_name = T), 
   annotation_name_gp =  gpar(fontsize = 9, fontface = "bold"))
@@ -67,9 +91,11 @@ Heatmap(expr,
 )
 ```
 
-What's clear from the plot of raw counts is that, by design, genes 5, 6, and 7 are more highly-expressed in condition A than B and C. Let's formally assess the differential expression of all genes in A vs B, A vs C, and B vs C, with two sample t-tests (assuming counts are aprox. normal).
+What's clear from the heat map of raw counts is that, by design, genes 5, 6, and 7 are more highly-expressed in condition A than B and C.
 
-```{r t_test_raw_counts, fig.width=6.5, fig.height=4}
+Let's formally assess the differential expression of all genes in A vs B, A vs C, and B vs C, with two sample t-tests (assuming counts are aprox. normal).
+
+```{r t_test_raw_counts, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
 library(reshape2)
 library(ggplot2)
 library(ggrepel)
@@ -113,7 +139,7 @@ data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
 
 ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
   geom_bar(stat = "identity", position="dodge", colour = "black", width = 0.65, linewidth = 0.3) +
-  geom_text(aes(x = gene, y = t + (sign(t)), label = signif, group = comparison, color = comparison), 
+  geom_text(aes(x = gene, y = t + ((sign(t))*0.5), label = signif, group = comparison, color = comparison), 
             position = position_dodge(0.9), hjust = 0.5,
             show.legend = F) +
   theme_bw() + 
@@ -133,7 +159,7 @@ ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) +
 
 ```
 
-```{r}
+```{r plot_lib_sizes, fig.align='center', warning=FALSE, message=FALSE}
 library(ggplot2)
 
 ## Sample library sizes
@@ -159,8 +185,11 @@ ggplot(data = library_sizes, aes(x = sample, y = lib_size, fill = Condition)) +
 ```
 
 \
+Proportionality property.
 
-```{r plot_gene_props}
+Even after normalizing for library size, because of the sampling, the counts are not directly comparable: we need to account for the proportion of reads per gene after sampling.
+
+```{r plot_gene_props, fig.align='center', warning=FALSE, message=FALSE}
 library(Polychrome)
 
 
@@ -209,7 +238,9 @@ ggplot(data = rna_seq_expr_melted, aes(x = sample, y = count, fill = gene, alpha
 
 ```
 
-```{r plot_RNAseq_expr, fig.height = 5}
+In reality, however, we have a limited sequencing capacity so that not all RNAs in a sample are sequenced. A way to think about it is
+
+```{r plot_RNAseq_expr, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
 colnames(rna_seq_expr) <- conditions
 
@@ -239,7 +270,9 @@ Heatmap(rna_seq_expr,
 )
 ```
 
-```{r}
+More false positives.
+
+```{r t_tests_RNAseq_data, fig.align='center', warning=FALSE, message=FALSE}
 ## Matrices to save gene p-values and t-stats
 pvals <- matrix(data = NA, nrow = nrow(rna_seq_expr), ncol = 3)
 tstats <- matrix(data = NA, nrow = nrow(rna_seq_expr), ncol = 3)
@@ -298,3 +331,7 @@ ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) +
 
 
 ```
+
+# Conclusion
+
+More read counts for a gene can also be caused by greater lengths, not only by its high expression.

@@ -56,7 +56,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -104,6 +124,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -176,7 +225,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#what-youll-learn-here" id="toc-what-youll-learn-here" class="nav-link" data-scroll-target="#what-youll-learn-here">What you’ll learn here</a></li>
-  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
+  <li><a href="#rna-seq-counts-a-sampling-artifact" id="toc-rna-seq-counts-a-sampling-artifact" class="nav-link" data-scroll-target="#rna-seq-counts-a-sampling-artifact">RNA-seq counts: a sampling artifact?</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
 </nav>
     </div>
@@ -188,7 +238,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1 class="title">Trimmed Mean of M values</h1>
   <div class="quarto-categories">
     <div class="quarto-category">Normalization</div>
-    <div class="quarto-category">Trimmed Mean of M values</div>
+    <div class="quarto-category">Trimmed Mean of M-values</div>
     <div class="quarto-category">Highly-expressed genes</div>
     <div class="quarto-category">Differential Gene Expression</div>
     <div class="quarto-category">RNA-seq</div>
@@ -224,362 +274,359 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>⚠️ This page is under development.</p>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
+<p>Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples for the study of transcriptome dynamics.</p>
+<p>Varying sequencing depth in the samples is usually accounted for in normalization methods, where gene counts are scaled by sample library size (i.e.&nbsp;total sum of read counts per sample). This consideration is necessary when comparing expression across samples, but is not the only factor at play, specially when the samples are expected to have very diverse transcriptomes between experimental conditions.</p>
+<p>In a <a href="https://doi.org/10.1186/gb-2010-11-3-r25">pioneer paper of 2010</a>, Mark D. Robinson and Alicia Oshlack introduced the issue of the <strong>RNA composition bias</strong> in RNA-seq data, and developed the <strong>Trimmed Mean of M-values (TMM)</strong> method to adjust for it <span class="citation" data-cites="robinson2010">(<a href="#ref-robinson2010" role="doc-biblioref">Robinson and Oshlack 2010</a>)</span>. As a widely-implemented normalization scheme, it is important to understand why the RNA population of the samples is a concern for normalization and how TMM accounts for it.</p>
 </section>
 <section id="what-youll-learn-here" class="level1">
 <h1>What you’ll learn here</h1>
+<ul>
+<li><p>Visualize how RNA-seq gene expression estimates result from sampling effects and the implications of it in downstream differential gene expression (DGE) analysis.</p></li>
+<li><p>Understand the RNA composition bias: visualize how highly-expressed genes specific to one condition increase the false positive rate in DGE.</p></li>
+<li><p>Learn how the TMM method works to eliminate the RNA composition bias.</p></li>
+</ul>
 </section>
-<section id="section" class="level1">
-<h1></h1>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ComplexHeatmap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Loading required package: grid</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>========================================
-ComplexHeatmap version 2.22.0
-Bioconductor page: http://bioconductor.org/packages/ComplexHeatmap/
-Github page: https://github.com/jokergoo/ComplexHeatmap
-Documentation: http://jokergoo.github.io/ComplexHeatmap-reference
-
-If you use it in published research, please cite either one:
-- Gu, Z. Complex Heatmap Visualization. iMeta 2022.
-- Gu, Z. Complex heatmaps reveal patterns and correlations in multidimensional 
-    genomic data. Bioinformatics 2016.
-
-
-The new InteractiveComplexHeatmap package can directly export static 
-complex heatmaps into an interactive Shiny app with zero effort. Have a try!
-
-This message can be suppressed by:
-  suppressPackageStartupMessages(library(ComplexHeatmap))
-========================================</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(circlize)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>========================================
-circlize version 0.4.16
-CRAN page: https://cran.r-project.org/package=circlize
-Github page: https://github.com/jokergoo/circlize
-Documentation: https://jokergoo.github.io/circlize_book/book/
-
-If you use it in published research, please cite:
-Gu, Z. circlize implements and enhances circular visualization
-  in R. Bioinformatics 2014.
-
-This message can be suppressed by:
-  suppressPackageStartupMessages(library(circlize))
-========================================</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 15 samples across 3 conditions </span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>conditions <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>), <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>))</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Raw counts for 30 genes across the 15 samples</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12242024</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>expr <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">10</span><span class="sc">:</span><span class="dv">100</span>), <span class="at">replace =</span> T, <span class="at">size =</span> <span class="dv">450</span>), <span class="at">nrow =</span> <span class="dv">30</span>)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(expr) <span class="ot">&lt;-</span> conditions</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(expr) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"gene"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="do">## Introduce 3 highly-expressed genes in condition A only</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>expr[<span class="fu">c</span>(<span class="st">"gene 5"</span>, <span class="st">"gene 6"</span>, <span class="st">"gene 7"</span>), <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>] <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1000</span><span class="sc">:</span><span class="dv">2000</span>), <span class="at">replace =</span> T, <span class="at">size =</span> <span class="dv">12</span>)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="do">## Plot</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>col_anno <span class="ot">&lt;-</span> <span class="fu">HeatmapAnnotation</span>(</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">Condition =</span> <span class="fu">anno_block</span>(<span class="at">gp =</span> <span class="fu">gpar</span>(<span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"orchid1"</span>, <span class="st">"palegreen1"</span>, <span class="st">"deepskyblue1"</span>), <span class="at">col =</span> <span class="st">"black"</span>), <span class="at">show_name =</span> T), </span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">annotation_name_gp =</span>  <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">9</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>))</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="fu">Heatmap</span>(expr,</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">name =</span> <span class="st">"Raw counts"</span>, </span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        <span class="at">top_annotation =</span> col_anno, </span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>        <span class="at">cluster_rows =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>        <span class="at">cluster_columns =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">col =</span> <span class="fu">colorRamp2</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">2000</span>), <span class="fu">c</span>(<span class="st">"linen"</span>, <span class="st">"mistyrose2"</span>, <span class="st">"rosybrown2"</span>, <span class="st">"darkred"</span>)),</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_split =</span> conditions,</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>        <span class="at">border =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        <span class="at">show_row_names =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_title =</span> <span class="st">"Samples"</span>,</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_title_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">10</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_side =</span> <span class="st">"top"</span>,</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">9</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>        <span class="at">row_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">8</span>),</span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>        <span class="at">row_names_side =</span> <span class="st">"left"</span>,</span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_rot =</span> <span class="dv">0</span>,</span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>        <span class="at">heatmap_width =</span> <span class="fu">unit</span>(<span class="fl">12.5</span>, <span class="st">"cm"</span>),</span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>        <span class="at">heatmap_height =</span> <span class="fu">unit</span>(<span class="fl">12.5</span>, <span class="st">"cm"</span>)</span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
+<section id="rna-seq-counts-a-sampling-artifact" class="level1">
+<h1>RNA-seq counts: a sampling artifact?</h1>
+<p>Let’s imagine a simple scenario with 15 samples across 3 experimental conditions (A, B, and C), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression values.</p>
+<p>Of the 15 genes, 12 have similar expression levels in all 3 conditions, and 3 are highly-expressed in condition A only (genes <span class="math inline">\(g_5\)</span>, <span class="math inline">\(g_6\)</span>, and <span class="math inline">\(g_7\)</span>).</p>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/plot_raw_expr-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="images/read_pools.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="13000"></p>
+</figure>
+</div>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Caution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The number of reads mapping to a given gene depends on gene expression (number of gene transcripts), but also gene length: larger genes will have more mapping reads. Thus, read counts are not direct estimations of gene expression. In this example, however, we assumed all genes have the same length so reads counts reflect expression.</p>
+</div>
+</div>
+<p>Below we create a matrix of these raw read counts (ranging from 10 to 100) for all 30 genes across the 15 samples. Then, let’s introduce 3 highly-expressed genes (genes 5,6, and 7 with counts from 1,000 to 2,000) in condition A only.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ComplexHeatmap)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(circlize)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="do">## 15 samples across 3 conditions </span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>conditions <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>), <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Raw counts for 30 genes across the 15 samples</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12242024</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>expr <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">10</span><span class="sc">:</span><span class="dv">100</span>), <span class="at">replace =</span> T, <span class="at">size =</span> <span class="dv">450</span>), <span class="at">nrow =</span> <span class="dv">30</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(expr) <span class="ot">&lt;-</span> conditions</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(expr) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"gene"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="do">## Introduce 3 highly-expressed genes in condition A only</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>expr[<span class="fu">c</span>(<span class="st">"gene 5"</span>, <span class="st">"gene 6"</span>, <span class="st">"gene 7"</span>), <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>] <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1000</span><span class="sc">:</span><span class="dv">2000</span>), <span class="at">replace =</span> T, <span class="at">size =</span> <span class="dv">12</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="do">## Heat map</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>col_anno <span class="ot">&lt;-</span> <span class="fu">HeatmapAnnotation</span>(</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">Condition =</span> <span class="fu">anno_block</span>(<span class="at">gp =</span> <span class="fu">gpar</span>(<span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"orchid1"</span>, <span class="st">"palegreen1"</span>, <span class="st">"deepskyblue1"</span>), <span class="at">col =</span> <span class="st">"black"</span>), <span class="at">show_name =</span> T), </span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">annotation_name_gp =</span>  <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">9</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>))</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">Heatmap</span>(expr,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        <span class="at">name =</span> <span class="st">"Raw counts"</span>, </span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">top_annotation =</span> col_anno, </span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">cluster_rows =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        <span class="at">cluster_columns =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        <span class="at">col =</span> <span class="fu">colorRamp2</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">2000</span>), <span class="fu">c</span>(<span class="st">"linen"</span>, <span class="st">"mistyrose2"</span>, <span class="st">"rosybrown2"</span>, <span class="st">"darkred"</span>)),</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_split =</span> conditions,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="at">border =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="at">show_row_names =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_title =</span> <span class="st">"Samples"</span>,</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_title_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">10</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_side =</span> <span class="st">"top"</span>,</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">9</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        <span class="at">row_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">8</span>),</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        <span class="at">row_names_side =</span> <span class="st">"left"</span>,</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_rot =</span> <span class="dv">0</span>,</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        <span class="at">heatmap_width =</span> <span class="fu">unit</span>(<span class="fl">12.5</span>, <span class="st">"cm"</span>),</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        <span class="at">heatmap_height =</span> <span class="fu">unit</span>(<span class="fl">12.5</span>, <span class="st">"cm"</span>)</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/plot_raw_expr-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>What’s clear from the plot of raw counts is that, by design, genes 5, 6, and 7 are more highly-expressed in condition A than B and C. Let’s formally assess the differential expression of all genes in A vs B, A vs C, and B vs C, with two sample t-tests (assuming counts are aprox. normal).</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(reshape2)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Matrices to save gene p-values and t-stats</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>pvals <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="fu">nrow</span>(expr), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>tstats <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="fu">nrow</span>(expr), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(tstats)  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span>,  <span class="st">"A_vs_C"</span>,  <span class="st">"B_vs_C"</span>)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(tstats) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="do">## Iterate over genes</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(expr)){</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="do">## t-test for gene expr in condition1 vs condition2</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(condition_pair <span class="cf">in</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),  <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"C"</span>),  <span class="fu">c</span>(<span class="st">"B"</span>, <span class="st">"C"</span>))){</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    comparison <span class="ot">&lt;-</span> <span class="fu">paste0</span>(condition_pair[<span class="dv">1</span>], <span class="st">"_vs_"</span>, condition_pair[<span class="dv">2</span>])</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    gene <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, i)</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    gene_expr <span class="ot">&lt;-</span> expr[i, <span class="fu">colnames</span>(expr) <span class="sc">%in%</span> condition_pair]</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    formula <span class="ot">&lt;-</span> gene_expr <span class="sc">~</span> Condition</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    results <span class="ot">&lt;-</span> <span class="fu">t.test</span>(<span class="at">formula =</span> formula, </span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="st">"Condition"</span> <span class="ot">=</span> conditions[conditions <span class="sc">%in%</span> condition_pair]))</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    pvals[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>p.value</span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    tstats[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>statistic</span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="do">## Plot t-stats (expression change size)</span></span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>melted_pvals <span class="ot">=</span> <span class="fu">melt</span>(pvals)</span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>melted_tstats <span class="ot">=</span> <span class="fu">melt</span>(tstats)</span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>data <span class="ot">=</span> <span class="fu">cbind</span>(melted_pvals, melted_tstats<span class="sc">$</span>value)</span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gene"</span>, <span class="st">"comparison"</span>, <span class="st">"p"</span>, <span class="st">"t"</span>)</span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>signif <span class="ot">&lt;-</span> <span class="fu">sapply</span>(data<span class="sc">$</span>p, <span class="cf">function</span>(p){ <span class="cf">if</span>(p<span class="sc">&lt;</span><span class="fl">0.05</span>){<span class="st">"*"</span>} <span class="cf">else</span>{<span class="cn">NA</span>}})</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t, <span class="at">fill =</span> comparison, <span class="at">color =</span> comparison)) <span class="sc">+</span> </span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position=</span><span class="st">"dodge"</span>, <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">width =</span> <span class="fl">0.65</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t <span class="sc">+</span> (<span class="fu">sign</span>(t)), <span class="at">label =</span> signif, <span class="at">group =</span> comparison, <span class="at">color =</span> comparison), </span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>            <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="fl">0.9</span>), <span class="at">hjust =</span> <span class="fl">0.5</span>,</span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>            <span class="at">show.legend =</span> F) <span class="sc">+</span></span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"Change in expression"</span>, <span class="at">fill =</span> <span class="st">"Comparison"</span>) <span class="sc">+</span> </span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"hotpink1"</span>, <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"greenyellow"</span>, <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"cyan1"</span>), </span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>                               <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"A vs B"</span>, <span class="st">"A vs C"</span>, <span class="st">"B vs C"</span>)) <span class="sc">+</span></span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"hotpink1"</span>, <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"greenyellow"</span>, <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"cyan1"</span>)) <span class="sc">+</span></span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>), </span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>), </span>
-<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
-<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">7</span>), </span>
-<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>),</span>
-<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 83 rows containing missing values or values outside the scale range
-(`geom_text()`).</code></pre>
-</div>
+<p>What’s clear from the heat map of raw counts is that, by design, genes 5, 6, and 7 are more highly-expressed in condition A than B and C.</p>
+<p>Let’s formally assess the differential expression of all genes in A vs B, A vs C, and B vs C, with two sample t-tests (assuming counts are aprox. normal).</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(reshape2)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Matrices to save gene p-values and t-stats</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>pvals <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="fu">nrow</span>(expr), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>tstats <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="fu">nrow</span>(expr), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(tstats)  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span>,  <span class="st">"A_vs_C"</span>,  <span class="st">"B_vs_C"</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(tstats) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="do">## Iterate over genes</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(expr)){</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="do">## t-test for gene expr in condition1 vs condition2</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(condition_pair <span class="cf">in</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),  <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"C"</span>),  <span class="fu">c</span>(<span class="st">"B"</span>, <span class="st">"C"</span>))){</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    comparison <span class="ot">&lt;-</span> <span class="fu">paste0</span>(condition_pair[<span class="dv">1</span>], <span class="st">"_vs_"</span>, condition_pair[<span class="dv">2</span>])</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    gene <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, i)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    gene_expr <span class="ot">&lt;-</span> expr[i, <span class="fu">colnames</span>(expr) <span class="sc">%in%</span> condition_pair]</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    formula <span class="ot">&lt;-</span> gene_expr <span class="sc">~</span> Condition</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    results <span class="ot">&lt;-</span> <span class="fu">t.test</span>(<span class="at">formula =</span> formula, </span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="st">"Condition"</span> <span class="ot">=</span> conditions[conditions <span class="sc">%in%</span> condition_pair]))</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    pvals[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>p.value</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    tstats[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>statistic</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="do">## Plot t-stats (expression change size)</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>melted_pvals <span class="ot">=</span> <span class="fu">melt</span>(pvals)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>melted_tstats <span class="ot">=</span> <span class="fu">melt</span>(tstats)</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>data <span class="ot">=</span> <span class="fu">cbind</span>(melted_pvals, melted_tstats<span class="sc">$</span>value)</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gene"</span>, <span class="st">"comparison"</span>, <span class="st">"p"</span>, <span class="st">"t"</span>)</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>signif <span class="ot">&lt;-</span> <span class="fu">sapply</span>(data<span class="sc">$</span>p, <span class="cf">function</span>(p){ <span class="cf">if</span>(p<span class="sc">&lt;</span><span class="fl">0.05</span>){<span class="st">"*"</span>} <span class="cf">else</span>{<span class="cn">NA</span>}})</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t, <span class="at">fill =</span> comparison, <span class="at">color =</span> comparison)) <span class="sc">+</span> </span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position=</span><span class="st">"dodge"</span>, <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">width =</span> <span class="fl">0.65</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t <span class="sc">+</span> ((<span class="fu">sign</span>(t))<span class="sc">*</span><span class="fl">0.5</span>), <span class="at">label =</span> signif, <span class="at">group =</span> comparison, <span class="at">color =</span> comparison), </span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>            <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="fl">0.9</span>), <span class="at">hjust =</span> <span class="fl">0.5</span>,</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>            <span class="at">show.legend =</span> F) <span class="sc">+</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"Change in expression"</span>, <span class="at">fill =</span> <span class="st">"Comparison"</span>) <span class="sc">+</span> </span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"hotpink1"</span>, <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"greenyellow"</span>, <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"cyan1"</span>), </span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>                               <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"A vs B"</span>, <span class="st">"A vs C"</span>, <span class="st">"B vs C"</span>)) <span class="sc">+</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"hotpink1"</span>, <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"greenyellow"</span>, <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"cyan1"</span>)) <span class="sc">+</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>), </span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>), </span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">7</span>), </span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>),</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/t_test_raw_counts-1.png" class="img-fluid figure-img" width="624"></p>
+<p><img src="index_files/figure-html/t_test_raw_counts-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="624"></p>
 </figure>
 </div>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Sample library sizes</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>library_sizes <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">"lib_size"</span> <span class="ot">=</span> <span class="fu">apply</span>(expr, <span class="dv">2</span>, sum),</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"sample"</span> <span class="ot">=</span> <span class="fu">paste</span>(<span class="st">"sample"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>),</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"Condition"</span> <span class="ot">=</span> conditions)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Order samples for plotting</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>library_sizes<span class="sc">$</span>sample <span class="ot">&lt;-</span> <span class="fu">factor</span>(library_sizes<span class="sc">$</span>sample, <span class="at">levels =</span> <span class="fu">unique</span>(library_sizes<span class="sc">$</span>sample))</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="do">## Bar plot</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> library_sizes, <span class="fu">aes</span>(<span class="at">x =</span> sample, <span class="at">y =</span> lib_size, <span class="at">fill =</span> Condition)) <span class="sc">+</span> </span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">colour =</span> <span class="st">"black"</span>) <span class="sc">+</span> </span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">y =</span> lib_size <span class="sc">+</span> <span class="dv">200</span>, <span class="at">label =</span> lib_size), <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"Total read counts"</span>) <span class="sc">+</span> </span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A"</span> <span class="ot">=</span> <span class="st">"orchid1"</span>, <span class="st">"B"</span> <span class="ot">=</span> <span class="st">"palegreen1"</span>, <span class="st">"C"</span> <span class="ot">=</span> <span class="st">"deepskyblue1"</span>)) <span class="sc">+</span></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>), </span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">10</span>), </span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">9</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Sample library sizes</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>library_sizes <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">"lib_size"</span> <span class="ot">=</span> <span class="fu">apply</span>(expr, <span class="dv">2</span>, sum),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"sample"</span> <span class="ot">=</span> <span class="fu">paste</span>(<span class="st">"sample"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"Condition"</span> <span class="ot">=</span> conditions)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Order samples for plotting</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>library_sizes<span class="sc">$</span>sample <span class="ot">&lt;-</span> <span class="fu">factor</span>(library_sizes<span class="sc">$</span>sample, <span class="at">levels =</span> <span class="fu">unique</span>(library_sizes<span class="sc">$</span>sample))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="do">## Bar plot</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> library_sizes, <span class="fu">aes</span>(<span class="at">x =</span> sample, <span class="at">y =</span> lib_size, <span class="at">fill =</span> Condition)) <span class="sc">+</span> </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">colour =</span> <span class="st">"black"</span>) <span class="sc">+</span> </span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">y =</span> lib_size <span class="sc">+</span> <span class="dv">200</span>, <span class="at">label =</span> lib_size), <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"Total read counts"</span>) <span class="sc">+</span> </span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A"</span> <span class="ot">=</span> <span class="st">"orchid1"</span>, <span class="st">"B"</span> <span class="ot">=</span> <span class="st">"palegreen1"</span>, <span class="st">"C"</span> <span class="ot">=</span> <span class="st">"deepskyblue1"</span>)) <span class="sc">+</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>), </span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">10</span>), </span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">9</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/plot_lib_sizes-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p><br>
-</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Polychrome)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Create pool of reads per gene in each sample</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(expr) <span class="ot">&lt;-</span> library_sizes<span class="sc">$</span>sample</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>reads_per_gene_per_sample <span class="ot">&lt;-</span> <span class="fu">apply</span>(expr, <span class="dv">2</span>, <span class="cf">function</span>(sample) {<span class="fu">rep</span>(<span class="fu">rownames</span>(expr), sample)})</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Randomly select 1000 reads per sample</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12242024</span>)</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>reads_sample <span class="ot">&lt;-</span> <span class="fu">lapply</span>(reads_per_gene_per_sample, <span class="cf">function</span>(sample) {<span class="fu">sample</span>(sample, <span class="at">size =</span> <span class="dv">1000</span>, <span class="at">replace =</span> <span class="cn">FALSE</span>)})</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="do">## Read counts per gene after sampling</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>rna_seq_expr <span class="ot">&lt;-</span> <span class="fu">lapply</span>(reads_sample, <span class="cf">function</span>(sample){<span class="fu">table</span>(sample)[<span class="fu">rownames</span>(expr)]})</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co"># lapply(rna_seq_expr, function(x){which(is.na(names(x)))})</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>rna_seq_expr <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cbind, <span class="fu">lapply</span>(reads_sample, table))</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>rna_seq_expr <span class="ot">&lt;-</span> rna_seq_expr[<span class="fu">rownames</span>(expr), ]</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>rna_seq_expr_melted <span class="ot">&lt;-</span> <span class="fu">melt</span>(rna_seq_expr)</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(rna_seq_expr_melted) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gene"</span>, <span class="st">"sample"</span>, <span class="st">"count"</span>)</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>rna_seq_expr_melted <span class="ot">&lt;-</span> <span class="fu">merge</span>(rna_seq_expr_melted, library_sizes[, <span class="fu">c</span>(<span class="st">"sample"</span>, <span class="st">"Condition"</span>)], <span class="at">by =</span> <span class="st">"sample"</span>)</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="do">## Order genes for plotting</span></span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>rna_seq_expr_melted<span class="sc">$</span>gene <span class="ot">&lt;-</span> <span class="fu">factor</span>(rna_seq_expr_melted<span class="sc">$</span>gene, <span class="at">levels =</span> <span class="fu">paste</span>(<span class="st">"gene"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>))</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="do">## Color palette for genes</span></span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12212024</span>)</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>col_palette <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="fu">hcl.colors</span>(<span class="dv">30</span>, <span class="at">palette =</span> <span class="st">"Pastel 1"</span>), </span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">hcl.colors</span>(<span class="dv">30</span>, <span class="at">palette =</span> <span class="st">"PinkYl"</span>),</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">hcl.colors</span>(<span class="dv">30</span>, <span class="at">palette =</span> <span class="st">"Cyan-Magenta"</span>)), <span class="dv">30</span>, <span class="at">replace =</span> F)</span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(col_palette) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(expr)</span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>col_palette[<span class="fu">paste</span>(<span class="st">"gene"</span>, <span class="dv">5</span><span class="sc">:</span><span class="dv">7</span>)] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"orangered"</span>, <span class="st">"yellow3"</span>, <span class="st">"mediumpurple1"</span>)</span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="do">## Bar plot</span></span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> rna_seq_expr_melted, <span class="fu">aes</span>(<span class="at">x =</span> sample, <span class="at">y =</span> count, <span class="at">fill =</span> gene, <span class="at">alpha =</span> gene)) <span class="sc">+</span> </span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"Read counts per gene after sampling"</span>, <span class="at">fill =</span> <span class="st">"Gene"</span>) <span class="sc">+</span> </span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> col_palette) <span class="sc">+</span></span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_alpha_manual</span>(<span class="at">values =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="fl">0.7</span>, <span class="dv">1</span>, <span class="fl">0.7</span>), <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">23</span>))) <span class="sc">+</span></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">alpha =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>), </span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">10</span>), </span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>), </span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">0.35</span>, <span class="st">"cm"</span>),</span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.35</span>, <span class="st">"cm"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+Proportionality property.</p>
+<p>Even after normalizing for library size, because of the sampling, the counts are not directly comparable: we need to account for the proportion of reads per gene after sampling.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Polychrome)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Create pool of reads per gene in each sample</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(expr) <span class="ot">&lt;-</span> library_sizes<span class="sc">$</span>sample</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>reads_per_gene_per_sample <span class="ot">&lt;-</span> <span class="fu">apply</span>(expr, <span class="dv">2</span>, <span class="cf">function</span>(sample) {<span class="fu">rep</span>(<span class="fu">rownames</span>(expr), sample)})</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Randomly select 1000 reads per sample</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12242024</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>reads_sample <span class="ot">&lt;-</span> <span class="fu">lapply</span>(reads_per_gene_per_sample, <span class="cf">function</span>(sample) {<span class="fu">sample</span>(sample, <span class="at">size =</span> <span class="dv">1000</span>, <span class="at">replace =</span> <span class="cn">FALSE</span>)})</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="do">## Read counts per gene after sampling</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>rna_seq_expr <span class="ot">&lt;-</span> <span class="fu">lapply</span>(reads_sample, <span class="cf">function</span>(sample){<span class="fu">table</span>(sample)[<span class="fu">rownames</span>(expr)]})</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># lapply(rna_seq_expr, function(x){which(is.na(names(x)))})</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>rna_seq_expr <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cbind, <span class="fu">lapply</span>(reads_sample, table))</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>rna_seq_expr <span class="ot">&lt;-</span> rna_seq_expr[<span class="fu">rownames</span>(expr), ]</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>rna_seq_expr_melted <span class="ot">&lt;-</span> <span class="fu">melt</span>(rna_seq_expr)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(rna_seq_expr_melted) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gene"</span>, <span class="st">"sample"</span>, <span class="st">"count"</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>rna_seq_expr_melted <span class="ot">&lt;-</span> <span class="fu">merge</span>(rna_seq_expr_melted, library_sizes[, <span class="fu">c</span>(<span class="st">"sample"</span>, <span class="st">"Condition"</span>)], <span class="at">by =</span> <span class="st">"sample"</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="do">## Order genes for plotting</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>rna_seq_expr_melted<span class="sc">$</span>gene <span class="ot">&lt;-</span> <span class="fu">factor</span>(rna_seq_expr_melted<span class="sc">$</span>gene, <span class="at">levels =</span> <span class="fu">paste</span>(<span class="st">"gene"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>))</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="do">## Color palette for genes</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12212024</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>col_palette <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="fu">hcl.colors</span>(<span class="dv">30</span>, <span class="at">palette =</span> <span class="st">"Pastel 1"</span>), </span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">hcl.colors</span>(<span class="dv">30</span>, <span class="at">palette =</span> <span class="st">"PinkYl"</span>),</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">hcl.colors</span>(<span class="dv">30</span>, <span class="at">palette =</span> <span class="st">"Cyan-Magenta"</span>)), <span class="dv">30</span>, <span class="at">replace =</span> F)</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(col_palette) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(expr)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>col_palette[<span class="fu">paste</span>(<span class="st">"gene"</span>, <span class="dv">5</span><span class="sc">:</span><span class="dv">7</span>)] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"orangered"</span>, <span class="st">"yellow3"</span>, <span class="st">"mediumpurple1"</span>)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="do">## Bar plot</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> rna_seq_expr_melted, <span class="fu">aes</span>(<span class="at">x =</span> sample, <span class="at">y =</span> count, <span class="at">fill =</span> gene, <span class="at">alpha =</span> gene)) <span class="sc">+</span> </span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"Read counts per gene after sampling"</span>, <span class="at">fill =</span> <span class="st">"Gene"</span>) <span class="sc">+</span> </span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> col_palette) <span class="sc">+</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_alpha_manual</span>(<span class="at">values =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="fl">0.7</span>, <span class="dv">1</span>, <span class="fl">0.7</span>), <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">23</span>))) <span class="sc">+</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">alpha =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>), </span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">10</span>), </span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>), </span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">0.35</span>, <span class="st">"cm"</span>),</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.35</span>, <span class="st">"cm"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/plot_gene_props-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/plot_gene_props-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(rna_seq_expr) <span class="ot">&lt;-</span> conditions</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Plot</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>col_anno <span class="ot">&lt;-</span> <span class="fu">HeatmapAnnotation</span>(</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Condition =</span> <span class="fu">anno_block</span>(<span class="at">gp =</span> <span class="fu">gpar</span>(<span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"orchid1"</span>, <span class="st">"palegreen1"</span>, <span class="st">"deepskyblue1"</span>), <span class="at">col =</span> <span class="st">"black"</span>), <span class="at">show_name =</span> T), </span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">annotation_name_gp =</span>  <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">9</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>))</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="fu">Heatmap</span>(rna_seq_expr,</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">name =</span> <span class="st">"RNA-seq counts"</span>, </span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">top_annotation =</span> col_anno, </span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">cluster_rows =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">cluster_columns =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">col =</span> <span class="fu">colorRamp2</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">2000</span>), <span class="fu">c</span>(<span class="st">"linen"</span>, <span class="st">"mistyrose2"</span>, <span class="st">"rosybrown2"</span>, <span class="st">"darkred"</span>)),</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_split =</span> conditions,</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">border =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">show_row_names =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_title =</span> <span class="st">"Samples"</span>,</span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_title_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">10</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_side =</span> <span class="st">"top"</span>,</span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">9</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        <span class="at">row_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">8</span>),</span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        <span class="at">row_names_side =</span> <span class="st">"left"</span>,</span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_rot =</span> <span class="dv">0</span>,</span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">heatmap_width =</span> <span class="fu">unit</span>(<span class="fl">12.5</span>, <span class="st">"cm"</span>),</span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">heatmap_height =</span> <span class="fu">unit</span>(<span class="fl">12.5</span>, <span class="st">"cm"</span>)</span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In reality, however, we have a limited sequencing capacity so that not all RNAs in a sample are sequenced. A way to think about it is</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(rna_seq_expr) <span class="ot">&lt;-</span> conditions</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Plot</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>col_anno <span class="ot">&lt;-</span> <span class="fu">HeatmapAnnotation</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Condition =</span> <span class="fu">anno_block</span>(<span class="at">gp =</span> <span class="fu">gpar</span>(<span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"orchid1"</span>, <span class="st">"palegreen1"</span>, <span class="st">"deepskyblue1"</span>), <span class="at">col =</span> <span class="st">"black"</span>), <span class="at">show_name =</span> T), </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">annotation_name_gp =</span>  <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">9</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">Heatmap</span>(rna_seq_expr,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">name =</span> <span class="st">"RNA-seq counts"</span>, </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">top_annotation =</span> col_anno, </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">cluster_rows =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">cluster_columns =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">col =</span> <span class="fu">colorRamp2</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">2000</span>), <span class="fu">c</span>(<span class="st">"linen"</span>, <span class="st">"mistyrose2"</span>, <span class="st">"rosybrown2"</span>, <span class="st">"darkred"</span>)),</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_split =</span> conditions,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">border =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">show_row_names =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_title =</span> <span class="st">"Samples"</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_title_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">10</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_side =</span> <span class="st">"top"</span>,</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">9</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        <span class="at">row_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">8</span>),</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="at">row_names_side =</span> <span class="st">"left"</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>        <span class="at">column_names_rot =</span> <span class="dv">0</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">heatmap_width =</span> <span class="fu">unit</span>(<span class="fl">12.5</span>, <span class="st">"cm"</span>),</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">heatmap_height =</span> <span class="fu">unit</span>(<span class="fl">12.5</span>, <span class="st">"cm"</span>)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/plot_RNAseq_expr-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/plot_RNAseq_expr-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Matrices to save gene p-values and t-stats</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>pvals <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="fu">nrow</span>(rna_seq_expr), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>tstats <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="fu">nrow</span>(rna_seq_expr), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(tstats)  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span>,  <span class="st">"A_vs_C"</span>,  <span class="st">"B_vs_C"</span>)</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(tstats) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Iterate over genes</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(rna_seq_expr)){</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="do">## t-test for gene expr in condition1 vs condition2</span></span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(condition_pair <span class="cf">in</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),  <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"C"</span>),  <span class="fu">c</span>(<span class="st">"B"</span>, <span class="st">"C"</span>))){</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    comparison <span class="ot">&lt;-</span> <span class="fu">paste0</span>(condition_pair[<span class="dv">1</span>], <span class="st">"_vs_"</span>, condition_pair[<span class="dv">2</span>])</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    gene <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, i)</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    gene_expr <span class="ot">&lt;-</span> rna_seq_expr[i, <span class="fu">colnames</span>(rna_seq_expr) <span class="sc">%in%</span> condition_pair]</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    formula <span class="ot">&lt;-</span> gene_expr <span class="sc">~</span> Condition</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    results <span class="ot">&lt;-</span> <span class="fu">t.test</span>(<span class="at">formula =</span> formula, </span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="st">"Condition"</span> <span class="ot">=</span> conditions[conditions <span class="sc">%in%</span> condition_pair]))</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    pvals[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>p.value</span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    tstats[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>statistic</span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="do">## Plot t-stats (expression change size)</span></span>
-<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>melted_pvals <span class="ot">=</span> <span class="fu">melt</span>(pvals)</span>
-<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>melted_tstats <span class="ot">=</span> <span class="fu">melt</span>(tstats)</span>
-<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>data <span class="ot">=</span> <span class="fu">cbind</span>(melted_pvals, melted_tstats<span class="sc">$</span>value)</span>
-<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gene"</span>, <span class="st">"comparison"</span>, <span class="st">"p"</span>, <span class="st">"t"</span>)</span>
-<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>signif <span class="ot">&lt;-</span> <span class="fu">sapply</span>(data<span class="sc">$</span>p, <span class="cf">function</span>(p){ <span class="cf">if</span>(p<span class="sc">&lt;</span><span class="fl">0.05</span>){<span class="st">"*"</span>} <span class="cf">else</span>{<span class="cn">NA</span>}})</span>
-<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t, <span class="at">fill =</span> comparison, <span class="at">color =</span> comparison)) <span class="sc">+</span> </span>
-<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position=</span><span class="st">"dodge"</span>, <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">width =</span> <span class="fl">0.65</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t <span class="sc">+</span> (<span class="fu">sign</span>(t)), <span class="at">label =</span> signif, <span class="at">group =</span> comparison, <span class="at">color =</span> comparison), </span>
-<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>            <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="fl">0.9</span>), <span class="at">hjust =</span> <span class="fl">0.5</span>,</span>
-<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>            <span class="at">show.legend =</span> F) <span class="sc">+</span></span>
-<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
-<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"Change in expression"</span>, <span class="at">fill =</span> <span class="st">"Comparison"</span>) <span class="sc">+</span> </span>
-<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"hotpink1"</span>, <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"greenyellow"</span>, <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"cyan1"</span>), </span>
-<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>                               <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"A vs B"</span>, <span class="st">"A vs C"</span>, <span class="st">"B vs C"</span>)) <span class="sc">+</span></span>
-<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"hotpink1"</span>, <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"greenyellow"</span>, <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"cyan1"</span>)) <span class="sc">+</span></span>
-<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>), </span>
-<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>), </span>
-<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
-<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">7</span>), </span>
-<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
-<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>),</span>
-<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 46 rows containing missing values or values outside the scale range
-(`geom_text()`).</code></pre>
-</div>
+<p>More false positives.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Matrices to save gene p-values and t-stats</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>pvals <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="fu">nrow</span>(rna_seq_expr), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>tstats <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="fu">nrow</span>(rna_seq_expr), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(tstats)  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span>,  <span class="st">"A_vs_C"</span>,  <span class="st">"B_vs_C"</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(tstats) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Iterate over genes</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(rna_seq_expr)){</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="do">## t-test for gene expr in condition1 vs condition2</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(condition_pair <span class="cf">in</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),  <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"C"</span>),  <span class="fu">c</span>(<span class="st">"B"</span>, <span class="st">"C"</span>))){</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    comparison <span class="ot">&lt;-</span> <span class="fu">paste0</span>(condition_pair[<span class="dv">1</span>], <span class="st">"_vs_"</span>, condition_pair[<span class="dv">2</span>])</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    gene <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, i)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    gene_expr <span class="ot">&lt;-</span> rna_seq_expr[i, <span class="fu">colnames</span>(rna_seq_expr) <span class="sc">%in%</span> condition_pair]</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    formula <span class="ot">&lt;-</span> gene_expr <span class="sc">~</span> Condition</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    results <span class="ot">&lt;-</span> <span class="fu">t.test</span>(<span class="at">formula =</span> formula, </span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="st">"Condition"</span> <span class="ot">=</span> conditions[conditions <span class="sc">%in%</span> condition_pair]))</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    pvals[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>p.value</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    tstats[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>statistic</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="do">## Plot t-stats (expression change size)</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>melted_pvals <span class="ot">=</span> <span class="fu">melt</span>(pvals)</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>melted_tstats <span class="ot">=</span> <span class="fu">melt</span>(tstats)</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>data <span class="ot">=</span> <span class="fu">cbind</span>(melted_pvals, melted_tstats<span class="sc">$</span>value)</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gene"</span>, <span class="st">"comparison"</span>, <span class="st">"p"</span>, <span class="st">"t"</span>)</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>signif <span class="ot">&lt;-</span> <span class="fu">sapply</span>(data<span class="sc">$</span>p, <span class="cf">function</span>(p){ <span class="cf">if</span>(p<span class="sc">&lt;</span><span class="fl">0.05</span>){<span class="st">"*"</span>} <span class="cf">else</span>{<span class="cn">NA</span>}})</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t, <span class="at">fill =</span> comparison, <span class="at">color =</span> comparison)) <span class="sc">+</span> </span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position=</span><span class="st">"dodge"</span>, <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">width =</span> <span class="fl">0.65</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t <span class="sc">+</span> (<span class="fu">sign</span>(t)), <span class="at">label =</span> signif, <span class="at">group =</span> comparison, <span class="at">color =</span> comparison), </span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>            <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="fl">0.9</span>), <span class="at">hjust =</span> <span class="fl">0.5</span>,</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>            <span class="at">show.legend =</span> F) <span class="sc">+</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"Change in expression"</span>, <span class="at">fill =</span> <span class="st">"Comparison"</span>) <span class="sc">+</span> </span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"hotpink1"</span>, <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"greenyellow"</span>, <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"cyan1"</span>), </span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>                               <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"A vs B"</span>, <span class="st">"A vs C"</span>, <span class="st">"B vs C"</span>)) <span class="sc">+</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"hotpink1"</span>, <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"greenyellow"</span>, <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"cyan1"</span>)) <span class="sc">+</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>), </span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>), </span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">7</span>), </span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>),</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/t_tests_RNAseq_data-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<p>More read counts for a gene can also be caused by greater lengths, not only by its high expression.</p>
+
 
 
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-robinson2010" class="csl-entry" role="listitem">
+Robinson, Mark D, and Alicia Oshlack. 2010. <span>“A Scaling Normalization Method for Differential Expression Analysis of RNA-Seq Data.”</span> <em>Genome Biology</em> 11 (3). <a href="https://doi.org/10.1186/gb-2010-11-3-r25">https://doi.org/10.1186/gb-2010-11-3-r25</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

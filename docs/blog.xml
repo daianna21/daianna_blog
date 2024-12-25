@@ -1131,7 +1131,7 @@ font-style: inherit;">"cm"</span>))</span></code></pre></div>
 </div>
 </div>
 <p>In the above figure we are plotting the <em>t</em>-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions; those expression changes that were significant (<em>p</em>-value &lt;0.05) have a “*” above the bar. Not surprisingly, genes <span style="color: #FF4500"><strong>5</strong></span>, <span style="color: #CDCD00"><strong>6</strong></span>, and <span style="color: #AB82FF"><strong>7</strong></span> have significantly higher expression in <span style="color: #FF83FA"><strong>A</strong></span> compared to the other two conditions, and the rest of the genes don’t show significant expression changes except for the false positive gene 3 in <span style="background-color: #A2CD5A"><strong>B vs C</strong></span>.</p>
-<p>Something evident but worth showing is that the sizes of the “true” libraries we just generated, vary considerably between samples. Specially samples in condition <span style="color: #FF83FA"><strong>A</strong></span> have much larger libraries because of the three genes with high expression.</p>
+<p>Something evident but worth showing is that the sizes of the “true” libraries we just generated, vary considerably between samples. Specially samples in condition <span style="color: #FF83FA"><strong>A</strong></span> have much greater libraries because of the three genes with high expression.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -1337,28 +1337,33 @@ font-style: inherit;">9</span>))</span></code></pre></div>
 </div>
 </div>
 </div>
-<p>The differences in the total read counts per sample wouldn’t represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per sample, meaning not all molecules can be sequenced.</p>
-<p>This introduces a proportionality property in the RNA-seq count data: the</p>
-<p><br>
-Proportionality property.</p>
-<p>Even after normalizing for library size, because of the sampling, the counts are not directly comparable: we need to account for the proportion of reads per gene after sampling.</p>
+<p>The differences in total expression between samples wouldn’t represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per library, meaning not all molecules can be sequenced in each sample but there’s a sampling of molecules from which reads are generated. Think of it as having the pool of reads for all transcripts expressed in a sample, and having to randomly select a given number of them.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/images/read_sample.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0px" width="700"></p>
+</figure>
+</div>
+</section>
+<section id="the-rna-composition-bias" class="level1">
+<h1>The RNA composition bias</h1>
+<p>The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with more highly-expressed genes (and thus more transcripts), a higher proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression, as depicted in the pre. This is known as the RNA composition or population bias. Therefore, we need to account for the proportion of reads mapping to each gene after “sampling”.</p>
+<p>In the next code we randomly select 1000 reads per sample and plot the proportion that correspond to each gene per sample.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">library</span>(Polychrome)</span>
 <span id="cb4-2"></span>
-<span id="cb4-3"></span>
-<span id="cb4-4"><span class="do" style="color: #5E5E5E;
+<span id="cb4-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Create pool of reads per gene in each sample</span></span>
-<span id="cb4-5"><span class="fu" style="color: #4758AB;
+<span id="cb4-4"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">colnames</span>(expr) <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> library_sizes<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>sample</span>
-<span id="cb4-6">reads_per_gene_per_sample <span class="ot" style="color: #003B4F;
+<span id="cb4-5">reads_per_gene_per_sample <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1371,16 +1376,16 @@ background-color: null;
 font-style: inherit;">rep</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">rownames</span>(expr), sample)})</span>
-<span id="cb4-7"></span>
-<span id="cb4-8"><span class="do" style="color: #5E5E5E;
+<span id="cb4-6"></span>
+<span id="cb4-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Randomly select 1000 reads per sample</span></span>
-<span id="cb4-9"><span class="fu" style="color: #4758AB;
+<span id="cb4-8"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">set.seed</span>(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">12242024</span>)</span>
-<span id="cb4-10">reads_sample <span class="ot" style="color: #003B4F;
+<span id="cb4-9">reads_sample <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1397,11 +1402,11 @@ background-color: null;
 font-style: inherit;">replace =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">FALSE</span>)})</span>
-<span id="cb4-11"></span>
-<span id="cb4-12"><span class="do" style="color: #5E5E5E;
+<span id="cb4-10"></span>
+<span id="cb4-11"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Read counts per gene after sampling</span></span>
-<span id="cb4-13">rna_seq_expr <span class="ot" style="color: #003B4F;
+<span id="cb4-12">rna_seq_expr <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1412,28 +1417,24 @@ background-color: null;
 font-style: inherit;">table</span>(sample)[<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">rownames</span>(expr)]})</span>
-<span id="cb4-14"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># lapply(rna_seq_expr, function(x){which(is.na(names(x)))})</span></span>
-<span id="cb4-15"></span>
-<span id="cb4-16">rna_seq_expr <span class="ot" style="color: #003B4F;
+<span id="cb4-13">rna_seq_expr <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">do.call</span>(cbind, <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">lapply</span>(reads_sample, table))</span>
-<span id="cb4-17">rna_seq_expr <span class="ot" style="color: #003B4F;
+<span id="cb4-14">rna_seq_expr <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> rna_seq_expr[<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">rownames</span>(expr), ]</span>
-<span id="cb4-18">rna_seq_expr_melted <span class="ot" style="color: #003B4F;
+<span id="cb4-15">rna_seq_expr_melted <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">melt</span>(rna_seq_expr)</span>
-<span id="cb4-19"><span class="fu" style="color: #4758AB;
+<span id="cb4-16"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">colnames</span>(rna_seq_expr_melted) <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -1446,7 +1447,7 @@ background-color: null;
 font-style: inherit;">"sample"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"count"</span>)</span>
-<span id="cb4-20">rna_seq_expr_melted <span class="ot" style="color: #003B4F;
+<span id="cb4-17">rna_seq_expr_melted <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1461,11 +1462,11 @@ background-color: null;
 font-style: inherit;">by =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"sample"</span>)</span>
-<span id="cb4-21"></span>
-<span id="cb4-22"><span class="do" style="color: #5E5E5E;
+<span id="cb4-18"></span>
+<span id="cb4-19"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Order genes for plotting</span></span>
-<span id="cb4-23">rna_seq_expr_melted<span class="sc" style="color: #5E5E5E;
+<span id="cb4-20">rna_seq_expr_melted<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>gene <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -1486,16 +1487,16 @@ background-color: null;
 font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">30</span>))</span>
-<span id="cb4-24"></span>
-<span id="cb4-25"><span class="do" style="color: #5E5E5E;
+<span id="cb4-21"></span>
+<span id="cb4-22"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Color palette for genes</span></span>
-<span id="cb4-26"><span class="fu" style="color: #4758AB;
+<span id="cb4-23"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">set.seed</span>(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">12212024</span>)</span>
-<span id="cb4-27">col_palette <span class="ot" style="color: #003B4F;
+<span id="cb4-24">col_palette <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1510,7 +1511,7 @@ background-color: null;
 font-style: inherit;">palette =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Pastel 1"</span>), </span>
-<span id="cb4-28">                        <span class="fu" style="color: #4758AB;
+<span id="cb4-25">                        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">hcl.colors</span>(<span class="dv" style="color: #AD0000;
 background-color: null;
@@ -1519,7 +1520,7 @@ background-color: null;
 font-style: inherit;">palette =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"PinkYl"</span>),</span>
-<span id="cb4-29">                        <span class="fu" style="color: #4758AB;
+<span id="cb4-26">                        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">hcl.colors</span>(<span class="dv" style="color: #AD0000;
 background-color: null;
@@ -1532,14 +1533,14 @@ background-color: null;
 font-style: inherit;">30</span>, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">replace =</span> F)</span>
-<span id="cb4-30"><span class="fu" style="color: #4758AB;
+<span id="cb4-27"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">names</span>(col_palette) <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">rownames</span>(expr)</span>
-<span id="cb4-31">col_palette[<span class="fu" style="color: #4758AB;
+<span id="cb4-28">col_palette[<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
 background-color: null;
@@ -1560,11 +1561,11 @@ background-color: null;
 font-style: inherit;">"yellow3"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"mediumpurple1"</span>)</span>
-<span id="cb4-32">  </span>
-<span id="cb4-33"><span class="do" style="color: #5E5E5E;
+<span id="cb4-29">  </span>
+<span id="cb4-30"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Bar plot</span></span>
-<span id="cb4-34"><span class="fu" style="color: #4758AB;
+<span id="cb4-31"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">ggplot</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -1581,7 +1582,7 @@ background-color: null;
 font-style: inherit;">alpha =</span> gene)) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb4-35">  <span class="fu" style="color: #4758AB;
+<span id="cb4-32">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_bar</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -1598,12 +1599,12 @@ background-color: null;
 font-style: inherit;">0.2</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb4-36">  <span class="fu" style="color: #4758AB;
+<span id="cb4-33">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme_bw</span>() <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb4-37">  <span class="fu" style="color: #4758AB;
+<span id="cb4-34">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -1613,21 +1614,21 @@ font-style: inherit;">""</span>, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">y =</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"Read counts per gene after sampling"</span>, <span class="at" style="color: #657422;
+font-style: inherit;">"Read per gene after sampling"</span>, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">fill =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Gene"</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb4-38">  <span class="fu" style="color: #4758AB;
+<span id="cb4-35">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">scale_fill_manual</span>(<span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">values =</span> col_palette) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb4-39">  <span class="fu" style="color: #4758AB;
+<span id="cb4-36">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">scale_alpha_manual</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -1652,7 +1653,7 @@ background-color: null;
 font-style: inherit;">23</span>))) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb4-40">  <span class="fu" style="color: #4758AB;
+<span id="cb4-37">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">guides</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -1661,7 +1662,7 @@ background-color: null;
 font-style: inherit;">"none"</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb4-41">  <span class="fu" style="color: #4758AB;
+<span id="cb4-38">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -1680,7 +1681,7 @@ background-color: null;
 font-style: inherit;">hjust =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>), </span>
-<span id="cb4-42">        <span class="at" style="color: #657422;
+<span id="cb4-39">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.title =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1693,7 +1694,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">10</span>), </span>
-<span id="cb4-43">        <span class="at" style="color: #657422;
+<span id="cb4-40">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.text =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1702,7 +1703,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">8</span>), </span>
-<span id="cb4-44">        <span class="at" style="color: #657422;
+<span id="cb4-41">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.key.width =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1711,7 +1712,7 @@ background-color: null;
 font-style: inherit;">0.35</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>),</span>
-<span id="cb4-45">        <span class="at" style="color: #657422;
+<span id="cb4-42">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.key.height =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1728,7 +1729,7 @@ font-style: inherit;">"cm"</span>))</span></code></pre></div>
 </div>
 </div>
 </div>
-<p>In reality, however, we have a limited sequencing capacity so that not all RNAs in a sample are sequenced. A way to think about it is</p>
+<p>Clearly, in samples 1-4 of condition <span style="color: #FF83FA"><strong>A</strong></span> most of the reads go to the highly-expressed genes <span style="color: #FF4500"><strong>5</strong></span>, <span style="color: #CDCD00"><strong>6</strong></span>, and <span style="color: #AB82FF"><strong>7</strong></span>, and the read counts for the rest of genes are decreased, compared to the other samples with similar read proportions across genes. In the following heat map of counts after sampling, note the reduced expression of all non highly-expressed expressed genes in condition <span style="color: #FF83FA"><strong>A</strong></span>, while maintaining similar low expression levels for all genes in conditions <span style="color: #7CCD7C"><strong>B</strong></span> and <span style="color: #00BFFF"><strong>C</strong></span>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1738,7 +1739,7 @@ font-style: inherit;">&lt;-</span> conditions</span>
 <span id="cb5-2"></span>
 <span id="cb5-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## Plot</span></span>
+font-style: italic;">## Plot heat map</span></span>
 <span id="cb5-4">col_anno <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
@@ -1924,7 +1925,11 @@ font-style: inherit;">"cm"</span>)</span>
 </div>
 </div>
 </div>
-<p>More false positives.</p>
+</section>
+<section id="more-false-positives" class="level1">
+<h1>More false positives …</h1>
+<p>Th</p>
+<p>As you may suspect, the decrease in the counts of genes in condition A caused by smaller proportions of reads for these genes, yield to false discoveries of differential expression.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -2113,7 +2118,7 @@ font-style: inherit;">$</span>statistic</span>
 <span id="cb6-29"></span>
 <span id="cb6-30"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## Plot t-stats (expression change size)</span></span>
+font-style: italic;">## Plot t-stats </span></span>
 <span id="cb6-31">melted_pvals <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
@@ -2225,12 +2230,13 @@ font-style: inherit;">+</span> (<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">sign</span>(t)), <span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">label =</span> signif, <span class="at" style="color: #657422;
+font-style: inherit;">label =</span> signif, </span>
+<span id="cb6-41">                <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">group =</span> comparison, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">color =</span> comparison), </span>
-<span id="cb6-41">            <span class="at" style="color: #657422;
+<span id="cb6-42">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">position =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2241,17 +2247,17 @@ background-color: null;
 font-style: inherit;">hjust =</span> <span class="fl" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0.5</span>,</span>
-<span id="cb6-42">            <span class="at" style="color: #657422;
+<span id="cb6-43">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">show.legend =</span> F) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb6-43">  <span class="fu" style="color: #4758AB;
+<span id="cb6-44">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme_bw</span>() <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb6-44">  <span class="fu" style="color: #4758AB;
+<span id="cb6-45">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -2268,7 +2274,7 @@ background-color: null;
 font-style: inherit;">"Comparison"</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb6-45">  <span class="fu" style="color: #4758AB;
+<span id="cb6-46">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">scale_fill_manual</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -2280,20 +2286,22 @@ font-style: inherit;">"A_vs_B"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"hotpink1"</span>, <span class="st" style="color: #20794D;
+font-style: inherit;">"#8DB6CD"</span>, </span>
+<span id="cb6-47">                               <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"A_vs_C"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"greenyellow"</span>, <span class="st" style="color: #20794D;
+font-style: inherit;">"#FF82AB"</span>, </span>
+<span id="cb6-48">                               <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"B_vs_C"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"cyan1"</span>), </span>
-<span id="cb6-46">                               <span class="at" style="color: #657422;
+font-style: inherit;">"#A2CD5A"</span>), </span>
+<span id="cb6-49">                               <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">labels =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2306,7 +2314,7 @@ background-color: null;
 font-style: inherit;">"B vs C"</span>)) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb6-47">  <span class="fu" style="color: #4758AB;
+<span id="cb6-50">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">scale_color_manual</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -2318,22 +2326,24 @@ font-style: inherit;">"A_vs_B"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"hotpink1"</span>, <span class="st" style="color: #20794D;
+font-style: inherit;">"#8DB6CD"</span>, </span>
+<span id="cb6-51">                                <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"A_vs_C"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"greenyellow"</span>, <span class="st" style="color: #20794D;
+font-style: inherit;">"#FF82AB"</span>, </span>
+<span id="cb6-52">                                <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"B_vs_C"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"cyan1"</span>)) <span class="sc" style="color: #5E5E5E;
+font-style: inherit;">"#A2CD5A"</span>)) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb6-48">  <span class="fu" style="color: #4758AB;
+<span id="cb6-53">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -2352,7 +2362,7 @@ background-color: null;
 font-style: inherit;">hjust =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>), </span>
-<span id="cb6-49">        <span class="at" style="color: #657422;
+<span id="cb6-54">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">axis.title.y =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2361,7 +2371,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">8</span>), </span>
-<span id="cb6-50">        <span class="at" style="color: #657422;
+<span id="cb6-55">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">axis.text.y =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2370,7 +2380,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">6</span>), </span>
-<span id="cb6-51">        <span class="at" style="color: #657422;
+<span id="cb6-56">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.title =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2383,7 +2393,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">7</span>), </span>
-<span id="cb6-52">        <span class="at" style="color: #657422;
+<span id="cb6-57">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.text =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2392,7 +2402,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">6</span>), </span>
-<span id="cb6-53">        <span class="at" style="color: #657422;
+<span id="cb6-58">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.key.width =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2401,7 +2411,7 @@ background-color: null;
 font-style: inherit;">0.3</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>),</span>
-<span id="cb6-54">        <span class="at" style="color: #657422;
+<span id="cb6-59">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.key.height =</span> <span class="fu" style="color: #4758AB;
 background-color: null;

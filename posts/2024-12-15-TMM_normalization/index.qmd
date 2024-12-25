@@ -158,7 +158,7 @@ ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) +
 
 In the above figure we are plotting the *t*-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions; those expression changes that were significant (*p*-value \<0.05) have a "\*" above the bar. Not surprisingly, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} have significantly higher expression in [**A**]{style="color: #FF83FA"} compared to the other two conditions, and the rest of the genes don't show significant expression changes except for the false positive gene 3 in [**B vs C**]{style="background-color: #A2CD5A"}.
 
-Something evident but worth showing is that the sizes of the "true" libraries we just generated, vary considerably between samples. Specially samples in condition [**A**]{style="color: #FF83FA"} have much larger libraries because of the three genes with high expression.
+Something evident but worth showing is that the sizes of the "true" libraries we just generated, vary considerably between samples. Specially samples in condition [**A**]{style="color: #FF83FA"} have much greater libraries because of the three genes with high expression.
 
 ```{r plot_lib_sizes, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -184,18 +184,18 @@ ggplot(data = library_sizes, aes(x = sample, y = lib_size, fill = Condition)) +
 
 ```
 
-The differences in the total read counts per sample wouldn't represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per sample, meaning not all molecules can be sequenced.
+The differences in total expression between samples wouldn't represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per library, meaning not all molecules can be sequenced in each sample but there's a sampling of molecules from which reads are generated. Think of it as having the pool of reads for all transcripts expressed in a sample, and having to randomly select a given number of them.
 
-This introduces a proportionality property in the RNA-seq count data: the
+![](images/read_sample.png){style="margin: 0px" fig-align="center" width="700"}
 
-\
-Proportionality property.
+# The RNA composition bias
 
-Even after normalizing for library size, because of the sampling, the counts are not directly comparable: we need to account for the proportion of reads per gene after sampling.
+The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with more highly-expressed genes (and thus more transcripts), a higher proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression, as depicted in the pre. This is known as the RNA composition or population bias. Therefore, we need to account for the proportion of reads mapping to each gene after "sampling".
+
+In the next code we randomly select 1000 reads per sample and plot the proportion that correspond to each gene per sample.
 
 ```{r plot_gene_props, fig.align='center', warning=FALSE, message=FALSE}
 library(Polychrome)
-
 
 ## Create pool of reads per gene in each sample
 colnames(expr) <- library_sizes$sample
@@ -207,8 +207,6 @@ reads_sample <- lapply(reads_per_gene_per_sample, function(sample) {sample(sampl
 
 ## Read counts per gene after sampling
 rna_seq_expr <- lapply(reads_sample, function(sample){table(sample)[rownames(expr)]})
-# lapply(rna_seq_expr, function(x){which(is.na(names(x)))})
-
 rna_seq_expr <- do.call(cbind, lapply(reads_sample, table))
 rna_seq_expr <- rna_seq_expr[rownames(expr), ]
 rna_seq_expr_melted <- melt(rna_seq_expr)
@@ -230,7 +228,7 @@ col_palette[paste("gene", 5:7)] <- c("orangered", "yellow3", "mediumpurple1")
 ggplot(data = rna_seq_expr_melted, aes(x = sample, y = count, fill = gene, alpha = gene)) + 
   geom_bar(stat = "identity", colour = "black", linewidth = 0.2) +
   theme_bw() + 
-  labs(x = "", y = "Read counts per gene after sampling", fill = "Gene") + 
+  labs(x = "", y = "Read per gene after sampling", fill = "Gene") + 
   scale_fill_manual(values = col_palette) +
   scale_alpha_manual(values = rep(c(0.7, 1, 0.7), c(4, 3, 23))) +
   guides(alpha = "none") +
@@ -242,13 +240,13 @@ ggplot(data = rna_seq_expr_melted, aes(x = sample, y = count, fill = gene, alpha
 
 ```
 
-In reality, however, we have a limited sequencing capacity so that not all RNAs in a sample are sequenced. A way to think about it is
+Clearly, in samples 1-4 of condition [**A**]{style="color: #FF83FA"} most of the reads go to the highly-expressed genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"}, and the read counts for the rest of genes are decreased, compared to the other samples with similar read proportions across genes. In the following heat map of counts after sampling, note the reduced expression of all non highly-expressed expressed genes in condition [**A**]{style="color: #FF83FA"}, while maintaining similar low expression levels for all genes in conditions [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00BFFF"}.
 
 ```{r plot_RNAseq_expr, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
 colnames(rna_seq_expr) <- conditions
 
-## Plot
+## Plot heat map
 col_anno <- HeatmapAnnotation(
   Condition = anno_block(gp = gpar(fill = c("orchid1", "palegreen1", "deepskyblue1"), col = "black"), show_name = T), 
   annotation_name_gp =  gpar(fontsize = 9, fontface = "bold"))
@@ -274,7 +272,11 @@ Heatmap(rna_seq_expr,
 )
 ```
 
-More false positives.
+# More false positives ... 
+
+Th
+
+As you may suspect, the decrease in the counts of genes in condition A caused by smaller proportions of reads for these genes, yield to false discoveries of differential expression.
 
 ```{r t_tests_RNAseq_data, fig.align='center', warning=FALSE, message=FALSE}
 ## Matrices to save gene p-values and t-stats
@@ -306,7 +308,7 @@ for(i in 1:nrow(rna_seq_expr)){
   
 }
 
-## Plot t-stats (expression change size)
+## Plot t-stats 
 melted_pvals = melt(pvals)
 melted_tstats = melt(tstats)
 
@@ -316,14 +318,19 @@ data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
 
 ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
   geom_bar(stat = "identity", position="dodge", colour = "black", width = 0.65, linewidth = 0.3) +
-  geom_text(aes(x = gene, y = t + (sign(t)), label = signif, group = comparison, color = comparison), 
+  geom_text(aes(x = gene, y = t + (sign(t)), label = signif, 
+                group = comparison, color = comparison), 
             position = position_dodge(0.9), hjust = 0.5,
             show.legend = F) +
   theme_bw() + 
   labs(x = "", y = "Change in expression", fill = "Comparison") + 
-  scale_fill_manual(values = c("A_vs_B" = "hotpink1", "A_vs_C" = "greenyellow", "B_vs_C" = "cyan1"), 
+  scale_fill_manual(values = c("A_vs_B" = "#8DB6CD", 
+                               "A_vs_C" = "#FF82AB", 
+                               "B_vs_C" = "#A2CD5A"), 
                                labels = c("A vs B", "A vs C", "B vs C")) +
-  scale_color_manual(values = c("A_vs_B" = "hotpink1", "A_vs_C" = "greenyellow", "B_vs_C" = "cyan1")) +
+  scale_color_manual(values = c("A_vs_B" = "#8DB6CD", 
+                                "A_vs_C" = "#FF82AB", 
+                                "B_vs_C" = "#A2CD5A")) +
   theme(axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
         axis.title.y = element_text(size = 8), 
         axis.text.y = element_text(size = 6), 

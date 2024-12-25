@@ -6,6 +6,7 @@ author:
 date: 2024-12-12
 categories:
   - "Normalization"
+  - "RNA composition bias"
   - "Trimmed Mean of M-values"
   - "Highly-expressed genes"
   - "Differential Gene Expression"
@@ -35,17 +36,17 @@ In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. 
 
 # RNA-seq counts: a sampling artifact?
 
-Let's imagine a simple scenario with 15 samples across 3 experimental conditions (A, B, and C), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression values.
+Let's imagine a simple scenario with 15 samples across 3 experimental conditions ([**A**]{style="color: #FF83FA"}, [**B**]{style="color: #7CCD7C"}, and [**C**]{style="color: #00BFFF"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression values.
 
-Of the 15 genes, 12 have similar expression levels in all 3 conditions, and 3 are highly-expressed in condition A only (genes $g_5$, $g_6$, and $g_7$).
+Of the 15 genes, 12 have similar expression levels in all 3 conditions, and 3 are highly-expressed in condition [**A**]{style="color: #FF83FA"} only (genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"}).
 
 ![](images/read_pools.png){fig-align="center" width="9000"}
 
 ::: callout-caution
-The number of reads mapping to a given gene depends on gene expression (number of gene transcripts), but also gene length: larger genes will have more mapping reads. Thus, read counts are not direct estimations of gene expression. In this example, however, we assumed all genes have the same length so reads counts reflect expression.
+The number of reads mapping to a given gene depends on gene expression (number of gene transcripts), but also gene length: larger genes will have more mapping reads. Thus, read counts are not direct estimations of gene expression. In this example, however, we assumed all genes have the same length so we are supposing reads counts reflect expression.
 :::
 
-Below we create a matrix of these raw read counts (ranging from 10 to 100) for all 30 genes across the 15 samples. Then, let's introduce 3 highly-expressed genes (genes 5,6, and 7 with counts from 1,000 to 2,000) in condition A only.
+Below, we create a matrix of these raw read counts (ranging from 10 to 100) for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #FF83FA"} only.
 
 ```{r plot_raw_expr, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -55,58 +56,56 @@ library(circlize)
 ## 15 samples across 3 conditions 
 conditions <- rep(c("A", "B", "C"), c(4, 5, 6))
 
-## Raw counts for 30 genes across the 15 samples
+## Raw counts from 10-100 for 30 genes across the 15 samples
 set.seed(12242024)
 expr <- matrix(data = sample(c(10:100), replace = T, size = 450), nrow = 30)
 colnames(expr) <- conditions
 rownames(expr) <- paste("gene", 1:30)
 
-## Introduce 3 highly-expressed genes in condition A only
+## Introduce the 3 highly-expressed genes in condition A only
 expr[c("gene 5", "gene 6", "gene 7"), 1:4] <- sample(c(1000:2000), replace = T, size = 12)
 
 
 ## Heat map
 col_anno <- HeatmapAnnotation(
-  Condition = anno_block(gp = gpar(fill = c("orchid1", "palegreen1", "deepskyblue1"), col = "black"), show_name = T), 
+  Condition = anno_block(gp = gpar(fill = c("orchid1", "palegreen1", "deepskyblue1"), 
+                                   col = "black"), show_name = T), 
   annotation_name_gp =  gpar(fontsize = 9, fontface = "bold"))
 
 Heatmap(expr,
         name = "Raw counts", 
         top_annotation = col_anno, 
+        col = colorRamp2(c(1, 10, 100, 2000), 
+                         c("linen", "mistyrose2", "rosybrown2", "darkred")),
         cluster_rows = FALSE,
         cluster_columns = FALSE,
-        col = colorRamp2(c(1, 10, 100, 2000), c("linen", "mistyrose2", "rosybrown2", "darkred")),
         column_split = conditions,
-        border = TRUE,
-        show_row_names = TRUE,
         column_title = "Samples",
         column_title_gp = gpar(fontsize = 10, fontface = "bold"),
         column_names_side = "top",
         column_names_gp = gpar(fontsize = 9, fontface = "bold"),
+        column_names_rot = 0,
+        show_row_names = TRUE,
         row_names_gp = gpar(fontsize = 8),
         row_names_side = "left",
-        column_names_rot = 0,
+        border = TRUE,
         heatmap_width = unit(12.5, "cm"),
         heatmap_height = unit(12.5, "cm")
 )
 ```
 
-What's clear from the heat map of raw counts is that, by design, genes 5, 6, and 7 are more highly-expressed in condition A than B and C.
-
-Let's formally assess the differential expression of all genes in A vs B, A vs C, and B vs C, with two sample t-tests (assuming counts are aprox. normal).
+What's clear from the heat map of raw counts is that, by design, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} are more highly-expressed in condition [**A**]{style="color: #FF83FA"} than in [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00BFFF"}, whereas the rest of genes don't seem to present changes in their expression between conditions. Let's formally assess if the differences in the mean expression of all genes in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"}, are statisitcally significant with two sample t-tests.
 
 ```{r t_test_raw_counts, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
 library(reshape2)
 library(ggplot2)
 library(ggrepel)
 
-## Matrices to save gene p-values and t-stats
+## Create matrices to save gene p-values and t-stats
 pvals <- matrix(data = NA, nrow = nrow(expr), ncol = 3)
 tstats <- matrix(data = NA, nrow = nrow(expr), ncol = 3)
-
 colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
 rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
-
 
 ## Iterate over genes
 for(i in 1:nrow(expr)){
@@ -144,9 +143,9 @@ ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) +
             show.legend = F) +
   theme_bw() + 
   labs(x = "", y = "Change in expression", fill = "Comparison") + 
-  scale_fill_manual(values = c("A_vs_B" = "hotpink1", "A_vs_C" = "greenyellow", "B_vs_C" = "cyan1"), 
+  scale_fill_manual(values = c("A_vs_B" = "#8DB6CD", "A_vs_C" = "#FF82AB", "B_vs_C" = "#A2CD5A"), 
                                labels = c("A vs B", "A vs C", "B vs C")) +
-  scale_color_manual(values = c("A_vs_B" = "hotpink1", "A_vs_C" = "greenyellow", "B_vs_C" = "cyan1")) +
+  scale_color_manual(values = c("A_vs_B" = "#8DB6CD", "A_vs_C" = "#FF82AB", "B_vs_C" = "#A2CD5A")) +
   theme(axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
         axis.title.y = element_text(size = 8), 
         axis.text.y = element_text(size = 6), 
@@ -155,14 +154,15 @@ ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) +
         legend.key.width = unit(0.3, "cm"),
         legend.key.height = unit(0.3, "cm"))
 
-
-
 ```
 
-```{r plot_lib_sizes, fig.align='center', warning=FALSE, message=FALSE}
-library(ggplot2)
+In the above figure we are plotting the *t*-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions; those expression changes that were significant (*p*-value \<0.05) have a "\*" above the bar. Not surprisingly, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} have significantly higher expression in [**A**]{style="color: #FF83FA"} compared to the other two conditions, and the rest of the genes don't show significant expression changes except for the false positive gene 3 in [**B vs C**]{style="background-color: #A2CD5A"}.
 
-## Sample library sizes
+Something evident but worth showing is that the sizes of the "true" libraries we just generated, vary considerably between samples. Specially samples in condition [**A**]{style="color: #FF83FA"} have much larger libraries because of the three genes with high expression.
+
+```{r plot_lib_sizes, fig.align='center', warning=FALSE, message=FALSE}
+
+## Sample library sizes and conditions
 library_sizes <- data.frame("lib_size" = apply(expr, 2, sum),
                             "sample" = paste("sample", 1:15),
                             "Condition" = conditions)
@@ -183,6 +183,10 @@ ggplot(data = library_sizes, aes(x = sample, y = lib_size, fill = Condition)) +
 
 
 ```
+
+The differences in the total read counts per sample wouldn't represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per sample, meaning not all molecules can be sequenced.
+
+This introduces a proportionality property in the RNA-seq count data: the
 
 \
 Proportionality property.

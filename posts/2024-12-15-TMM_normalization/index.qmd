@@ -20,35 +20,39 @@ bibliography: references.bib
 
 # Introduction
 
-Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples for the study of transcriptome dynamics.
+Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples, and enabling the study of transcriptome dynamics.
 
-Varying sequencing depth in the samples is usually accounted for in normalization methods, where gene counts are scaled by sample library size (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression across samples, but is not the only factor at play, specially when the samples are expected to have very diverse transcriptomes between experimental conditions.
+Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample library size (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression across samples, but is not the only factor at play, specially when samples are expected to have very variable transcriptomes across experimental conditions.
 
-In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. Robinson and Alicia Oshlack introduced the issue of the **RNA composition bias** in RNA-seq data, and developed the **Trimmed Mean of M-values (TMM)** method to adjust for it [@robinson2010]. As a widely-implemented normalization scheme, it is important to understand why the RNA population of the samples is a concern for normalization and how TMM accounts for it.
+In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. Robinson and Alicia Oshlack introduced the issue of the [**RNA composition bias**]{style="background-color: #FFFACD"} in RNA-seq data, and developed the **Trimmed Mean of M-values (TMM)** method to adjust for it [@robinson2010]. As a widely-implemented normalization scheme, it is important to understand why the RNA population of the samples is a concern for normalization and how TMM accounts for it.
 
 # What you'll learn here
 
--   Visualize how RNA-seq gene expression estimates result from sampling effects and the implications of it in downstream differential gene expression (DGE) analysis.
+-   Visualize RNA-seq gene expression estimates as sampling results and the implications of it in downstream differential gene expression (DGE) analysis.
 
--   Understand the RNA composition bias: visualize how highly-expressed genes specific to one condition increase the false positive rate in DGE.
+-   Understand the **RNA composition bias**: evaluate cases of transcriptomes differing between samples that are problematic as a result of sampling effects in RNA-seq.
+
+-   Demonstrate how such RNA composition cases increase the false positive rate in DGE.
 
 -   Learn how the TMM method works to eliminate the RNA composition bias.
 
 # RNA-seq counts: a sampling artifact?
 
-Let's imagine a simple scenario with 15 samples across 3 experimental conditions ([**A**]{style="color: #FF83FA"}, [**B**]{style="color: #7CCD7C"}, and [**C**]{style="color: #00BFFF"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression values.
+## Hypothetical scenario
 
-Of the 15 genes, 12 have similar expression levels in all 3 conditions, and 3 are highly-expressed in condition [**A**]{style="color: #FF83FA"} only (genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"}).
+Imagine we have 15 samples across 3 experimental conditions ([**A**]{style="color: #FF83FA"}, [**B**]{style="color: #7CCD7C"}, and [**C**]{style="color: #00BFFF"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression\*.
+
+Then, think of the following three cases:
+
+-   [**Case 1**]{.underline}**: Highly-expressed genes in one condition only**:
+
+    Of the 30 genes, 27 have similar expression levels in all three conditions, and 3 are more highly-expressed in condition [**A**]{style="background-color: #FF83FA"} than in [**B**]{style="background-color: #7CCD7C"} and [**C**]{style="background-color: #00BFFF"}(genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"}).
 
 ![](images/read_pools.png){fig-align="center" width="9000"}
 
-::: callout-caution
-The number of reads mapping to a given gene depends on gene expression (number of gene transcripts), but also gene length: larger genes will have more mapping reads. Thus, read counts are not direct estimations of gene expression. In this example, however, we assumed all genes have the same length so we are supposing reads counts reflect expression.
-:::
+Below, we create a matrix of the raw read counts (ranging from 10 to 100) for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #FF83FA"} only.
 
-Below, we create a matrix of these raw read counts (ranging from 10 to 100) for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #FF83FA"} only.
-
-```{r plot_raw_expr, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
+```{r plot_raw_expr_case1, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
 library(ComplexHeatmap)
 library(circlize)
@@ -56,14 +60,18 @@ library(circlize)
 ## 15 samples across 3 conditions 
 conditions <- rep(c("A", "B", "C"), c(4, 5, 6))
 
+################################################################
+##                           Case 1:
+################################################################
+
 ## Raw counts from 10-100 for 30 genes across the 15 samples
 set.seed(12242024)
-expr <- matrix(data = sample(c(10:100), replace = T, size = 450), nrow = 30)
-colnames(expr) <- conditions
-rownames(expr) <- paste("gene", 1:30)
+expr_case1 <- matrix(data = sample(c(10:100), replace = T, size = 450), nrow = 30)
+colnames(expr_case1) <- conditions
+rownames(expr_case1) <- paste("gene", 1:30)
 
-## Introduce the 3 highly-expressed genes in condition A only
-expr[c("gene 5", "gene 6", "gene 7"), 1:4] <- sample(c(1000:2000), replace = T, size = 12)
+## Introduce the 3 highly-expressed genes in condition A 
+expr_case1[c("gene 5", "gene 6", "gene 7"), 1:4] <- sample(c(1000:2000), replace = T, size = 12)
 
 
 ## Heat map
@@ -72,7 +80,7 @@ col_anno <- HeatmapAnnotation(
                                    col = "black"), show_name = T), 
   annotation_name_gp =  gpar(fontsize = 9, fontface = "bold"))
 
-Heatmap(expr,
+Heatmap(expr_case1,
         name = "Raw counts", 
         top_annotation = col_anno, 
         col = colorRamp2(c(1, 10, 100, 2000), 
@@ -94,252 +102,441 @@ Heatmap(expr,
 )
 ```
 
-What's clear from the heat map of raw counts is that, by design, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} are more highly-expressed in condition [**A**]{style="color: #FF83FA"} than in [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00BFFF"}, whereas the rest of genes don't seem to present changes in their expression between conditions. Let's formally assess if the differences in the mean expression of all genes in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"}, are statisitcally significant with two sample t-tests.
+-   [**Case 2**]{.underline}**: Genes expressed uniquely in one condition**:
 
-```{r t_test_raw_counts, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
-library(reshape2)
-library(ggplot2)
-library(ggrepel)
+    Of the 30 genes, 15 are similarly expressed across the three conditions (genes 1-15), and the second half of genes (genes 16-30) are uniquely expressed in condition [**A**]{style="color: #FF83FA"} but to the same extent as the other genes. Thus, samples of condition [**A**]{style="color: #FF83FA"} have twice the number of expressed genes in [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00BFFF"} samples.
 
-## Create matrices to save gene p-values and t-stats
-pvals <- matrix(data = NA, nrow = nrow(expr), ncol = 3)
-tstats <- matrix(data = NA, nrow = nrow(expr), ncol = 3)
-colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
-rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
+    ```{r plot_raw_expr_case2, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
-## Iterate over genes
-for(i in 1:nrow(expr)){
-  
-  ## t-test for gene expr in condition1 vs condition2
-  for(condition_pair in list(c("A", "B"),  c("A", "C"),  c("B", "C"))){
-    
-    comparison <- paste0(condition_pair[1], "_vs_", condition_pair[2])
-    gene <- paste0("gene", i)
-    
-    gene_expr <- expr[i, colnames(expr) %in% condition_pair]
-    formula <- gene_expr ~ Condition
-    results <- t.test(formula = formula, 
-                      data = data.frame("Condition" = conditions[conditions %in% condition_pair]))
-    
-    pvals[gene, comparison] <- results$p.value
-    tstats[gene, comparison] <- results$statistic
+    ################################################################
+    ##                           Case 2:
+    ################################################################
 
-  }
-  
-}
+    ## 15 genes similarly expressed in all samples
+    set.seed(12242024)
+    expr_case2 <- matrix(data = sample(c(10:100), replace = T, size = 225), nrow = 15)
+    colnames(expr_case2) <- conditions
 
-## Plot t-stats (expression change size)
-melted_pvals = melt(pvals)
-melted_tstats = melt(tstats)
+    ## 15 genes expressed in condition A samples only
+    expr_case2 <- rbind(expr_case2, 
+                  cbind(matrix(sample(c(10:100), replace = T, size = 60), nrow = 15), 
+                        matrix(0, nrow = 15, ncol = 11))
+                  )
+    rownames(expr_case2) <- paste("gene", 1:30)
 
-data = cbind(melted_pvals, melted_tstats$value)
-colnames(data) <- c("gene", "comparison", "p", "t")
-data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
+    ## Heat map
+    Heatmap(expr_case2,
+            name = "Raw counts", 
+            top_annotation = col_anno, 
+            col = colorRamp2(c(0, 1, 10, 100, 2000), 
+                             c("gray95", "linen", "mistyrose2", "rosybrown2", "darkred")),
+            cluster_rows = FALSE,
+            cluster_columns = FALSE,
+            column_split = conditions,
+            column_title = "Samples",
+            column_title_gp = gpar(fontsize = 10, fontface = "bold"),
+            column_names_side = "top",
+            column_names_gp = gpar(fontsize = 9, fontface = "bold"),
+            column_names_rot = 0,
+            show_row_names = TRUE,
+            row_names_gp = gpar(fontsize = 8),
+            row_names_side = "left",
+            border = TRUE,
+            heatmap_width = unit(12.5, "cm"),
+            heatmap_height = unit(12.5, "cm")
+    )
 
-ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
-  geom_bar(stat = "identity", position="dodge", colour = "black", width = 0.65, linewidth = 0.3) +
-  geom_text(aes(x = gene, y = t + ((sign(t))*0.5), label = signif, group = comparison, color = comparison), 
-            position = position_dodge(0.9), hjust = 0.5,
-            show.legend = F) +
-  theme_bw() + 
-  labs(x = "", y = "Change in expression", fill = "Comparison") + 
-  scale_fill_manual(values = c("A_vs_B" = "#8DB6CD", "A_vs_C" = "#FF82AB", "B_vs_C" = "#A2CD5A"), 
-                               labels = c("A vs B", "A vs C", "B vs C")) +
-  scale_color_manual(values = c("A_vs_B" = "#8DB6CD", "A_vs_C" = "#FF82AB", "B_vs_C" = "#A2CD5A")) +
-  theme(axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
-        axis.title.y = element_text(size = 8), 
-        axis.text.y = element_text(size = 6), 
-        legend.title = element_text(face = "bold", size = 7), 
-        legend.text = element_text(size = 6), 
-        legend.key.width = unit(0.3, "cm"),
-        legend.key.height = unit(0.3, "cm"))
+    ```
 
-```
+-   [**Case 3**]{.underline}**: Highly-expressed genes uniquely in one condition**:
 
-In the above figure we are plotting the *t*-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions; those expression changes that were significant (*p*-value \<0.05) have a "\*" above the bar. Not surprisingly, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} have significantly higher expression in [**A**]{style="color: #FF83FA"} compared to the other two conditions, and the rest of the genes don't show significant expression changes except for the false positive gene 3 in [**B vs C**]{style="background-color: #A2CD5A"}.
+    Of the 30 genes, 27 have similar expression levels in all 3 conditions, and 3 are uniquely expressed in condition [**A**]{style="color: #FF83FA"} and are more high-expressed than the rest of genes (genes 28, 19, and 30).
 
-Something evident but worth showing is that the sizes of the "true" libraries we just generated, vary considerably between samples. Specially samples in condition [**A**]{style="color: #FF83FA"} have much greater libraries because of the three genes with high expression.
+    ```{r plot_raw_expr_case3, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
+
+    ################################################################
+    ##                           Case 3:
+    ################################################################
+
+    ## 27 similarly expressed genes in all samples
+    set.seed(12242024)
+    expr_case3 <- matrix(data = sample(c(10:100), replace = T, size = 405), nrow = 27)
+    colnames(expr_case3) <- conditions
+
+    ## Add the 3 highly-expressed genes in condition A only
+    expr_case3 <- rbind(expr_case3, 
+                  cbind(matrix(sample(c(1000:2000), replace = T, size = 12), nrow = 3), 
+                        matrix(0, nrow = 3, ncol = 11))
+                  )
+    rownames(expr_case3) <- paste("gene", 1:30)
+
+    ## Heat map
+    Heatmap(expr_case3,
+            name = "Raw counts", 
+            top_annotation = col_anno, 
+            col = colorRamp2(c(0, 1, 10, 100, 2000), 
+                             c("gray95", "linen", "mistyrose2", "rosybrown2", "darkred")),
+            cluster_rows = FALSE,
+            cluster_columns = FALSE,
+            column_split = conditions,
+            column_title = "Samples",
+            column_title_gp = gpar(fontsize = 10, fontface = "bold"),
+            column_names_side = "top",
+            column_names_gp = gpar(fontsize = 9, fontface = "bold"),
+            column_names_rot = 0,
+            show_row_names = TRUE,
+            row_names_gp = gpar(fontsize = 8),
+            row_names_side = "left",
+            border = TRUE,
+            heatmap_width = unit(12.5, "cm"),
+            heatmap_height = unit(12.5, "cm")
+    )
+
+
+    ```
+
+::: callout-caution
+\*The number of reads mapping to a given gene depends on gene expression (number of gene transcripts), but also gene length: larger genes will have more mapping reads. Thus, read counts are not direct estimations of gene expression. In our examples, however, we assumed all genes have the same length so that reads counts reflect expression.
+:::
+
+## Transcriptomes that are naturally different 
+
+Something evident but worth showing is that the sizes of the "true" libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely cases. Here samples in condition [**A**]{style="color: #FF83FA"} have much greater libraries because of highly-expressed genes, more expressed genes, or both, in case 1, 2, and 3, respectively.
 
 ```{r plot_lib_sizes, fig.align='center', warning=FALSE, message=FALSE}
+library(ggplot2)
 
 ## Sample library sizes and conditions
-library_sizes <- data.frame("lib_size" = apply(expr, 2, sum),
+library_sizes <- data.frame("lib_size_case1" = apply(expr_case1, 2, sum),
+                           "lib_size_case2" = apply(expr_case2, 2, sum),
+                           "lib_size_case3" = apply(expr_case3, 2, sum),
                             "sample" = paste("sample", 1:15),
                             "Condition" = conditions)
 
 ## Order samples for plotting
 library_sizes$sample <- factor(library_sizes$sample, levels = unique(library_sizes$sample))
 
-## Bar plot
-ggplot(data = library_sizes, aes(x = sample, y = lib_size, fill = Condition)) + 
-  geom_bar(stat = "identity", colour = "black") + 
-  geom_text(aes(y = lib_size + 200, label = lib_size), size = 3) +
-  theme_bw() + 
-  labs(x = "", y = "Total read counts") + 
-  scale_fill_manual(values = c("A" = "orchid1", "B" = "palegreen1", "C" = "deepskyblue1")) +
-  theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1), 
-        legend.title = element_text(face = "bold", size = 10), 
-        legend.text = element_text(face = "bold", size = 9))
-
+for(case in 1:3){
+  
+  ynum <- ifelse(case == 2, 60, 200)
+  
+  ## Bar plot for library sizes in case 1
+  plot <- ggplot(data = library_sizes, 
+                 aes(x = sample, 
+                     y = .data[[paste0("lib_size_case", case)]], 
+                     fill = Condition)) + 
+    geom_bar(stat = "identity", colour = "black") + 
+    geom_text(aes(y = .data[[paste0("lib_size_case", case)]] + ynum, 
+                  label = .data[[paste0("lib_size_case", case)]]), size = 3) +
+    theme_bw() + 
+    labs(title = paste("Case", case, "library sizes"), x = "", y = "Total read counts") + 
+    scale_fill_manual(values = c("A" = "orchid1", "B" = "palegreen1", "C" = "deepskyblue1")) +
+    theme(plot.title = element_text(face = "bold", size = 10), 
+          axis.title.y = element_text(size = 9), 
+          axis.text.x = element_text(size = 8, angle = 45, hjust = 1), 
+          legend.title = element_text(face = "bold", size = 9), 
+          legend.text = element_text(face = "bold", size = 8))
+  
+  print(plot)
+}
 
 ```
+
+## Randomly picking reads 🤏🏼
 
 The differences in total expression between samples wouldn't represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per library, meaning not all molecules can be sequenced in each sample but there's a sampling of molecules from which reads are generated. Think of it as having the pool of reads for all transcripts expressed in a sample, and having to randomly select a given number of them.
 
-![](images/read_sample.png){style="margin: 0px" fig-align="center" width="700"}
+![](images/read_sample.png){fig-align="center" style="margin: 0px" width="800"}
+
+For this reason, RNA-seq counts suffer from **sampling effects**. In the next section we'll clearly see why this data property represents a problem in downstrem analysis.
 
 # The RNA composition bias
 
-The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with more highly-expressed genes (and thus more transcripts), a higher proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression, as depicted in the pre. This is known as the RNA composition or population bias. Therefore, we need to account for the proportion of reads mapping to each gene after "sampling".
+The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes (case 1), a greater number of expressed genes (case 2), or both (case 3), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression, as depicted in the previous figure (look how more reads from such genes would be selected in condition A samples in all 3 cases).
 
-In the next code we randomly select 1000 reads per sample and plot the proportion that correspond to each gene per sample.
+This is known as the [**RNA composition or population bias**]{style="background-color: #FFFACD"}: differences in the sample transcriptomes across multiple conditions are exacerbated after this "molecule sampling" in sequencing experiments, thus requiring RNA-seq count data to be further processed to account for the proportion of reads mapping to each gene.
+
+In the next code we randomly select 1000 reads per sample in each case and plot the proportion that correspond to each gene per sample.
 
 ```{r plot_gene_props, fig.align='center', warning=FALSE, message=FALSE}
+library(rlang)
+library(reshape2)
 library(Polychrome)
 
-## Create pool of reads per gene in each sample
-colnames(expr) <- library_sizes$sample
-reads_per_gene_per_sample <- apply(expr, 2, function(sample) {rep(rownames(expr), sample)})
-
-## Randomly select 1000 reads per sample
-set.seed(12242024)
-reads_sample <- lapply(reads_per_gene_per_sample, function(sample) {sample(sample, size = 1000, replace = FALSE)})
-
-## Read counts per gene after sampling
-rna_seq_expr <- lapply(reads_sample, function(sample){table(sample)[rownames(expr)]})
-rna_seq_expr <- do.call(cbind, lapply(reads_sample, table))
-rna_seq_expr <- rna_seq_expr[rownames(expr), ]
-rna_seq_expr_melted <- melt(rna_seq_expr)
-colnames(rna_seq_expr_melted) <- c("gene", "sample", "count")
-rna_seq_expr_melted <- merge(rna_seq_expr_melted, library_sizes[, c("sample", "Condition")], by = "sample")
-
-## Order genes for plotting
-rna_seq_expr_melted$gene <- factor(rna_seq_expr_melted$gene, levels = paste("gene", 1:30))
-
-## Color palette for genes
-set.seed(12212024)
-col_palette <- sample(c(hcl.colors(30, palette = "Pastel 1"), 
-                        hcl.colors(30, palette = "PinkYl"),
-                        hcl.colors(30, palette = "Cyan-Magenta")), 30, replace = F)
-names(col_palette) <- rownames(expr)
-col_palette[paste("gene", 5:7)] <- c("orangered", "yellow3", "mediumpurple1")
+for(case in 1:3){
   
-## Bar plot
-ggplot(data = rna_seq_expr_melted, aes(x = sample, y = count, fill = gene, alpha = gene)) + 
-  geom_bar(stat = "identity", colour = "black", linewidth = 0.2) +
-  theme_bw() + 
-  labs(x = "", y = "Read per gene after sampling", fill = "Gene") + 
-  scale_fill_manual(values = col_palette) +
-  scale_alpha_manual(values = rep(c(0.7, 1, 0.7), c(4, 3, 23))) +
-  guides(alpha = "none") +
-  theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1), 
-        legend.title = element_text(face = "bold", size = 10), 
-        legend.text = element_text(size = 8), 
-        legend.key.width = unit(0.35, "cm"),
-        legend.key.height = unit(0.35, "cm"))
+  expr <- eval(parse_expr(paste0("expr_case", case)))
+  
+  ## Create pool of reads per gene in each sample
+  colnames(expr) <- library_sizes$sample
+  reads_per_gene_per_sample <- apply(expr, 2, function(sample) {rep(rownames(expr), sample)})
+  
+  ## Randomly select 1000 reads per sample
+  set.seed(12242024)
+  reads_sample <- lapply(reads_per_gene_per_sample, 
+                         function(sample_reads) {sample(sample_reads, size = 700, replace = FALSE)})
+  
+  ## Read counts per gene after sampling
+  rna_seq_expr <- lapply(reads_sample, function(sample){table(sample)[rownames(expr)]})
+  rna_seq_expr <- as.data.frame(do.call(cbind, rna_seq_expr))
+  rownames(rna_seq_expr) <- rownames(expr)
+  ## Gene with NA = 0 reads
+  rna_seq_expr[is.na(rna_seq_expr)] <- 0
+  
+  assign(paste0("rna_seq_expr_case", case), rna_seq_expr)
+  rna_seq_expr$gene <- rownames(rna_seq_expr)
+  
+  rna_seq_expr_melted <- melt(rna_seq_expr)
+  colnames(rna_seq_expr_melted) <- c("gene", "sample", "count")
 
+  ## Order genes for plotting
+  rna_seq_expr_melted$gene <- factor(rna_seq_expr_melted$gene, levels = paste("gene", 1:30))
+  
+  ## Color palette for genes
+  set.seed(12212024)
+  col_palette <- sample(c(hcl.colors(30, palette = "Pastel 1"), 
+                          hcl.colors(30, palette = "PinkYl"),
+                          hcl.colors(30, palette = "Cyan-Magenta")), 30, replace = F)
+  names(col_palette) <- rownames(expr)
+  col_palette[paste("gene", c(5:7, 28:30))] <- c("orangered", "yellow3", "mediumpurple1", 
+                                                 "plum2", "cadetblue1", "lightsteelblue")
+  
+  if(case == 1){
+    alphas <- rep(c(0.7, 1, 0.7), c(4, 3, 23))
+  }
+  else if(case == 2){
+    alphas <- rep(0.7, 30)
+  }
+  else{
+    alphas <- rep(c(0.7, 1), c(27, 3))
+  }
+  
+  ## Bar plot
+  plot <- ggplot(data = rna_seq_expr_melted, 
+                       aes(x = sample, y = count, fill = gene, alpha = gene)) + 
+                geom_bar(stat = "identity", colour = "black", linewidth = 0.2) +
+                theme_bw() + 
+                labs(title = paste("Case", case), x = "", 
+                     y = "Reads per gene after sampling", 
+                     fill = "Gene") + 
+                scale_fill_manual(values = col_palette) +
+                scale_alpha_manual(name = "Gene", values = alphas) +
+                theme(plot.title = element_text(face = "bold", size = 10), 
+                      axis.text.x = element_text(size = 8, angle = 45, hjust = 1), 
+                      axis.title.y = element_text(size = 9), 
+                      legend.title = element_text(face = "bold", size = 9), 
+                      legend.text = element_text(size = 8), 
+                      legend.key.width = unit(0.35, "cm"),
+                      legend.key.height = unit(0.35, "cm"))
+  
+  print(plot)
+}
 ```
 
-Clearly, in samples 1-4 of condition [**A**]{style="color: #FF83FA"} most of the reads go to the highly-expressed genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"}, and the read counts for the rest of genes are decreased, compared to the other samples with similar read proportions across genes. In the following heat map of counts after sampling, note the reduced expression of all non highly-expressed expressed genes in condition [**A**]{style="color: #FF83FA"}, while maintaining similar low expression levels for all genes in conditions [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00BFFF"}.
+Clearly, in samples 1-4 of condition [**A**]{style="color: #FF83FA"} most of the reads go to the highly-expressed genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"}, and the read counts for the rest of genes are decreased, compared to the other samples with similar read proportions across genes.
+
+In the following heat map of counts after sampling, note the reduced expression of all non highly-expressed expressed genes in condition [**A**]{style="color: #FF83FA"}, while maintaining similar low expression levels for all genes in conditions [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00BFFF"}.
 
 ```{r plot_RNAseq_expr, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
-colnames(rna_seq_expr) <- conditions
+## Plot heat map of RNA-seq counts in each case
+for(case in 1:3){
+  
+  rna_seq_expr <- eval(parse_expr(paste0("rna_seq_expr_case", case)))
+  colnames(rna_seq_expr) <- conditions
+  
+  h <- Heatmap(rna_seq_expr,
+          name = "RNA-seq counts", 
+          top_annotation = col_anno, 
+          cluster_rows = FALSE,
+          cluster_columns = FALSE,
+          col = colorRamp2(c(0, 1, 10, 100, 2000), 
+                           c("gray95", "linen", "mistyrose2", "rosybrown2", "darkred")),
+          column_split = conditions,
+          border = TRUE,
+          show_row_names = TRUE,
+          column_title = "Samples",
+          column_title_gp = gpar(fontsize = 10, fontface = "bold"),
+          column_names_side = "top",
+          column_names_gp = gpar(fontsize = 9, fontface = "bold"),
+          row_names_gp = gpar(fontsize = 8),
+          row_names_side = "left",
+          column_names_rot = 0,
+          heatmap_width = unit(12.5, "cm"),
+          heatmap_height = unit(12.5, "cm")
+  )
+  print(h)
+  
+}
 
-## Plot heat map
-col_anno <- HeatmapAnnotation(
-  Condition = anno_block(gp = gpar(fill = c("orchid1", "palegreen1", "deepskyblue1"), col = "black"), show_name = T), 
-  annotation_name_gp =  gpar(fontsize = 9, fontface = "bold"))
-
-Heatmap(rna_seq_expr,
-        name = "RNA-seq counts", 
-        top_annotation = col_anno, 
-        cluster_rows = FALSE,
-        cluster_columns = FALSE,
-        col = colorRamp2(c(1, 10, 100, 2000), c("linen", "mistyrose2", "rosybrown2", "darkred")),
-        column_split = conditions,
-        border = TRUE,
-        show_row_names = TRUE,
-        column_title = "Samples",
-        column_title_gp = gpar(fontsize = 10, fontface = "bold"),
-        column_names_side = "top",
-        column_names_gp = gpar(fontsize = 9, fontface = "bold"),
-        row_names_gp = gpar(fontsize = 8),
-        row_names_side = "left",
-        column_names_rot = 0,
-        heatmap_width = unit(12.5, "cm"),
-        heatmap_height = unit(12.5, "cm")
-)
 ```
 
 # More false positives ... 
 
-Th
+The issue: more false discoveries
+
+What's clear from the heat map of raw counts is that, by design, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} are more highly-expressed in condition [**A**]{style="color: #FF83FA"} than in [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00BFFF"}, whereas the rest of genes don't seem to present changes in their expression between conditions. Let's formally assess if the differences in the mean expression of all genes in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"}, are statisitcally significant with two sample t-tests (but keep in mind this tests assumes data normality and equal variances in both groups).
+
+```{r t_test_raw_counts, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
+library(ggrepel)
+
+for(case in 1:3){
+  
+  ## Create matrices to save gene p-values and t-stats
+  pvals <- matrix(data = NA, nrow = 30, ncol = 3)
+  tstats <- matrix(data = NA, nrow = 30, ncol = 3)
+  colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
+  rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
+  
+  ## Iterate over genes
+  for(i in 1:nrow(expr)){
+    
+    expr <- eval(parse_expr(paste0("expr_case", case)))
+      
+    ## t-test for gene expr in condition1 vs condition2
+    condition_pairs <- list(c("A", "B"),  c("A", "C"),  c("B", "C"))
+    
+    if((case == 2 & i>15) | (case == 3 & i>27)){
+      condition_pairs <- list(c("A", "B"),  c("A", "C"))
+    }
+    
+    for(condition_pair in condition_pairs){
+      
+      comparison <- paste0(condition_pair[1], "_vs_", condition_pair[2])
+      gene <- paste0("gene", i)
+      
+      gene_expr <- expr[i, colnames(expr) %in% condition_pair]
+      formula <- gene_expr ~ Condition
+      results <- t.test(formula = formula, 
+                          data = data.frame("Condition" = conditions[conditions %in% condition_pair]))
+        
+        pvals[gene, comparison] <- results$p.value
+        tstats[gene, comparison] <- results$statistic
+    
+    }
+    
+  }
+  
+  ## Plot t-stats (expression change size)
+  melted_pvals = na.omit(melt(pvals))
+  melted_tstats = na.omit(melt(tstats))
+  
+  data = cbind(melted_pvals, melted_tstats$value)
+  colnames(data) <- c("gene", "comparison", "p", "t")
+  data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
+  
+  plot <- ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
+    geom_bar(stat = "identity", position="dodge", colour = "black", 
+             width = 0.65, linewidth = 0.3) +
+    geom_text(aes(x = gene, y = t + ((sign(t))*0.5), 
+                  label = signif, group = comparison, color = comparison), 
+                  position = position_dodge(0.9), hjust = 0.5,
+                  show.legend = F) +
+    theme_bw() + 
+    labs(title = paste("Case", case), 
+         x = "", y = "True change in expression", fill = "Comparison") + 
+    scale_fill_manual(values = c("A_vs_B" = "#8DB6CD", 
+                                 "A_vs_C" = "#FF82AB", 
+                                 "B_vs_C" = "#A2CD5A"), 
+                                 labels = c("A vs B", "A vs C", "B vs C")) +
+    scale_color_manual(values = c("A_vs_B" = "#8DB6CD", 
+                                  "A_vs_C" = "#FF82AB", 
+                                  "B_vs_C" = "#A2CD5A")) +
+    theme(plot.title = element_text(face = "bold", size = 9), 
+          axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
+          axis.title.y = element_text(size = 8), 
+          axis.text.y = element_text(size = 6), 
+          legend.title = element_text(face = "bold", size = 7), 
+          legend.text = element_text(size = 6), 
+          legend.key.width = unit(0.3, "cm"),
+          legend.key.height = unit(0.3, "cm"))
+  
+  print(plot)
+}
+
+
+```
+
+In the above figure we are plotting the *t*-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions; those expression changes that were significant (*p*-value \<0.05) have a "\*" above the bar. Not surprisingly, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} have significantly higher expression in [**A**]{style="color: #FF83FA"} compared to the other two conditions, and the rest of the genes don't show significant expression changes except for the false positive gene 3 in [**B vs C**]{style="background-color: #A2CD5A"}.
 
 As you may suspect, the decrease in the counts of genes in condition A caused by smaller proportions of reads for these genes, yield to false discoveries of differential expression.
 
 ```{r t_tests_RNAseq_data, fig.align='center', warning=FALSE, message=FALSE}
-## Matrices to save gene p-values and t-stats
-pvals <- matrix(data = NA, nrow = nrow(rna_seq_expr), ncol = 3)
-tstats <- matrix(data = NA, nrow = nrow(rna_seq_expr), ncol = 3)
 
-colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
-rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
-
-
-## Iterate over genes
-for(i in 1:nrow(rna_seq_expr)){
+for(case in 1:3){
   
-  ## t-test for gene expr in condition1 vs condition2
-  for(condition_pair in list(c("A", "B"),  c("A", "C"),  c("B", "C"))){
+  ## Matrices to save gene p-values and t-stats
+  pvals <- matrix(data = NA, nrow = 30, ncol = 3)
+  tstats <- matrix(data = NA, nrow = 30, ncol = 3)
+  
+  colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
+  rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
+  
+  ## Iterate over genes
+  for(i in 1:nrow(rna_seq_expr)){
     
-    comparison <- paste0(condition_pair[1], "_vs_", condition_pair[2])
-    gene <- paste0("gene", i)
+    rna_seq_expr <- as.matrix(eval(parse_expr(paste0("rna_seq_expr_case", case))))
+    colnames(rna_seq_expr) <- conditions
     
-    gene_expr <- rna_seq_expr[i, colnames(rna_seq_expr) %in% condition_pair]
-    formula <- gene_expr ~ Condition
-    results <- t.test(formula = formula, 
-                      data = data.frame("Condition" = conditions[conditions %in% condition_pair]))
+    ## t-test for gene expr in condition1 vs condition2
+    condition_pairs <- list(c("A", "B"),  c("A", "C"),  c("B", "C"))
     
-    pvals[gene, comparison] <- results$p.value
-    tstats[gene, comparison] <- results$statistic
-
+    if((case == 2 & i>15) | (case == 3 & i>27)){
+      condition_pairs <- list(c("A", "B"),  c("A", "C"))
+    }
+    
+    for(condition_pair in condition_pairs){
+      
+      comparison <- paste0(condition_pair[1], "_vs_", condition_pair[2])
+      gene <- paste0("gene", i)
+      
+      gene_expr <- rna_seq_expr[i, colnames(rna_seq_expr) %in% condition_pair]
+      formula <- gene_expr ~ Condition
+      results <- t.test(formula = formula, 
+                        data = data.frame("Condition" = conditions[conditions %in% condition_pair]))
+      
+      pvals[gene, comparison] <- results$p.value
+      tstats[gene, comparison] <- results$statistic
+  
+    }
+    
   }
   
+  ## Plot t-stats 
+  melted_pvals = na.omit(melt(pvals))
+  melted_tstats = na.omit(melt(tstats))
+  
+  data = cbind(melted_pvals, melted_tstats$value)
+  colnames(data) <- c("gene", "comparison", "p", "t")
+  data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
+  
+  plot <- ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
+    geom_bar(stat = "identity", position="dodge", colour = "black", width = 0.65, linewidth = 0.3) +
+    geom_text(aes(x = gene, y = t + (sign(t)), label = signif, 
+                  group = comparison, color = comparison), 
+              position = position_dodge(0.9), hjust = 0.5,
+              show.legend = F) +
+    theme_bw() + 
+    labs(title = paste("Case", case), 
+         x = "", y = "Change in expression with RNA-seq counts", fill = "Comparison") + 
+    scale_fill_manual(values = c("A_vs_B" = "#8DB6CD", 
+                                 "A_vs_C" = "#FF82AB", 
+                                 "B_vs_C" = "#A2CD5A"), 
+                                 labels = c("A vs B", "A vs C", "B vs C")) +
+    scale_color_manual(values = c("A_vs_B" = "#8DB6CD", 
+                                  "A_vs_C" = "#FF82AB", 
+                                  "B_vs_C" = "#A2CD5A")) +
+    theme(plot.title = element_text(face = "bold", size = 9), 
+          axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
+          axis.title.y = element_text(size = 8), 
+          axis.text.y = element_text(size = 6), 
+          legend.title = element_text(face = "bold", size = 7), 
+          legend.text = element_text(size = 6), 
+          legend.key.width = unit(0.3, "cm"),
+          legend.key.height = unit(0.3, "cm"))
+  
+  print(plot)
 }
-
-## Plot t-stats 
-melted_pvals = melt(pvals)
-melted_tstats = melt(tstats)
-
-data = cbind(melted_pvals, melted_tstats$value)
-colnames(data) <- c("gene", "comparison", "p", "t")
-data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
-
-ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
-  geom_bar(stat = "identity", position="dodge", colour = "black", width = 0.65, linewidth = 0.3) +
-  geom_text(aes(x = gene, y = t + (sign(t)), label = signif, 
-                group = comparison, color = comparison), 
-            position = position_dodge(0.9), hjust = 0.5,
-            show.legend = F) +
-  theme_bw() + 
-  labs(x = "", y = "Change in expression", fill = "Comparison") + 
-  scale_fill_manual(values = c("A_vs_B" = "#8DB6CD", 
-                               "A_vs_C" = "#FF82AB", 
-                               "B_vs_C" = "#A2CD5A"), 
-                               labels = c("A vs B", "A vs C", "B vs C")) +
-  scale_color_manual(values = c("A_vs_B" = "#8DB6CD", 
-                                "A_vs_C" = "#FF82AB", 
-                                "B_vs_C" = "#A2CD5A")) +
-  theme(axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
-        axis.title.y = element_text(size = 8), 
-        axis.text.y = element_text(size = 6), 
-        legend.title = element_text(face = "bold", size = 7), 
-        legend.text = element_text(size = 6), 
-        legend.key.width = unit(0.3, "cm"),
-        legend.key.height = unit(0.3, "cm"))
-
-
 
 ```
 

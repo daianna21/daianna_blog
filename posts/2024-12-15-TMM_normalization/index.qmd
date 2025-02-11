@@ -22,9 +22,9 @@ bibliography: references.bib
 
 Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples, and enabling the study of transcriptome dynamics.
 
-Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample library size (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression across samples, but is not the only factor at play, specially when samples are expected to have very variable transcriptomes across experimental conditions.
+Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample **library size** (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression levels across samples but is not the only factor at play, specially when samples are expected to have very variable transcriptomes across experimental conditions.
 
-In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. Robinson and Alicia Oshlack introduced the issue of the [**RNA composition bias**]{style="background-color: #FFFACD"} in RNA-seq data, and developed the **Trimmed Mean of M-values (TMM)** method to adjust for it [@robinson2010]. As a widely-implemented normalization scheme, it is important to understand why the RNA population of the samples is a concern for normalization and how TMM accounts for it.
+In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. Robinson and Alicia Oshlack introduced the issue of the [**RNA composition bias**]{style="background-color: #FFFACD"} in RNA-seq data, and developed the **Trimmed Mean of M-values (TMM)** method to adjust for it [@robinson2010]. As a widely-implemented normalization scheme, it is important to understand why sample RNA population differences are a concern for normalization and how TMM accounts for it.
 
 # What you'll learn here
 
@@ -38,19 +38,19 @@ In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. 
 
 # RNA-seq counts: a sampling artifact?
 
-## Hypothetical scenario
+## Hypothetical scenarios
 
-Imagine we have 15 samples across 3 experimental conditions ([**A**]{style="color: #FF83FA"}, [**B**]{style="color: #7CCD7C"}, and [**C**]{style="color: #00BFFF"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression\*.
+Imagine we have 15 samples across 3 experimental conditions ([**A**]{style="color: #EE7AE9"}, [**B**]{style="color: #7CCD7C"}, and [**C**]{style="color: #00B2EE"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression[\*]{style="color: #EE4000"}.
 
 Then, think of the following three cases:
 
 -   [**Case 1**]{.underline}**: Highly-expressed genes in one condition only**:
 
-    Of the 30 genes, 27 have similar expression levels in all three conditions, and 3 are more highly-expressed in condition [**A**]{style="background-color: #FF83FA"} than in [**B**]{style="background-color: #7CCD7C"} and [**C**]{style="background-color: #00BFFF"}(genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"}).
+    Of the 30 genes, 27 have similar expression levels in all three conditions, and 3 are more highly-expressed in condition [**A**]{style="color: #EE7AE9"} than in the other two conditions (genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"}).
 
-![](images/read_pools.png){fig-align="center" width="9000"}
+![](images/Case1.png){fig-align="center" width="6000"}
 
-Below, we create a matrix of the raw read counts (ranging from 10 to 100) for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #FF83FA"} only.
+Below, we create an initial matrix of the raw read counts (ranging from 10 to 100) for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #EE7AE9"} only.
 
 ```{r plot_raw_expr_case1, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -104,7 +104,9 @@ Heatmap(expr_case1,
 
 -   [**Case 2**]{.underline}**: Genes expressed uniquely in one condition**:
 
-    Of the 30 genes, 15 are similarly expressed across the three conditions (genes 1-15), and the second half of genes (genes 16-30) are uniquely expressed in condition [**A**]{style="color: #FF83FA"} but to the same extent as the other genes. Thus, samples of condition [**A**]{style="color: #FF83FA"} have twice the number of expressed genes in [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00BFFF"} samples.
+    In a separate scenario, imagine that of the 30 genes, half are similarly expressed across the three conditions and half are uniquely expressed in condition [**A**]{style="color: #EE7AE9"}, but in the same expression levels as the other genes. In such case, samples of condition [**A**]{style="color: #EE7AE9"} have twice the number of expressed genes that samples have in [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00B2EE"}.
+
+    ![](images/Case2.png){width="4800"}
 
     ```{r plot_raw_expr_case2, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -117,7 +119,7 @@ Heatmap(expr_case1,
     expr_case2 <- matrix(data = sample(c(10:100), replace = T, size = 225), nrow = 15)
     colnames(expr_case2) <- conditions
 
-    ## 15 genes expressed in condition A samples only
+    ## Add 15 genes expressed in condition A samples only
     expr_case2 <- rbind(expr_case2, 
                   cbind(matrix(sample(c(10:100), replace = T, size = 60), nrow = 15), 
                         matrix(0, nrow = 15, ncol = 11))
@@ -145,12 +147,13 @@ Heatmap(expr_case1,
             heatmap_width = unit(12.5, "cm"),
             heatmap_height = unit(12.5, "cm")
     )
-
     ```
 
 -   [**Case 3**]{.underline}**: Highly-expressed genes uniquely in one condition**:
 
-    Of the 30 genes, 27 have similar expression levels in all 3 conditions, and 3 are uniquely expressed in condition [**A**]{style="color: #FF83FA"} and are more high-expressed than the rest of genes (genes 28, 19, and 30).
+    In the third scenario, of the 30 genes, 27 have similar expression levels in all 3 conditions, and 3 are uniquely expressed in condition [**A**]{style="color: #EE7AE9"} and are more high-expressed than the rest of genes (genes [**28**]{style="color: #EEAEEE"}, [**29**]{style="color: #8EE5EE"}, and [**30**]{style="color: #A2B5CD"}).
+
+    ![](images/Case3.png)
 
     ```{r plot_raw_expr_case3, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -192,16 +195,15 @@ Heatmap(expr_case1,
             heatmap_height = unit(12.5, "cm")
     )
 
-
     ```
 
 ::: callout-caution
-\*The number of reads mapping to a given gene depends on gene expression (number of gene transcripts), but also gene length: larger genes will have more mapping reads. Thus, read counts are not direct estimations of gene expression. In our examples, however, we assumed all genes have the same length so that reads counts reflect expression.
+[\*]{style="color: #EE4000"}The number of reads mapping to a given gene depends on gene expression (number of gene transcripts), but also gene length: larger genes result in more mapping reads. Thus, read counts are not direct estimations of gene expression. In our examples, however, we assumed all genes have the same length so that read counts reflect expression.
 :::
 
 ## Transcriptomes that are naturally different 
 
-Something evident but worth showing is that the sizes of the "true" libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely cases. Here samples in condition [**A**]{style="color: #FF83FA"} have much greater libraries because of highly-expressed genes, more expressed genes, or both, in case 1, 2, and 3, respectively.
+Something perhaps evident but worth showing is that the sizes of the "true" libraries (assumed to be estimates of sample transcriptomes) we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In the three cases, samples in condition [**A**]{style="color: #EE7AE9"} have greater libraries because of highly-expressed genes in [**Case 1**]{.underline}, more expressed genes in [**Case 2**]{.underline}, or both in [**Case 3**]{.underline}, as presented in the below bar plots.
 
 ```{r plot_lib_sizes, fig.align='center', warning=FALSE, message=FALSE}
 library(ggplot2)
@@ -216,11 +218,12 @@ library_sizes <- data.frame("lib_size_case1" = apply(expr_case1, 2, sum),
 ## Order samples for plotting
 library_sizes$sample <- factor(library_sizes$sample, levels = unique(library_sizes$sample))
 
+## Bar plot for library sizes in each case 
 for(case in 1:3){
   
+  ## args for adding numbers
   ynum <- ifelse(case == 2, 60, 200)
-  
-  ## Bar plot for library sizes in case 1
+
   plot <- ggplot(data = library_sizes, 
                  aes(x = sample, 
                      y = .data[[paste0("lib_size_case", case)]], 
@@ -244,11 +247,11 @@ for(case in 1:3){
 
 ## Randomly picking reads 🤏🏼
 
-The differences in total expression between samples wouldn't represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per library, meaning not all molecules can be sequenced in each sample but there's a sampling of molecules from which reads are generated. Think of it as having the pool of reads for all transcripts expressed in a sample, and having to randomly select a given number of them.
+The differences in total expression between samples wouldn't represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per library, meaning not all molecules can be sequenced in each sample but there's a sampling of molecules from which reads are generated. Think of it as having the pool of reads for all transcripts expressed in a sample, and having to randomly select a fixed number of them.
 
 ![](images/read_sample.png){fig-align="center" style="margin: 0px" width="800"}
 
-For this reason, RNA-seq counts suffer from **sampling effects**. In the next section we'll clearly see why this data property represents a problem in downstrem analysis.
+For this reason, RNA-seq counts suffer from **sampling effects**. As you may have noticed, In the next section we'll clearly see why this data property represents a problem in downstrem analysis.
 
 # The RNA composition bias
 
@@ -256,7 +259,7 @@ The sampling of molecules introduces a proportionality problem in the RNA-seq co
 
 This is known as the [**RNA composition or population bias**]{style="background-color: #FFFACD"}: differences in the sample transcriptomes across multiple conditions are exacerbated after this "molecule sampling" in sequencing experiments, thus requiring RNA-seq count data to be further processed to account for the proportion of reads mapping to each gene.
 
-In the next code we randomly select 1000 reads per sample in each case and plot the proportion that correspond to each gene per sample.
+In the next code we randomly select 1000 reads per sample in each case and plot the proportion that correspond to each gene per sample. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.
 
 ```{r plot_gene_props, fig.align='center', warning=FALSE, message=FALSE}
 library(rlang)

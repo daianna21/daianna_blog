@@ -1,5 +1,5 @@
 ---
-title: "Trimmed Mean of M values"
+title: "Trimmed Mean of M-values"
 description: ""
 author:
   - name: Daianna Gonzalez-Padilla
@@ -20,7 +20,7 @@ bibliography: references.bib
 
 # Introduction
 
-Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples, and enabling the study of transcriptome dynamics.
+Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the systematic effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples, and enabling the study of transcriptome dynamics.
 
 Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample **library size** (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression levels across samples but is not the only factor at play, specially when samples are expected to have very variable transcriptomes across experimental conditions.
 
@@ -28,13 +28,13 @@ In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. 
 
 # What you'll learn here
 
--   Visualize RNA-seq gene expression estimates as sampling results and the implications of it in downstream differential gene expression (DGE) analysis.
+-   Visualize RNA-seq gene expression estimates as sampling artifacts and the implications of it in downstream differential gene expression (DGE) analysis.
 
--   Understand the **RNA composition bias**: evaluate cases of transcriptomes differing between samples that are problematic as a result of sampling effects in RNA-seq.
+-   Understand the **RNA composition bias**: explore cases of transcriptomes differing between samples and how they introduce a proportionality issue in read count data as a result of sampling effects in RNA-seq.
 
--   Demonstrate how such RNA composition cases increase the false positive rate in DGE.
+-   Demonstrate how such RNA composition cases increase the false positive rates in DGE.
 
--   Learn how the TMM method works to eliminate the RNA composition bias.
+-   Learn how the TMM method works to reduce the RNA composition bias.
 
 # RNA-seq counts: a sampling artifact?
 
@@ -50,7 +50,7 @@ Then, think of the following three cases:
 
 ![](images/Case1.png){fig-align="center" width="6000"}
 
-Below, we create an initial matrix of the raw read counts (ranging from 10 to 100) for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #EE7AE9"} only.
+Below, we create an initial matrix of raw read counts from a negative binomial distribution for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #EE7AE9"} only.
 
 ```{r plot_raw_expr_case1, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -66,7 +66,8 @@ conditions <- rep(c("A", "B", "C"), c(4, 5, 6))
 
 ## Raw counts from 10-100 for 30 genes across the 15 samples
 set.seed(12242024)
-expr_case1 <- matrix(data = sample(c(10:100), replace = T, size = 450), nrow = 30)
+# expr_case1 <- matrix(data = sample(c(10:100), replace = T, size = 450), nrow = 30)
+expr_case1 <- matrix(data = rnbinom(450, mu=50, size=1/0.05), nrow = 30)
 colnames(expr_case1) <- conditions
 rownames(expr_case1) <- paste("gene", 1:30)
 
@@ -100,6 +101,7 @@ Heatmap(expr_case1,
         heatmap_width = unit(12.5, "cm"),
         heatmap_height = unit(12.5, "cm")
 )
+
 ```
 
 -   [**Case 2**]{.underline}**: Genes expressed uniquely in one condition**:
@@ -116,14 +118,21 @@ Heatmap(expr_case1,
 
     ## 15 genes similarly expressed in all samples
     set.seed(12242024)
-    expr_case2 <- matrix(data = sample(c(10:100), replace = T, size = 225), nrow = 15)
+    #expr_case2 <- matrix(data = sample(c(10:100), replace = T, size = 225), nrow = 15)
+    expr_case2 <- matrix(data = rnbinom(225, mu=50, size=1/0.05), nrow = 15)
     colnames(expr_case2) <- conditions
 
     ## Add 15 genes expressed in condition A samples only
+    # expr_case2 <- rbind(expr_case2, 
+    #              cbind(matrix(sample(c(10:100), replace = T, size = 60), nrow = 15), 
+    #                    matrix(0, nrow = 15, ncol = 11))
+    #              )
+
     expr_case2 <- rbind(expr_case2, 
-                  cbind(matrix(sample(c(10:100), replace = T, size = 60), nrow = 15), 
+                  cbind(matrix(rnbinom(60, mu=50, size=1/0.05), nrow = 15), 
                         matrix(0, nrow = 15, ncol = 11))
                   )
+
     rownames(expr_case2) <- paste("gene", 1:30)
 
     ## Heat map
@@ -163,7 +172,8 @@ Heatmap(expr_case1,
 
     ## 27 similarly expressed genes in all samples
     set.seed(12242024)
-    expr_case3 <- matrix(data = sample(c(10:100), replace = T, size = 405), nrow = 27)
+    # expr_case3 <- matrix(data = sample(c(10:100), replace = T, size = 405), nrow = 27)
+    expr_case3 <- matrix(data = rnbinom(405, mu=50, size=1/0.05), nrow = 27)
     colnames(expr_case3) <- conditions
 
     ## Add the 3 highly-expressed genes in condition A only
@@ -203,7 +213,7 @@ Heatmap(expr_case1,
 
 ## Transcriptomes that are naturally different 
 
-Something perhaps evident but worth showing is that the sizes of the "true" libraries (assumed to be estimates of sample transcriptomes) we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In the three cases, samples in condition [**A**]{style="color: #EE7AE9"} have greater libraries because of highly-expressed genes in [**Case 1**]{.underline}, more expressed genes in [**Case 2**]{.underline}, or both in [**Case 3**]{.underline}, as presented in the below bar plots.
+Something maybe evident but worth showing is that the sizes of the "true" libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In the three cases, samples in condition [**A**]{style="color: #EE7AE9"} have greater libraries because of highly-expressed genes in [**Case 1**]{.underline}, more expressed genes in [**Case 2**]{.underline}, or both in [**Case 3**]{.underline}, as presented in the below bar plots.
 
 ```{r plot_lib_sizes, fig.align='center', warning=FALSE, message=FALSE}
 library(ggplot2)
@@ -249,17 +259,17 @@ for(case in 1:3){
 
 The differences in total expression between samples wouldn't represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per library, meaning not all molecules can be sequenced in each sample but there's a sampling of molecules from which reads are generated. Think of it as having the pool of reads for all transcripts expressed in a sample, and having to randomly select a fixed number of them.
 
-![](images/read_sample.png){fig-align="center" style="margin: 0px" width="800"}
+![](images/sampling.png){fig-align="center"}
 
-For this reason, RNA-seq counts suffer from **sampling effects**. As you may have noticed, In the next section we'll clearly see why this data property represents a problem in downstrem analysis.
+For this reason, RNA-seq counts suffer from **sampling effects**. In the next section we'll clearly see why this property in RNA-seq data represents an issue in downstrem analysis.
 
 # The RNA composition bias
 
-The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes (case 1), a greater number of expressed genes (case 2), or both (case 3), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression, as depicted in the previous figure (look how more reads from such genes would be selected in condition A samples in all 3 cases).
+The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes ([**Case 1**]{.underline}), a greater number of expressed genes ([**Case 2**]{.underline}), or both ([**Case 3**]{.underline}), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression. This is depicted in the previous figure: look how in condition [**A**]{style="color: #EE7AE9"}, in the first case more reads from the highly-expressed genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} are selected, in the second case reads from the genes [**16**]{style="color: #F5CCE4"}, [**17**]{style="color: #F6CBB7"}, ..., [**29**]{style="color: #8EE5EE"}, [**30**]{style="color: #A2B5CD"}, expressed in condition A only, decrease the selection of reads from the other genes, and in the third case most selected reads corespond to the condition A-only highly-expressed genes [**28**]{style="color: #EEAEEE"}, [**29**]{style="color: #8EE5EE"}, and [**30**]{style="color: #A2B5CD"}.
 
-This is known as the [**RNA composition or population bias**]{style="background-color: #FFFACD"}: differences in the sample transcriptomes across multiple conditions are exacerbated after this "molecule sampling" in sequencing experiments, thus requiring RNA-seq count data to be further processed to account for the proportion of reads mapping to each gene.
+This is known as the [**RNA composition or population bias**]{style="background-color: #FFFACD"}: this molecule sampling in sequencing experiments artificially reduce the expression of under-sampled genes in samples with larger RNA content, thus implying RNA-seq count data to be further processed to make accurate inferences.
 
-In the next code we randomly select 1000 reads per sample in each case and plot the proportion that correspond to each gene per sample. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.
+In the next code we simulate this read sampling by randomly selecting 1000 reads per sample in each case and plotting the proportion that correspond to each gene per sample. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.
 
 ```{r plot_gene_props, fig.align='center', warning=FALSE, message=FALSE}
 library(rlang)
@@ -277,7 +287,7 @@ for(case in 1:3){
   ## Randomly select 1000 reads per sample
   set.seed(12242024)
   reads_sample <- lapply(reads_per_gene_per_sample, 
-                         function(sample_reads) {sample(sample_reads, size = 700, replace = FALSE)})
+                         function(sample_reads) {sample(sample_reads, size = 650, replace = FALSE)})
   
   ## Read counts per gene after sampling
   rna_seq_expr <- lapply(reads_sample, function(sample){table(sample)[rownames(expr)]})
@@ -314,6 +324,8 @@ for(case in 1:3){
     alphas <- rep(c(0.7, 1), c(27, 3))
   }
   
+  assign(paste0("alphas_case_", case), alphas)
+   
   ## Bar plot
   plot <- ggplot(data = rna_seq_expr_melted, 
                        aes(x = sample, y = count, fill = gene, alpha = gene)) + 
@@ -336,9 +348,7 @@ for(case in 1:3){
 }
 ```
 
-Clearly, in samples 1-4 of condition [**A**]{style="color: #FF83FA"} most of the reads go to the highly-expressed genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"}, and the read counts for the rest of genes are decreased, compared to the other samples with similar read proportions across genes.
-
-In the following heat map of counts after sampling, note the reduced expression of all non highly-expressed expressed genes in condition [**A**]{style="color: #FF83FA"}, while maintaining similar low expression levels for all genes in conditions [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00BFFF"}.
+In the following heat maps we plot the count matrix after sampling.
 
 ```{r plot_RNAseq_expr, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -374,11 +384,13 @@ for(case in 1:3){
 
 ```
 
+Confirming the aforementioned, note in the bar plots the dominance in read proportion of highly-expressed and/or unique genes in condition [**A**]{style="color: #EE7AE9"} samples, and in the heat maps, the consequent reduction of the count-based estimated expression of non-highly expressed and shared genes in samples of the other two conditions.
+
 # More false positives ... 
 
-The issue: more false discoveries
+By design, we know that most genes are not DE. Let's formally assess if the differences in the mean expression of all genes in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"}, are statistically significant with two sample t-tests (but keep in mind this tests assumes data normality and equal variances in both groups).
 
-What's clear from the heat map of raw counts is that, by design, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} are more highly-expressed in condition [**A**]{style="color: #FF83FA"} than in [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00BFFF"}, whereas the rest of genes don't seem to present changes in their expression between conditions. Let's formally assess if the differences in the mean expression of all genes in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"}, are statisitcally significant with two sample t-tests (but keep in mind this tests assumes data normality and equal variances in both groups).
+Below we are plotting the *t*-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions. The expression changes that were significant (*p*-value \<0.05) have a "\*" above the bar.
 
 ```{r t_test_raw_counts, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
 library(ggrepel)
@@ -460,7 +472,7 @@ for(case in 1:3){
 
 ```
 
-In the above figure we are plotting the *t*-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions; those expression changes that were significant (*p*-value \<0.05) have a "\*" above the bar. Not surprisingly, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} have significantly higher expression in [**A**]{style="color: #FF83FA"} compared to the other two conditions, and the rest of the genes don't show significant expression changes except for the false positive gene 3 in [**B vs C**]{style="background-color: #A2CD5A"}.
+Not surprisingly, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} have significantly higher expression in [**A**]{style="color: #FF83FA"} compared to the other two conditions, and the rest of the genes don't show significant expression changes except for the false positive gene 3 in [**B vs C**]{style="background-color: #A2CD5A"}.
 
 As you may suspect, the decrease in the counts of genes in condition A caused by smaller proportions of reads for these genes, yield to false discoveries of differential expression.
 
@@ -474,13 +486,13 @@ for(case in 1:3){
   
   colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
   rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
-  
+
+  rna_seq_expr <- as.matrix(eval(parse_expr(paste0("rna_seq_expr_case", case))))
+  colnames(rna_seq_expr) <- conditions
+    
   ## Iterate over genes
   for(i in 1:nrow(rna_seq_expr)){
-    
-    rna_seq_expr <- as.matrix(eval(parse_expr(paste0("rna_seq_expr_case", case))))
-    colnames(rna_seq_expr) <- conditions
-    
+
     ## t-test for gene expr in condition1 vs condition2
     condition_pairs <- list(c("A", "B"),  c("A", "C"),  c("B", "C"))
     
@@ -543,6 +555,194 @@ for(case in 1:3){
 
 ```
 
+::: callout-important
+This proportionality issue can also decrease the power to detect true differentially expressed genes. For instance, in [**Case 1**]{.underline} look how after read sampling, the expression of highly-expressed genes reduces in condition A and becomes more similar to that of the other conditions (heat map), and consequently, the decreased sizes in their expression changes (bar plot).
+:::
+
+# How to solve the problem?
+
+Let's denote the true and unknown total reads of each sample $i$ by $S_i$ (i.e. the complete pool of reads per sample), and the RNA-seq library size by $N_i$ (reads selected after sampling).
+
+Now, instead of selecting a fixed number of reads in the sampling, we can think of selecting a fixed proportion of reads per sample ($p_i = \frac{N_i}{S_i}$), which would preserve the original true RNA composition of the samples and allow the direct comparison of gene counts between samples.
+
+![](images/sampling2.png){fig-align="center"}
+
+We define the total read counts of gene $g$ in samples $k$ and $r$ as $z_{gk}$ and $z_{gr}$, respectively. By selecting the same proportion $p$ of reads from $S_k$ and $S_r$, on average we keep $z_{gk} \times p$ and $z_{gr} \times p$ reads for that gene in samples $k$ and $r$, making the expression estimates comparable across samples.
+
+But the reality is that we have a fixed number of reads and $p_k ≠ p_r$. We aim to find a scaling factor $\alpha$ such that $\frac{N_k}{S_k} \times \alpha = \frac{N_r}{S_r}$, making proportions in both samples equal. Since we fix the number of selected reads, $N_k = N_r$ and $\alpha = \frac{\frac{N_r}{S_r}}{\frac{N_k}{S_k}} = \frac{S_k}{S_r}$. We cannot estimate $S_k$ and $S_r$ but approximate their ratio.
+
+# TMM method for estimating scaling factors
+
+What Mark D. Robinson and Alicia Oshlack proposed with their Trim Mean of M-values method is an empirical approach to approximate $\frac{S_k}{S_r}$, which can be summarized as follows:
+
+1.  Compute gene-wise log-expression ratios between samples $k$ and $r$:
+
+    $$
+    M_{gk}^r = \frac{log_2(y_{gk})}{log_2(y_{gr})}
+    $$
+
+    and the mean gene expression across samples as:
+
+    $$
+    A_g = \frac{log_2(y_{gk}) + log_2(y_{gr})}{2}
+    $$ where $y_{gk}$ and $y_{gr}$ are the RNA-seq counts of gene $g$ in samples $k$ and $r$.
+
+    In the next code we compute the $M$ and $A$ values for all genes in each case, comparing sample 1 of condition A and sample 5 of condition B. We then plot these values to map up and down differentially expressed genes.
+
+    ```{r MA_plots, fig.height = 3, fig.width = 4.55, fig.align='center', warning=FALSE, message=FALSE}
+
+    MA_plots <- list()
+    for(case in 1:3){
+       
+       ## Select sample 1 as k and 5 as r
+        rna_seq_expr <- as.matrix(eval(parse_expr(paste0("rna_seq_expr_case", case))))
+        rna_seq_expr_samples <- rna_seq_expr[, c(1,5)]
+        colnames(rna_seq_expr_samples) <- c("k", "r")
+        
+        ## Transform zero counts to smallest possible non-zero count
+        rna_seq_expr_samples[rna_seq_expr_samples == 0] <- 1
+        
+        ## Compute M and A values
+        M_values <- apply(rna_seq_expr_samples, 1, 
+                          function(yg){log2(yg["k"] / yg["r"])})
+        A_values <- apply(rna_seq_expr_samples, 1, 
+                          function(yg){(log2(yg["k"]) + log2(yg["r"])) / 2})
+        
+        df <- data.frame("M" = M_values, 
+                         "A" = A_values, 
+                         "gene" = rownames(rna_seq_expr_samples))
+        df$gene <- factor(df$gene, levels = df$gene)
+        assign(paste0("df_case_", case), df)
+        
+        ## M vs A plot 
+        plot <- ggplot(df, aes(x = A, y = M, color = gene, alpha = gene)) + 
+          geom_point() +
+          theme_bw() + 
+          scale_color_manual(values = col_palette) +
+          guides(colour = guide_legend(override.aes = list(size = 1.2))) +
+          scale_alpha_manual(name = "Gene", values = get(paste0("alphas_case_", case))) +
+          geom_hline(yintercept = 0, size = 0.55, linetype = 3, color = "gray40") +
+          labs(title = paste("Case", case), x = "A values", 
+               y = "M values", 
+               color = "Gene") + 
+          theme(plot.title = element_text(face = "bold", size = 10), 
+                axis.text.x = element_text(size = 8), 
+                axis.text.y = element_text(size = 8), 
+                axis.title.x = element_text(size = 9), 
+                axis.title.y = element_text(size = 9), 
+                legend.title = element_text(face = "bold", size = 8.5), 
+                legend.text = element_text(size = 6.5), 
+                legend.key.width = unit(0.25, "cm"),
+                legend.key.height = unit(0.25, "cm"))
+        
+      MA_plots[[case]] <- plot
+      print(plot)
+        
+    }
+
+    ```
+
+Observe how all genes have logFCs offset from zero, just as we have previously demonstrated.
+
+2.  Trim the upper and lower x% (30% by default) of gene $M$ values that represent genes differentially expressed across samples, as well as y% (5% by default) of $A$ values. This keeps genes that are considered non-differentially expressed and therefore useful to estimate a global expression fold change between samples
+
+    Given the very few genes we have in our simulated data, instead of timming 30% we will discard genes with outlier $M$ and $A$ values, defined as those 3 median-absolute-deviations (MAD; dotted lines) away from the median (solid line).
+
+    ```{r trimming_boxplots, fig.height = 3.6, fig.width = 10, fig.align='center', warning=FALSE, message=FALSE}
+
+    library(cowplot)
+
+    for(metric in c("M", "A")){
+      
+      plots <- list()
+      for(case in 1:3){
+        
+        df <- get(paste0("df_case_", case))
+        df <- df[, c("gene", metric)]
+        
+        ## Trimm outliers
+        df$outlier <- as.character(df[, metric] > median(df[, metric]) + (3*mad(df[, metric])) | 
+                                   df[, metric] < median(df[, metric]) - (3*mad(df[, metric])))
+        ## Values boxplot
+        pos <- position_jitter(width = .08, seed = 12242024)
+          
+        plot <- ggplot(df, aes(x = "", y = get(metric))) + 
+            geom_point(aes(color = gene, alpha = gene), size = 1.5, position = pos) +
+            scale_color_manual(values = col_palette) +
+            scale_alpha_manual(values = get(paste0("alphas_case_", case))) +
+            geom_point(aes(shape = outlier), color = "darkred",
+                       size = 2.3, stroke = 0.6, position = pos) +
+            scale_shape_manual(values = c("TRUE" = 4, "FALSE" = NA)) +
+            geom_boxplot(alpha = 0, size = 0.2, width = 0.2, color = "gray40") +
+            geom_hline(yintercept = median(df[, metric]), size = 0.5, color = "gray30") +
+            geom_hline(yintercept = median(df[, metric]) + (3 * mad(df[, metric])), size = 0.5, 
+                       linetype = 2, color = "orangered2") +
+            geom_hline(yintercept = median(df[, metric]) - (3 * mad(df[, metric])), size = 0.5, 
+                       linetype = 2, color = "orangered2") +
+            guides(alpha = "none") + 
+            labs(title = paste("Case", case), x = "", y = paste0(metric, " values"), 
+                 color = "Gene", shape = "Outlier") + 
+            theme_bw() + 
+            theme(plot.title = element_text(face = "bold", size = 10), 
+                  axis.ticks.length.x = unit(0, "cm"),
+                  axis.text.y = element_text(size = 8), 
+                  axis.title.y = element_text(size = 9), 
+                  legend.title = element_text(face = "bold", size = 9), 
+                  legend.text = element_text(size = 8), 
+                  legend.key.width = unit(0.35, "cm"),
+                  legend.key.height = unit(0.35, "cm"))
+          
+          if(case != 3){
+            plot <- plot + guides(color = "none", shape = "none")
+          }
+        
+      plots[[case]] <- plot
+    }
+
+    print(plot_grid(plotlist = plots, ncol = 3, rel_widths = c(0.65, 0.65, 1)))
+
+    }
+
+    ```
+
+3.  Estimate the average of the trimmed gene $M$ values, each weighted by gene inverse variances to account for (MA plot)
+
+    ```{r}
+
+
+
+    ```
+
+In other words, we approximate Sk/Sr as a global expression logFC between samples based on similarly-expressed genes (e.g. housekeeping genes).
+
+4.  Then we scale each gene count zk x p by alpha (RNA-seq read count is z x p), which is equivalent to scale the whole library k by
+
+The Trim Mean of M-values method computes library size scaling factors between teo samples as an approximation of
+
+the ... to adjust
+
+Normalization fators
+
+Scaling factors
+
+Assuming most genes are not DE, we can compute the log2FC of their expression levels between two samples.
+
+::: callout-caution
+This procedure assumes that $y_{gk}, y_{gr} >0$, so an initial filtering of non-/lowly-expressed genes is necessary. Indeed, zero-expressed genes are removed in advance.
+:::
+
+DGE analysis
+
+What reference and implementation in calcNormFactors()
+
 # Conclusion
 
-More read counts for a gene can also be caused by greater lengths, not only by its high expression.
+Initially, normalizing expression counts by true biological RNA composition differences seems counterintuitive as those are the differences we aim to detect in DGE analysis. But I hope you have it clear now that the problem arises from sampling effects in RNA-seq data, and that gene read counts depend not only on gene expression levels and length, but also on the inherent properties of the RNA samples from which they come.
+
+biological differences in the sample transcriptomes across multiple conditions
+
+Library size normalization is appropiate for replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the similarly-expressed ones.
+
+As we have seen, TMM is a simple but effective method to scale ...
+
+<https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/>

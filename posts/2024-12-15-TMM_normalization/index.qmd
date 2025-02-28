@@ -50,7 +50,7 @@ Then, think of the following three cases:
 
 ![](images/Case1.png){fig-align="center" width="6000"}
 
-Below, we create an initial matrix of raw read counts from a negative binomial distribution for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #EE7AE9"} only.
+Below, we generate an initial matrix of raw read counts from a negative binomial distribution centered in 50, for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #EE7AE9"} only.
 
 ```{r plot_raw_expr_case1, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -64,10 +64,10 @@ conditions <- rep(c("A", "B", "C"), c(4, 5, 6))
 ##                           Case 1:
 ################################################################
 
-## Raw counts from 10-100 for 30 genes across the 15 samples
+## Raw counts for 30 genes across the 15 samples as:
+## random numbers following a NB with mean = mu and var = mu + (mu^2/size)
 set.seed(12242024)
-# expr_case1 <- matrix(data = sample(c(10:100), replace = T, size = 450), nrow = 30)
-expr_case1 <- matrix(data = rnbinom(450, mu=50, size=1/0.05), nrow = 30)
+expr_case1 <- matrix(data = rnbinom(450, mu=50, size=20), nrow = 30)
 colnames(expr_case1) <- conditions
 rownames(expr_case1) <- paste("gene", 1:30)
 
@@ -118,19 +118,13 @@ Heatmap(expr_case1,
 
     ## 15 genes similarly expressed in all samples
     set.seed(12242024)
-    #expr_case2 <- matrix(data = sample(c(10:100), replace = T, size = 225), nrow = 15)
-    expr_case2 <- matrix(data = rnbinom(225, mu=50, size=1/0.05), nrow = 15)
+    expr_case2 <- matrix(data = rnbinom(225, mu=50, size=20), nrow = 15)
     colnames(expr_case2) <- conditions
 
     ## Add 15 genes expressed in condition A samples only
-    # expr_case2 <- rbind(expr_case2, 
-    #              cbind(matrix(sample(c(10:100), replace = T, size = 60), nrow = 15), 
-    #                    matrix(0, nrow = 15, ncol = 11))
-    #              )
-
     expr_case2 <- rbind(expr_case2, 
-                  cbind(matrix(rnbinom(60, mu=50, size=1/0.05), nrow = 15), 
-                        matrix(0, nrow = 15, ncol = 11))
+                        cbind(matrix(rnbinom(60, mu=50, size=20), nrow = 15), 
+                              matrix(0, nrow = 15, ncol = 11))
                   )
 
     rownames(expr_case2) <- paste("gene", 1:30)
@@ -172,14 +166,13 @@ Heatmap(expr_case1,
 
     ## 27 similarly expressed genes in all samples
     set.seed(12242024)
-    # expr_case3 <- matrix(data = sample(c(10:100), replace = T, size = 405), nrow = 27)
-    expr_case3 <- matrix(data = rnbinom(405, mu=50, size=1/0.05), nrow = 27)
+    expr_case3 <- matrix(data = rnbinom(405, mu=50, size=20), nrow = 27)
     colnames(expr_case3) <- conditions
 
     ## Add the 3 highly-expressed genes in condition A only
     expr_case3 <- rbind(expr_case3, 
-                  cbind(matrix(sample(c(1000:2000), replace = T, size = 12), nrow = 3), 
-                        matrix(0, nrow = 3, ncol = 11))
+                        cbind(matrix(sample(c(1000:2000), replace = T, size = 12), nrow = 3), 
+                              matrix(0, nrow = 3, ncol = 11))
                   )
     rownames(expr_case3) <- paste("gene", 1:30)
 
@@ -213,15 +206,15 @@ Heatmap(expr_case1,
 
 ## Transcriptomes that are naturally different 
 
-Something maybe evident but worth showing is that the sizes of the "true" libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In the three cases, samples in condition [**A**]{style="color: #EE7AE9"} have greater libraries because of highly-expressed genes in [**Case 1**]{.underline}, more expressed genes in [**Case 2**]{.underline}, or both in [**Case 3**]{.underline}, as presented in the below bar plots.
+Something maybe evident but worth showing is that the sizes of the "true" total libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In all cases, samples in condition [**A**]{style="color: #EE7AE9"} have greater libraries because of highly-expressed genes in [**Case 1**]{.underline}, more expressed genes in [**Case 2**]{.underline}, or both in [**Case 3**]{.underline}, as presented in the below bar plots.
 
 ```{r plot_lib_sizes, fig.align='center', warning=FALSE, message=FALSE}
 library(ggplot2)
 
 ## Sample library sizes and conditions
 library_sizes <- data.frame("lib_size_case1" = apply(expr_case1, 2, sum),
-                           "lib_size_case2" = apply(expr_case2, 2, sum),
-                           "lib_size_case3" = apply(expr_case3, 2, sum),
+                            "lib_size_case2" = apply(expr_case2, 2, sum),
+                            "lib_size_case3" = apply(expr_case3, 2, sum),
                             "sample" = paste("sample", 1:15),
                             "Condition" = conditions)
 
@@ -265,11 +258,11 @@ For this reason, RNA-seq counts suffer from **sampling effects**. In the next se
 
 # The RNA composition bias
 
-The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes ([**Case 1**]{.underline}), a greater number of expressed genes ([**Case 2**]{.underline}), or both ([**Case 3**]{.underline}), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression. This is depicted in the previous figure: look how in condition [**A**]{style="color: #EE7AE9"}, in the first case more reads from the highly-expressed genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} are selected, in the second case reads from the genes [**16**]{style="color: #F5CCE4"}, [**17**]{style="color: #F6CBB7"}, ..., [**29**]{style="color: #8EE5EE"}, [**30**]{style="color: #A2B5CD"}, expressed in condition A only, decrease the selection of reads from the other genes, and in the third case most selected reads corespond to the condition A-only highly-expressed genes [**28**]{style="color: #EEAEEE"}, [**29**]{style="color: #8EE5EE"}, and [**30**]{style="color: #A2B5CD"}.
+The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes ([**Case 1**]{.underline}), a greater number of expressed genes ([**Case 2**]{.underline}), or both ([**Case 3**]{.underline}), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression. This is depicted in the previous figure: look how in condition [**A**]{style="color: #EE7AE9"}, in the first case more reads from the highly-expressed genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} are selected; in the second case, reads from the genes [**16**]{style="color: #F5CCE4"}, [**17**]{style="color: #F6CBB7"}, ..., [**29**]{style="color: #8EE5EE"}, [**30**]{style="color: #A2B5CD"}, expressed in condition A only, reduce the number of reads for the other genes, and in the third case most selected reads correspond to the condition A-only highly-expressed genes [**28**]{style="color: #EEAEEE"}, [**29**]{style="color: #8EE5EE"}, and [**30**]{style="color: #A2B5CD"}.
 
-This is known as the [**RNA composition or population bias**]{style="background-color: #FFFACD"}: this molecule sampling in sequencing experiments artificially reduce the expression of under-sampled genes in samples with larger RNA content, thus implying RNA-seq count data to be further processed to make accurate inferences.
+This is known as the [**RNA composition or population bias**]{style="background-color: #FFFACD"}: the molecule sampling in sequencing experiments artificially reduce the expression of under-sampled genes in samples with larger RNA content, and also leads to increased gene expression in samples with lowly-expressed genes, thus implying RNA-seq count data sets need to be further processed to make accurate inferences from them.
 
-In the next code we simulate this read sampling by randomly selecting 1000 reads per sample in each case and plotting the proportion that correspond to each gene per sample. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.
+In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and plotting the proportion that correspond to each gene. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.
 
 ```{r plot_gene_props, fig.align='center', warning=FALSE, message=FALSE}
 library(rlang)
@@ -284,7 +277,7 @@ for(case in 1:3){
   colnames(expr) <- library_sizes$sample
   reads_per_gene_per_sample <- apply(expr, 2, function(sample) {rep(rownames(expr), sample)})
   
-  ## Randomly select 1000 reads per sample
+  ## Randomly select 650 reads per sample
   set.seed(12242024)
   reads_sample <- lapply(reads_per_gene_per_sample, 
                          function(sample_reads) {sample(sample_reads, size = 650, replace = FALSE)})
@@ -348,7 +341,7 @@ for(case in 1:3){
 }
 ```
 
-In the following heat maps we plot the count matrix after sampling.
+In the following heat maps we plot the count matrices after sampling.
 
 ```{r plot_RNAseq_expr, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -384,210 +377,154 @@ for(case in 1:3){
 
 ```
 
-Confirming the aforementioned, note in the bar plots the dominance in read proportion of highly-expressed and/or unique genes in condition [**A**]{style="color: #EE7AE9"} samples, and in the heat maps, the consequent reduction of the count-based estimated expression of non-highly expressed and shared genes in samples of the other two conditions.
+Confirming the aforementioned, note in the bar plots the dominance in read proportion of highly-expressed and/or unique genes in condition [**A**]{style="color: #EE7AE9"}, and in the heat maps, the consequent reduction in expression of non-highly expressed and shared genes, in the same condition.
 
 # More false positives ... 
 
-By design, we know that most genes are not DE. Let's formally assess if the differences in the mean expression of all genes in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"}, are statistically significant with two sample t-tests (but keep in mind this tests assumes data normality and equal variances in both groups).
+By design, we know that most genes are not differentially expressed (DE). Let's formally test if the differences in the mean expression of each gene in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"} with the original data, are statistically significant with two sample t-tests (but keep in mind this tests assumes data normality and equal variances in both groups).
 
 Below we are plotting the *t*-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions. The expression changes that were significant (*p*-value \<0.05) have a "\*" above the bar.
 
 ```{r t_test_raw_counts, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
 library(ggrepel)
 
-for(case in 1:3){
+## t-test for total or sampled counts
+t_test_expr <- function(expr_counts){
   
-  ## Create matrices to save gene p-values and t-stats
-  pvals <- matrix(data = NA, nrow = 30, ncol = 3)
-  tstats <- matrix(data = NA, nrow = 30, ncol = 3)
-  colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
-  rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
+  for(case in 1:3){
   
-  ## Iterate over genes
-  for(i in 1:nrow(expr)){
+    ## Total raw counts
+    expr <- eval(parse_expr(paste0(expr_counts, "_case", case))) 
+    expr <- as.matrix(expr)
+    colnames(expr) <- conditions
+     
+    ## Create matrices to save gene p-values and t-stats
+    pvals <- matrix(data = NA, nrow = 30, ncol = 3)
+    tstats <- matrix(data = NA, nrow = 30, ncol = 3)
+    colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
+    rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
     
-    expr <- eval(parse_expr(paste0("expr_case", case)))
-      
-    ## t-test for gene expr in condition1 vs condition2
-    condition_pairs <- list(c("A", "B"),  c("A", "C"),  c("B", "C"))
-    
-    if((case == 2 & i>15) | (case == 3 & i>27)){
-      condition_pairs <- list(c("A", "B"),  c("A", "C"))
-    }
-    
-    for(condition_pair in condition_pairs){
-      
-      comparison <- paste0(condition_pair[1], "_vs_", condition_pair[2])
-      gene <- paste0("gene", i)
-      
-      gene_expr <- expr[i, colnames(expr) %in% condition_pair]
-      formula <- gene_expr ~ Condition
-      results <- t.test(formula = formula, 
-                          data = data.frame("Condition" = conditions[conditions %in% condition_pair]))
+    ## Iterate over genes
+    for(i in 1:nrow(expr)){
         
-        pvals[gene, comparison] <- results$p.value
-        tstats[gene, comparison] <- results$statistic
-    
+      ## t-test for gene expr in condition1 vs condition2
+      condition_pairs <- list(c("A", "B"),  c("A", "C"),  c("B", "C"))
+      
+      if((case == 2 & i>15) | (case == 3 & i>27)){
+        condition_pairs <- list(c("A", "B"),  c("A", "C"))
+      }
+      
+      for(condition_pair in condition_pairs){
+        
+        comparison <- paste0(condition_pair[1], "_vs_", condition_pair[2])
+        gene <- paste0("gene", i)
+        
+        gene_expr <- expr[i, colnames(expr) %in% condition_pair]
+        formula <- gene_expr ~ Condition
+        results <- t.test(formula = formula, 
+                            data = data.frame("Condition" = conditions[conditions %in% condition_pair]))
+          
+          pvals[gene, comparison] <- results$p.value
+          tstats[gene, comparison] <- results$statistic
+      
+      }
+      
     }
     
+    ## Plot t-stats (expression change size)
+    melted_pvals = na.omit(melt(pvals))
+    melted_tstats = na.omit(melt(tstats))
+    
+    data = cbind(melted_pvals, melted_tstats$value)
+    colnames(data) <- c("gene", "comparison", "p", "t")
+    data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
+    
+    text_pos <- ifelse(expr_counts == "expr", 0.5, 1)
+    
+    plot <- ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
+      geom_bar(stat = "identity", position="dodge", colour = "black", 
+               width = 0.65, linewidth = 0.3) +
+      geom_text(aes(x = gene, y = t + ((sign(t))*text_pos), 
+                    label = signif, group = comparison, color = comparison), 
+                    position = position_dodge(0.9), hjust = 0.5,
+                    show.legend = F) +
+      theme_bw() + 
+      labs(title = paste("Case", case), 
+           x = "", y = "True change in expression", fill = "Comparison") + 
+      scale_fill_manual(values = c("A_vs_B" = "#8DB6CD", 
+                                   "A_vs_C" = "#FF82AB", 
+                                   "B_vs_C" = "#A2CD5A"), 
+                                   labels = c("A vs B", "A vs C", "B vs C")) +
+      scale_color_manual(values = c("A_vs_B" = "#8DB6CD",
+                                    "A_vs_C" = "#FF82AB",
+                                    "B_vs_C" = "#A2CD5A")) +
+      theme(plot.title = element_text(face = "bold", size = 9), 
+            axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
+            axis.title.y = element_text(size = 8), 
+            axis.text.y = element_text(size = 6), 
+            legend.title = element_text(face = "bold", size = 7), 
+            legend.text = element_text(size = 6), 
+            legend.key.width = unit(0.3, "cm"),
+            legend.key.height = unit(0.3, "cm"))
+    
+    print(plot)
   }
-  
-  ## Plot t-stats (expression change size)
-  melted_pvals = na.omit(melt(pvals))
-  melted_tstats = na.omit(melt(tstats))
-  
-  data = cbind(melted_pvals, melted_tstats$value)
-  colnames(data) <- c("gene", "comparison", "p", "t")
-  data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
-  
-  plot <- ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
-    geom_bar(stat = "identity", position="dodge", colour = "black", 
-             width = 0.65, linewidth = 0.3) +
-    geom_text(aes(x = gene, y = t + ((sign(t))*0.5), 
-                  label = signif, group = comparison, color = comparison), 
-                  position = position_dodge(0.9), hjust = 0.5,
-                  show.legend = F) +
-    theme_bw() + 
-    labs(title = paste("Case", case), 
-         x = "", y = "True change in expression", fill = "Comparison") + 
-    scale_fill_manual(values = c("A_vs_B" = "#8DB6CD", 
-                                 "A_vs_C" = "#FF82AB", 
-                                 "B_vs_C" = "#A2CD5A"), 
-                                 labels = c("A vs B", "A vs C", "B vs C")) +
-    scale_color_manual(values = c("A_vs_B" = "#8DB6CD", 
-                                  "A_vs_C" = "#FF82AB", 
-                                  "B_vs_C" = "#A2CD5A")) +
-    theme(plot.title = element_text(face = "bold", size = 9), 
-          axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
-          axis.title.y = element_text(size = 8), 
-          axis.text.y = element_text(size = 6), 
-          legend.title = element_text(face = "bold", size = 7), 
-          legend.text = element_text(size = 6), 
-          legend.key.width = unit(0.3, "cm"),
-          legend.key.height = unit(0.3, "cm"))
-  
-  print(plot)
+
 }
 
 
+t_test_expr(expr_counts = "expr")
+
 ```
 
-Not surprisingly, genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} have significantly higher expression in [**A**]{style="color: #FF83FA"} compared to the other two conditions, and the rest of the genes don't show significant expression changes except for the false positive gene 3 in [**B vs C**]{style="background-color: #A2CD5A"}.
+Not surprisingly, highly-expressed and unique genes in condition [**A**]{style="color: #FF83FA"} have significantly higher expression when compared to the other two conditions, and the rest of the genes don't show significant expression changes except for a few false positives.
 
-As you may suspect, the decrease in the counts of genes in condition A caused by smaller proportions of reads for these genes, yield to false discoveries of differential expression.
+Now, as you may suspect, the decrease in counts for genes in condition [**A**]{style="color: #FF83FA"} after sampling result in false discoveries of differential expression.
 
 ```{r t_tests_RNAseq_data, fig.align='center', warning=FALSE, message=FALSE}
 
-for(case in 1:3){
-  
-  ## Matrices to save gene p-values and t-stats
-  pvals <- matrix(data = NA, nrow = 30, ncol = 3)
-  tstats <- matrix(data = NA, nrow = 30, ncol = 3)
-  
-  colnames(pvals) <- colnames(tstats)  <- c("A_vs_B",  "A_vs_C",  "B_vs_C")
-  rownames(pvals) <- rownames(tstats) <- paste0("gene", 1:30)
-
-  rna_seq_expr <- as.matrix(eval(parse_expr(paste0("rna_seq_expr_case", case))))
-  colnames(rna_seq_expr) <- conditions
-    
-  ## Iterate over genes
-  for(i in 1:nrow(rna_seq_expr)){
-
-    ## t-test for gene expr in condition1 vs condition2
-    condition_pairs <- list(c("A", "B"),  c("A", "C"),  c("B", "C"))
-    
-    if((case == 2 & i>15) | (case == 3 & i>27)){
-      condition_pairs <- list(c("A", "B"),  c("A", "C"))
-    }
-    
-    for(condition_pair in condition_pairs){
-      
-      comparison <- paste0(condition_pair[1], "_vs_", condition_pair[2])
-      gene <- paste0("gene", i)
-      
-      gene_expr <- rna_seq_expr[i, colnames(rna_seq_expr) %in% condition_pair]
-      formula <- gene_expr ~ Condition
-      results <- t.test(formula = formula, 
-                        data = data.frame("Condition" = conditions[conditions %in% condition_pair]))
-      
-      pvals[gene, comparison] <- results$p.value
-      tstats[gene, comparison] <- results$statistic
-  
-    }
-    
-  }
-  
-  ## Plot t-stats 
-  melted_pvals = na.omit(melt(pvals))
-  melted_tstats = na.omit(melt(tstats))
-  
-  data = cbind(melted_pvals, melted_tstats$value)
-  colnames(data) <- c("gene", "comparison", "p", "t")
-  data$signif <- sapply(data$p, function(p){ if(p<0.05){"*"} else{NA}})
-  
-  plot <- ggplot(data, aes(x = gene, y = t, fill = comparison, color = comparison)) + 
-    geom_bar(stat = "identity", position="dodge", colour = "black", width = 0.65, linewidth = 0.3) +
-    geom_text(aes(x = gene, y = t + (sign(t)), label = signif, 
-                  group = comparison, color = comparison), 
-              position = position_dodge(0.9), hjust = 0.5,
-              show.legend = F) +
-    theme_bw() + 
-    labs(title = paste("Case", case), 
-         x = "", y = "Change in expression with RNA-seq counts", fill = "Comparison") + 
-    scale_fill_manual(values = c("A_vs_B" = "#8DB6CD", 
-                                 "A_vs_C" = "#FF82AB", 
-                                 "B_vs_C" = "#A2CD5A"), 
-                                 labels = c("A vs B", "A vs C", "B vs C")) +
-    scale_color_manual(values = c("A_vs_B" = "#8DB6CD", 
-                                  "A_vs_C" = "#FF82AB", 
-                                  "B_vs_C" = "#A2CD5A")) +
-    theme(plot.title = element_text(face = "bold", size = 9), 
-          axis.text.x = element_text(size = 6, angle = 45, hjust = 1), 
-          axis.title.y = element_text(size = 8), 
-          axis.text.y = element_text(size = 6), 
-          legend.title = element_text(face = "bold", size = 7), 
-          legend.text = element_text(size = 6), 
-          legend.key.width = unit(0.3, "cm"),
-          legend.key.height = unit(0.3, "cm"))
-  
-  print(plot)
-}
-
+t_test_expr(expr_counts = "rna_seq_expr")
 ```
 
 ::: callout-important
-This proportionality issue can also decrease the power to detect true differentially expressed genes. For instance, in [**Case 1**]{.underline} look how after read sampling, the expression of highly-expressed genes reduces in condition A and becomes more similar to that of the other conditions (heat map), and consequently, the decreased sizes in their expression changes (bar plot).
+TODO: This proportionality issue can also decrease the power to detect true differentially expressed genes. For instance, in [**Case 1**]{.underline} look how after read sampling, the expression of highly-expressed genes reduces in condition A and becomes more similar to that of the other conditions (heat map), and consequently, the decreased sizes in their expression changes (bar plot).
 :::
 
 # How to solve the problem?
 
-Let's denote the true and unknown total reads of each sample $i$ by $S_i$ (i.e. the complete pool of reads per sample), and the RNA-seq library size by $N_i$ (reads selected after sampling).
+Let's denote the true and unknown total library size of each sample $i$ by $S_i$ (i.e. the complete pool of reads per sample), and the RNA-seq library size by $N_i$ (reads selected after sampling). We define the total (and unknown) read counts of gene $g$ in samples $k$ and $r$ as $z_{gk}$ and $z_{gr}$, respectively.
 
-Now, instead of selecting a fixed number of reads in the sampling, we can think of selecting a fixed proportion of reads per sample ($p_i = \frac{N_i}{S_i}$), which would preserve the original true RNA composition of the samples and allow the direct comparison of gene counts between samples.
+Then, the number of reads after sampling for $g$ in samples $k$ and $r$ are given by $y_{gk} = \frac{z_{gk}}{S_k}N_k$ and $y_{gr} = \frac{z_{gr}}{S_r}N_r$, respectively. These correspond to the RNA-seq counts to which we have access. We know that $S_k$ is $\alpha$ times greater than $S_r$, i.e. $S_k = \alpha S_r$.
+
+If gene $g$ is a **true non-DEG** between these two samples, then $z_{gk} = z_{gr}$ and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., $y_{gk} = y_{gr}$. But we know that's not satisfied since $y_{gk} = \frac{z_{gk}}{S_k}N_k = \frac{z_{gr}}{\alpha S_r}N_k$ and given that we fixed the number of selected reads, $N_k = N_r$ and $y_{gk} = \frac{z_{gr}}{\alpha S_r}N_r ≠ \frac{z_{gr}}{S_r}N_r = y_{gr}$. We have that $y_{gk} \alpha = y_{gr}$ and we aim to estimate such factor $\alpha = \frac{S_k}{S_r}$ to scale read counts in sample $k$ to equal them to those in $r$. With library size-normalized counts, we'd have $\frac{y_{gk}}{N_k} \alpha= \frac{y_{gr}}{N_r}$, which is the same as $\frac{y_{gk}}{N_k} \sqrt{\alpha^2} = \frac{y_{gr}}{N_r}$ and results in $\frac{y_{gk}}{N_k} \sqrt{\alpha} = \frac{y_{gr}}{N_r \sqrt{\alpha}}$, which in turn is equivalent to divide library $N_k$ by $\sqrt{\alpha}$ and multiply library $N_r$ by $\sqrt{\alpha}$; that's what we refer to with the scaling of library sizes.
+
+Now, the fold change in the expression of a non-DEG $g$ in sample $k$ vs sample $r$, [after sampling]{.underline}, is given by $\frac{y_{gk}}{y_{gr}} = \alpha ^{-1} = \frac{S_r}{S_k}$. So we are basically aiming to scale library sizes by the inverse of the expression fold change of a non-DEG. This applies to all true non-DEGs.
+
+We cannot estimate $S_k$ and $S_r$ but we can take advantage of the inverse relationship between $\frac{S_k}{S_r}$ and the fold changes of non-DEGs, to approximate it by computing a **global mean expression fold change** across **all (assumed) non-DEGs** for sample $k$ vs $r$.
+
+A visual way to show why we need to estimate $\alpha$ is, instead of selecting a fixed number of reads in the sampling, we can think of selecting a fixed proportion of reads per sample $i$ ($p_i = \frac{N_i}{S_i}$), which would preserve the original true RNA composition of the samples and allow the direct comparison of gene counts between them.
 
 ![](images/sampling2.png){fig-align="center"}
 
-We define the total read counts of gene $g$ in samples $k$ and $r$ as $z_{gk}$ and $z_{gr}$, respectively. By selecting the same proportion $p$ of reads from $S_k$ and $S_r$, on average we keep $z_{gk} \times p$ and $z_{gr} \times p$ reads for that gene in samples $k$ and $r$, making the expression estimates comparable across samples.
-
-But the reality is that we have a fixed number of reads and $p_k ≠ p_r$. We aim to find a scaling factor $\alpha$ such that $\frac{N_k}{S_k} \times \alpha = \frac{N_r}{S_r}$, making proportions in both samples equal. Since we fix the number of selected reads, $N_k = N_r$ and $\alpha = \frac{\frac{N_r}{S_r}}{\frac{N_k}{S_k}} = \frac{S_k}{S_r}$. We cannot estimate $S_k$ and $S_r$ but approximate their ratio.
+By selecting the same proportion $p$ of reads from $S_k$ and $S_r$, on average we keep $z_{gk} \times p$ and $z_{gr} \times p$ reads for gene $g$ in samples $k$ and $r$, making the expression estimates comparable between them. But the reality is that we have a fixed number of reads and $p_k ≠ p_r$. Multiplying by $\alpha$ we obtain $\frac{N_k}{S_k} \alpha = \frac{N_r}{S_r}$, making proportions in both samples equal.
 
 # TMM method for estimating scaling factors
 
-What Mark D. Robinson and Alicia Oshlack proposed with their Trim Mean of M-values method is an empirical approach to approximate $\frac{S_k}{S_r}$, which can be summarized as follows:
+What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-values**]{style="background-color: #FFD700"} method is an empirical approach to approximate $\frac{S_r}{S_k}$, which can be summarized as follows:
 
-1.  Compute gene-wise log-expression ratios between samples $k$ and $r$:
-
-    $$
-    M_{gk}^r = \frac{log_2(y_{gk})}{log_2(y_{gr})}
-    $$
-
-    and the mean gene expression across samples as:
+1.  Compute gene-wise log-normalized expression ratios between samples $k$ and $r$:
 
     $$
-    A_g = \frac{log_2(y_{gk}) + log_2(y_{gr})}{2}
-    $$ where $y_{gk}$ and $y_{gr}$ are the RNA-seq counts of gene $g$ in samples $k$ and $r$.
+    M_{gk}^r = log_2(\frac{y_{gk}}{N_k} /\frac{y_{gr}}{N_r} )
+    $$
 
-    In the next code we compute the $M$ and $A$ values for all genes in each case, comparing sample 1 of condition A and sample 5 of condition B. We then plot these values to map up and down differentially expressed genes.
+    and the mean gene log-normalized expression across both samples as:
+
+    $$
+    A_g = \frac{log_2(\frac{y_{gk}}{N_k}) + log_2(\frac{y_{gr}}{N_r})}{2}
+    $$ where $y_{gk}$ and $y_{gr}$ are the RNA-seq counts of gene $g$ in samples $k$ and $r$ (after sampling).
+
+    In the next code we compute the $M$ and $A$ values for all genes in each case, comparing sample 1 of condition [**A**]{style="color: #EE7AE9"} vs sample 5 of condition [**B**]{style="color: #7CCD7C"}. We then plot $M$ vs $A$ values to spot up and down differentially expressed genes.
 
     ```{r MA_plots, fig.height = 3, fig.width = 4.55, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -596,21 +533,28 @@ What Mark D. Robinson and Alicia Oshlack proposed with their Trim Mean of M-valu
        
        ## Select sample 1 as k and 5 as r
         rna_seq_expr <- as.matrix(eval(parse_expr(paste0("rna_seq_expr_case", case))))
-        rna_seq_expr_samples <- rna_seq_expr[, c(1,5)]
-        colnames(rna_seq_expr_samples) <- c("k", "r")
+        yg <- rna_seq_expr[, c(1,5)]
+        colnames(yg) <- c("k", "r")
         
-        ## Transform zero counts to smallest possible non-zero count
-        rna_seq_expr_samples[rna_seq_expr_samples == 0] <- 1
+        ## Replace 0s with 1 (smallest positive integer)
+        yg[yg == 0] <- 1
+        
+        ## Library sizes
+        Nk = colSums(yg)["k"]
+        Nr = colSums(yg)["r"]
         
         ## Compute M and A values
-        M_values <- apply(rna_seq_expr_samples, 1, 
-                          function(yg){log2(yg["k"] / yg["r"])})
-        A_values <- apply(rna_seq_expr_samples, 1, 
-                          function(yg){(log2(yg["k"]) + log2(yg["r"])) / 2})
+        M_values <- log2( (yg[,"k"] / Nk) / 
+                          (yg[,"r"] / Nr) )
+        A_values <- (log2(yg[,"k"] / Nk) + log2(yg[,"r"] / Nr)) / 2
         
+        ## Variance weights x gene (see step 3)
+        vg <- ((Nk - yg[, "k"])/(Nk * yg[, "k"])) + ((Nr - yg[, "r"])/(Nr * yg[, "r"]))
+      
         df <- data.frame("M" = M_values, 
                          "A" = A_values, 
-                         "gene" = rownames(rna_seq_expr_samples))
+                         "v" = vg,
+                         "gene" = names(M_values))
         df$gene <- factor(df$gene, levels = df$gene)
         assign(paste0("df_case_", case), df)
         
@@ -622,6 +566,7 @@ What Mark D. Robinson and Alicia Oshlack proposed with their Trim Mean of M-valu
           guides(colour = guide_legend(override.aes = list(size = 1.2))) +
           scale_alpha_manual(name = "Gene", values = get(paste0("alphas_case_", case))) +
           geom_hline(yintercept = 0, size = 0.55, linetype = 3, color = "gray40") +
+          geom_hline(yintercept = mean(df$M), size = 0.35, linetype = 2, color = "firebrick3") +
           labs(title = paste("Case", case), x = "A values", 
                y = "M values", 
                color = "Gene") + 
@@ -642,11 +587,11 @@ What Mark D. Robinson and Alicia Oshlack proposed with their Trim Mean of M-valu
 
     ```
 
-Observe how all genes have logFCs offset from zero, just as we have previously demonstrated.
+Just as we have previously demonstrated, observe how all genes have logFCs ($M$ values) offset from zero, deviating their mean as well (red dashed line).
 
-2.  Trim the upper and lower x% (30% by default) of gene $M$ values that represent genes differentially expressed across samples, as well as y% (5% by default) of $A$ values. This keeps genes that are considered non-differentially expressed and therefore useful to estimate a global expression fold change between samples
+2.  Trim the upper and lower x% (30% by default) of $M$ values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of $A$ values, corresponding to genes with extreme expression. This keeps genes that are [considered non-differentially and moderately expressed]{.underline} and therefore useful to [estimate the global expression fold change]{.underline} between samples.
 
-    Given the very few genes we have in our simulated data, instead of timming 30% we will discard genes with outlier $M$ and $A$ values, defined as those 3 median-absolute-deviations (MAD; dotted lines) away from the median (solid line).
+    Given the very few genes we have in our simulated data, in total we'll trim 20% of $M$ values (10% up and 10% low) and 10% of $A$ values (5% up and 5% low).
 
     ```{r trimming_boxplots, fig.height = 3.6, fig.width = 10, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -654,34 +599,33 @@ Observe how all genes have logFCs offset from zero, just as we have previously d
 
     for(metric in c("M", "A")){
       
+      x = ifelse(metric == "M", 0.1, 0.05)
+      
       plots <- list()
       for(case in 1:3){
         
         df <- get(paste0("df_case_", case))
-        df <- df[, c("gene", metric)]
+
+        ## Trim upper and lower % 
+        df[, paste0("trim", metric)] <- FALSE
+        extremes <- c(order(df[, metric])[1: floor(nrow(df) * x)], 
+                      rev(order(df[, metric]))[1: floor(nrow(df) * x)])
+        df[extremes, paste0("trim", metric)] <- TRUE
         
-        ## Trimm outliers
-        df$outlier <- as.character(df[, metric] > median(df[, metric]) + (3*mad(df[, metric])) | 
-                                   df[, metric] < median(df[, metric]) - (3*mad(df[, metric])))
-        ## Values boxplot
+        ## Box plot
         pos <- position_jitter(width = .08, seed = 12242024)
           
         plot <- ggplot(df, aes(x = "", y = get(metric))) + 
-            geom_point(aes(color = gene, alpha = gene), size = 1.5, position = pos) +
+            geom_point(aes(color = gene, alpha = gene), size = 1.85, position = pos) +
             scale_color_manual(values = col_palette) +
             scale_alpha_manual(values = get(paste0("alphas_case_", case))) +
-            geom_point(aes(shape = outlier), color = "darkred",
-                       size = 2.3, stroke = 0.6, position = pos) +
+            geom_point(aes(shape = get(paste0("trim", metric))), color = "darkred",
+                       size = 2.75, stroke = 0.55, position = pos) +
             scale_shape_manual(values = c("TRUE" = 4, "FALSE" = NA)) +
             geom_boxplot(alpha = 0, size = 0.2, width = 0.2, color = "gray40") +
-            geom_hline(yintercept = median(df[, metric]), size = 0.5, color = "gray30") +
-            geom_hline(yintercept = median(df[, metric]) + (3 * mad(df[, metric])), size = 0.5, 
-                       linetype = 2, color = "orangered2") +
-            geom_hline(yintercept = median(df[, metric]) - (3 * mad(df[, metric])), size = 0.5, 
-                       linetype = 2, color = "orangered2") +
             guides(alpha = "none") + 
             labs(title = paste("Case", case), x = "", y = paste0(metric, " values"), 
-                 color = "Gene", shape = "Outlier") + 
+                 color = "Gene", shape = "Trimmed") + 
             theme_bw() + 
             theme(plot.title = element_text(face = "bold", size = 10), 
                   axis.ticks.length.x = unit(0, "cm"),
@@ -691,49 +635,159 @@ Observe how all genes have logFCs offset from zero, just as we have previously d
                   legend.text = element_text(size = 8), 
                   legend.key.width = unit(0.35, "cm"),
                   legend.key.height = unit(0.35, "cm"))
-          
-          if(case != 3){
-            plot <- plot + guides(color = "none", shape = "none")
+        
+          if(metric == "M"){
+            plot <- plot + 
+              geom_hline(yintercept = 0, size = 0.55, linetype = 3, color = "gray40") 
+            
+            if(case == 1){
+              legend <- get_legend(plot)
+            }
           }
         
-      plots[[case]] <- plot
+          plot <- plot + guides(color = "none", shape = "none")
+          plots[[case]] <- plot
+          assign(paste0("df_case_", case), df)
+      }
+
+      print(plot_grid(plots[[1]], plots[[2]], plots[[3]], legend, 
+                      ncol = 4, rel_widths = c(1,1,1,0.6)))
+
     }
 
-    print(plot_grid(plotlist = plots, ncol = 3, rel_widths = c(0.65, 0.65, 1)))
+    ## Subset to non-trimmed genes
+    df_trimmed_case_1 <- df_case_1[!df_case_1$trimM & !df_case_1$trimA, ]
+    df_trimmed_case_2 <- df_case_2[!df_case_2$trimM & !df_case_2$trimA, ]
+    df_trimmed_case_3 <- df_case_3[!df_case_3$trimM & !df_case_3$trimA, ]
+    ```
 
+3.  Estimate the average of the $M$ values for not trimmed genes ($G^*$), each weighted by gene inverse variances ($w_{gk}^r$) to account for lower variances in logFCs of genes with larger read counts.
+
+    $$
+    f_k^r = \frac{\sum_{g \in G^*} w_{gk}^r M_{gk}^r}{\sum_{g \in G^*}w_{gk}^r} 
+    $$
+
+    where $w_{gk}^r = 1/v_{gk}^r$ and $v_{gk}^r = \frac{N_k-Y_{gk}}{N_kY_{gk}} + \frac{N_r-Y_{gr}}{N_rY_{gr}}$.
+
+    Then, we define the normalization factor $TMM_k^r  = 2^{f_k^r}$ as an estimate of $\frac{1}{\alpha}=\frac{S_r}{S_k}$ and we scale the library $k$ by $\sqrt {TMM_k^r}$ and library $r$ by $1/\sqrt{TMM_k^r}$. $TMM$ is the global fold change in expression of sample $k$ compared to sample $r$ after sampling reads.
+
+    ```{r compute_factors, fig.height = 3.6, fig.width = 10, fig.align='center', warning=FALSE, message=FALSE}
+
+    library(edgeR)
+
+    ## Compute scaling factors 
+    for(case in 1:3){
+         
+        ## Non-trimmed genes G*
+        df_trimmed <- get(paste0("df_trimmed_case_", case))
+        
+        ## Inverse variance weights 
+        df_trimmed$w <- 1/df_trimmed$v
+
+        ## Weighted sum of M values
+        f = sum(df_trimmed$M * df_trimmed$w)/sum(df_trimmed$w)
+        ## Norm factor
+        tmm <- 2 ** f
+        
+        ## Scaling factors for k and r libraries
+        message(paste0("Case ", case, ":"))
+        print(paste("f = log2(TMM) =", signif(f, digits = 5)))
+        print(paste("TMM factor = 2^f (aprox to 1/α) =", signif(tmm, digits = 5)))
+        print(paste("Manually-computed scaling factors (√TMM for k and 1/√TMM r):", 
+                    signif(sqrt(tmm), digits = 5), 
+                    signif(1/sqrt(tmm), digits = 5)))
+        
+        ## Factors returned by edgeR::calcNormFactors() based on RNA-seq counts
+        rna_seq_expr <- as.matrix(get(paste0("rna_seq_expr_case", case)))
+        yg <- rna_seq_expr[, c(1,5)]
+        colnames(yg) <- c("k", "r")
+        
+        edgeR_NormFactors <- calcNormFactors(yg, method = "TMM", refColumn = 2, 
+                                logratioTrim = 0.1, sumTrim = 0.05)
+        assign(paste0("edgeR_NormFactors_", case), edgeR_NormFactors)
+        
+        print(paste("edgeR scaling factors for k and r:",
+              paste(signif(unname(edgeR_NormFactors), digits = 5), 
+              collapse = " ")))
+
+        ## True Sr/Sk
+        ratio_true <- library_sizes[5, paste0("lib_size_case", case)] / 
+                      library_sizes[1, paste0("lib_size_case", case)] 
+        print(paste("True FC = 1/α = Sr/S_k = ", signif(ratio_true, digits = 5)))
+        print(paste("True scaling factors (√1/α for k and 1/√1/α r):", 
+                signif(sqrt(ratio_true), digits = 5), 
+                signif(1/sqrt(ratio_true), digits = 5)))
+        
+        ## Save 
+     
     }
 
     ```
 
-3.  Estimate the average of the trimmed gene $M$ values, each weighted by gene inverse variances to account for (MA plot)
+    Note that in case 2 and 3 the factors we compute manually don't match with the ones returned by edgeR::calcNormFactors because we transformed 0 counts into 1, whereas the function removes
 
-    ```{r}
+4.  These factors are then used to scale the original RNA-seq sample library sizes and normalize counts. Look in the following plots the more homogeneous expression of sample 1 and 5 after normalizing counts by effective (scaled) library sizes.
 
+```{r norm_expr_heatmaps, fig.height = 5.6, fig.width = 3, fig.align='center', warning=FALSE, message=FALSE}
+for(case in 1:3){
+  
+  rna_seq_expr <- eval(parse_expr(paste0("rna_seq_expr_case", case)))
+  colnames(rna_seq_expr) <- conditions
+  
+  yg <- rna_seq_expr[, c(1,5)]
+  colnames(yg) <- c("k", "r")
+    
+  ## Effective lib sizes
+  edgeR_NormFactors <- get(paste0("edgeR_NormFactors_", case))
+  effective_lib_sizes <- 650 * edgeR_NormFactors
+  
+  rna_seq_expr_norm <- cbind(yg["k"]/effective_lib_sizes["k"],
+                             yg["r"]/effective_lib_sizes["r"])
+  
+  h <- Heatmap(rna_seq_expr_norm,
+          name = "RNA-seq counts", 
+          # top_annotation = col_anno, 
+          cluster_rows = FALSE,
+          cluster_columns = FALSE,
+          col = colorRamp2(c(0, 0.0001, 0.5, 1), 
+                           c("gray95", "linen", "mistyrose2", "rosybrown2")),
+          # column_split = conditions,
+          border = TRUE,
+          show_row_names = TRUE,
+          column_title = "Samples",
+          column_title_gp = gpar(fontsize = 10, fontface = "bold"),
+          column_names_side = "top",
+          column_names_gp = gpar(fontsize = 9, fontface = "bold"),
+          row_names_gp = gpar(fontsize = 8),
+          row_names_side = "left",
+          column_names_rot = 0,
+          heatmap_width = unit(2.5, "cm"),
+          heatmap_height = unit(13.5, "cm")
+  )
+  print(h)
+  
+}
+```
 
-
-    ```
-
-In other words, we approximate Sk/Sr as a global expression logFC between samples based on similarly-expressed genes (e.g. housekeeping genes).
-
-4.  Then we scale each gene count zk x p by alpha (RNA-seq read count is z x p), which is equivalent to scale the whole library k by
-
-The Trim Mean of M-values method computes library size scaling factors between teo samples as an approximation of
-
-the ... to adjust
-
-Normalization fators
-
-Scaling factors
-
-Assuming most genes are not DE, we can compute the log2FC of their expression levels between two samples.
+As you may be wondering, what happens with the rest of the samples? have more than two samples. Just as with sample 5, we proceed in the same way using the same reference sample to compute normalization factors for all the others.
 
 ::: callout-caution
-This procedure assumes that $y_{gk}, y_{gr} >0$, so an initial filtering of non-/lowly-expressed genes is necessary. Indeed, zero-expressed genes are removed in advance.
+This procedure assumes that $y_{gk}, y_{gr} >0$, so an initial filtering of non-expressed genes is desired. Indeed, `edgeR::calcNormFactors()` removes zero-expressed genes in advance.
 :::
 
 DGE analysis
 
-What reference and implementation in calcNormFactors()
+::: callout-note
+## Which sample to choose as the reference?
+
+If not specified, the TMM method, as implemented in `edgeR`, selects as the reference the sample whose expression is closer to the average expression across all samples. More specifically, it chooses the sample whose 75th expression quantile, normalized by library size, is closer to the mean of the normalized quantiles for all samples. Check an example [here](https://www.google.com/search?client=safari&rls=en&q=tmm+reference+sample&ie=UTF-8&oe=UTF-8#fpstate=ive&vld=cid:a7c9a19a,vid:Wdt6jdi-NQo,st:151).
+:::
+
+the ... to adjust
+
+Normalization factors
+
+Scaling factors
 
 # Conclusion
 
@@ -744,5 +798,7 @@ biological differences in the sample transcriptomes across multiple conditions
 Library size normalization is appropiate for replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the similarly-expressed ones.
 
 As we have seen, TMM is a simple but effective method to scale ...
+
+In other words, we approximate Sk/Sr as a global expression logFC between samples based on similarly-expressed genes (e.g. housekeeping genes).
 
 <https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/>

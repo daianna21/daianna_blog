@@ -561,7 +561,7 @@ Caution
 <section id="the-rna-composition-bias" class="level1">
 <h1>The RNA composition bias</h1>
 <p>The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes (<u><strong>Case 1</strong></u>), a greater number of expressed genes (<u><strong>Case 2</strong></u>), or both (<u><strong>Case 3</strong></u>), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression. This is depicted in the previous figure: look how in condition <span style="color: #EE7AE9"><strong>A</strong></span>, in the first case more reads from the highly-expressed genes <span style="color: #FF4500"><strong>5</strong></span>, <span style="color: #CDCD00"><strong>6</strong></span>, and <span style="color: #AB82FF"><strong>7</strong></span> are selected; in the second case, reads from the genes <span style="color: #F5CCE4"><strong>16</strong></span>, <span style="color: #F6CBB7"><strong>17</strong></span>, …, <span style="color: #8EE5EE"><strong>29</strong></span>, <span style="color: #A2B5CD"><strong>30</strong></span>, expressed in condition A only, reduce the number of reads for the other genes, and in the third case most selected reads correspond to the condition A-only highly-expressed genes <span style="color: #EEAEEE"><strong>28</strong></span>, <span style="color: #8EE5EE"><strong>29</strong></span>, and <span style="color: #A2B5CD"><strong>30</strong></span>.</p>
-<p>This is known as the <span style="background-color: #FFFACD"><strong>RNA composition or population bias</strong></span>: the molecule sampling in sequencing experiments artificially reduce the expression of under-sampled genes in samples with larger RNA content, and also leads to increased gene expression in samples with lowly-expressed genes, thus implying RNA-seq count data sets need to be further processed to make accurate inferences from them.</p>
+<p>This is known as the <span style="background-color: #FFFACD"><strong>RNA composition or population bias</strong></span>: the molecule sampling in sequencing experiments artificially reduce the expression of under-sampled genes in samples with larger RNA content, and also leads to increased gene expression in samples with lowly-expressed genes. This implies RNA-seq count data sets need to be further processed to make accurate inferences from them.</p>
 <p>In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and plotting the proportion that correspond to each gene. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlang)</span>
@@ -877,13 +877,25 @@ Important
 <p>If gene <span class="math inline">\(g\)</span> is a <strong>true non-DEG</strong> between these two samples, then <span class="math inline">\(z_{gk} = z_{gr}\)</span> and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., <span class="math inline">\(y_{gk} = y_{gr}\)</span>. But we know that’s not satisfied since <span class="math inline">\(y_{gk} = \frac{z_{gk}}{S_k}N_k = \frac{z_{gr}}{\alpha S_r}N_k\)</span> and given that we fixed the number of selected reads, <span class="math inline">\(N_k = N_r\)</span> and <span class="math inline">\(y_{gk} = \frac{z_{gr}}{\alpha S_r}N_r ≠ \frac{z_{gr}}{S_r}N_r = y_{gr}\)</span>. We have that <span class="math inline">\(y_{gk} \alpha = y_{gr}\)</span> and we aim to estimate such factor <span class="math inline">\(\alpha = \frac{S_k}{S_r}\)</span> to scale read counts in sample <span class="math inline">\(k\)</span> to equal them to those in <span class="math inline">\(r\)</span>. With library size-normalized counts, we’d have <span class="math inline">\(\frac{y_{gk}}{N_k} \alpha= \frac{y_{gr}}{N_r}\)</span>, which is the same as <span class="math inline">\(\frac{y_{gk}}{N_k} \sqrt{\alpha^2} = \frac{y_{gr}}{N_r}\)</span> and results in <span class="math inline">\(\frac{y_{gk}}{N_k} \sqrt{\alpha} = \frac{y_{gr}}{N_r \sqrt{\alpha}}\)</span>, which in turn is equivalent to divide library <span class="math inline">\(N_k\)</span> by <span class="math inline">\(\sqrt{\alpha}\)</span> and multiply library <span class="math inline">\(N_r\)</span> by <span class="math inline">\(\sqrt{\alpha}\)</span>; that’s what we refer to with the scaling of library sizes.</p>
 <p>Now, the fold change in the expression of a non-DEG <span class="math inline">\(g\)</span> in sample <span class="math inline">\(k\)</span> vs sample <span class="math inline">\(r\)</span>, <u>after sampling</u>, is given by <span class="math inline">\(\frac{y_{gk}}{y_{gr}} = \alpha ^{-1} = \frac{S_r}{S_k}\)</span>. So we are basically aiming to scale library sizes by the inverse of the expression fold change of a non-DEG. This applies to all true non-DEGs.</p>
 <p>We cannot estimate <span class="math inline">\(S_k\)</span> and <span class="math inline">\(S_r\)</span> but we can take advantage of the inverse relationship between <span class="math inline">\(\frac{S_k}{S_r}\)</span> and the fold changes of non-DEGs, to approximate it by computing a <strong>global mean expression fold change</strong> across <strong>all (assumed) non-DEGs</strong> for sample <span class="math inline">\(k\)</span> vs <span class="math inline">\(r\)</span>.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p>A visual way to show why we need to estimate <span class="math inline">\(\alpha\)</span> is, instead of selecting a fixed number of reads in the sampling, we can think of selecting a fixed proportion of reads per sample <span class="math inline">\(i\)</span> (<span class="math inline">\(p_i = \frac{N_i}{S_i}\)</span>), which would preserve the original true RNA composition of the samples and allow the direct comparison of gene counts between them.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/sampling2.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+<p><img src="images/sampling2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="2031"></p>
 </figure>
 </div>
 <p>By selecting the same proportion <span class="math inline">\(p\)</span> of reads from <span class="math inline">\(S_k\)</span> and <span class="math inline">\(S_r\)</span>, on average we keep <span class="math inline">\(z_{gk} \times p\)</span> and <span class="math inline">\(z_{gr} \times p\)</span> reads for gene <span class="math inline">\(g\)</span> in samples <span class="math inline">\(k\)</span> and <span class="math inline">\(r\)</span>, making the expression estimates comparable between them. But the reality is that we have a fixed number of reads and <span class="math inline">\(p_k ≠ p_r\)</span>. Multiplying by <span class="math inline">\(\alpha\)</span> we obtain <span class="math inline">\(\frac{N_k}{S_k} \alpha = \frac{N_r}{S_r}\)</span>, making proportions in both samples equal.</p>
+</div>
+</div>
 </section>
 <section id="tmm-method-for-estimating-scaling-factors" class="level1">
 <h1>TMM method for estimating scaling factors</h1>
@@ -938,8 +950,8 @@ A_g = \frac{log_2(\frac{y_{gk}}{N_k}) + log_2(\frac{y_{gr}}{N_r})}{2}
 <span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_alpha_manual</span>(<span class="at">name =</span> <span class="st">"Gene"</span>, <span class="at">values =</span> <span class="fu">get</span>(<span class="fu">paste0</span>(<span class="st">"alphas_case_"</span>, case))) <span class="sc">+</span></span>
 <span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> <span class="fl">0.55</span>, <span class="at">linetype =</span> <span class="dv">3</span>, <span class="at">color =</span> <span class="st">"gray40"</span>) <span class="sc">+</span></span>
 <span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fu">mean</span>(df<span class="sc">$</span>M), <span class="at">size =</span> <span class="fl">0.35</span>, <span class="at">linetype =</span> <span class="dv">2</span>, <span class="at">color =</span> <span class="st">"firebrick3"</span>) <span class="sc">+</span></span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Case"</span>, case), <span class="at">x =</span> <span class="st">"A values"</span>, </span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> <span class="st">"M values"</span>, </span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Case"</span>, case), <span class="at">x =</span> <span class="st">"A values (A vs B)"</span>, </span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> <span class="st">"M values (A vs B)"</span>, </span>
 <span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>           <span class="at">color =</span> <span class="st">"Gene"</span>) <span class="sc">+</span> </span>
 <span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">10</span>), </span>
 <span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>            <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>), </span>
@@ -976,10 +988,21 @@ A_g = \frac{log_2(\frac{y_{gk}}{N_k}) + log_2(\frac{y_{gr}}{N_r})}{2}
 </figure>
 </div>
 </div>
+</div>
+<p>Just as we have previously demonstrated, observe how all genes have logFCs (<span class="math inline">\(M\)</span> values) offset from zero, deviating their mean as well (red dashed line). <span class="math inline">\(M\)</span> vs <span class="math inline">\(A\)</span> plots are useful in exploratory analysis to spot highly-expressed genes (top right corner in Case 1), genes unique to one condition (top left corner in Case 2), and unique highly-expressed genes (top middle in Case 3), that can explain global negative/positive logFCs for a large number of genes, and thus highlighting the need of scaling library sizes.</p>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Caution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This procedure assumes that <span class="math inline">\(y_{gk}, y_{gr} &gt;0\)</span>, so an initial filtering of non/lowly-expressed genes is desired. Indeed, <code>edgeR::calcNormFactors()</code> removes in advance genes with zero counts in any of the samples. Here, however, we replaced 0s with 1s to keep most genes for illustrative purposes.</p>
+</div>
 </div></li>
-</ol>
-<p>Just as we have previously demonstrated, observe how all genes have logFCs (<span class="math inline">\(M\)</span> values) offset from zero, deviating their mean as well (red dashed line).</p>
-<ol start="2" type="1">
 <li><p>Trim the upper and lower x% (30% by default) of <span class="math inline">\(M\)</span> values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of <span class="math inline">\(A\)</span> values, corresponding to genes with extreme expression. This keeps genes that are <u>considered non-differentially and moderately expressed</u> and therefore useful to <u>estimate the global expression fold change</u> between samples.</p>
 <p>Given the very few genes we have in our simulated data, in total we’ll trim 20% of <span class="math inline">\(M\)</span> values (10% up and 10% low) and 10% of <span class="math inline">\(A\)</span> values (5% up and 5% low).</p>
 <div class="cell" data-layout-align="center">
@@ -1061,7 +1084,7 @@ A_g = \frac{log_2(\frac{y_{gk}}{N_k}) + log_2(\frac{y_{gr}}{N_r})}{2}
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df_trimmed_case_2 <span class="ot">&lt;-</span> df_case_2[<span class="sc">!</span>df_case_2<span class="sc">$</span>trimM <span class="sc">&amp;</span> <span class="sc">!</span>df_case_2<span class="sc">$</span>trimA, ]</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>df_trimmed_case_3 <span class="ot">&lt;-</span> df_case_3[<span class="sc">!</span>df_case_3<span class="sc">$</span>trimM <span class="sc">&amp;</span> <span class="sc">!</span>df_case_3<span class="sc">$</span>trimA, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
-<li><p>Estimate the average of the <span class="math inline">\(M\)</span> values for not trimmed genes (<span class="math inline">\(G^*\)</span>), each weighted by gene inverse variances (<span class="math inline">\(w_{gk}^r\)</span>) to account for lower variances in logFCs of genes with larger read counts.</p>
+<li><p>Estimate the average of the <span class="math inline">\(M\)</span> values for not trimmed genes (<span class="math inline">\(G^*\)</span>), each weighted by gene inverse variances (<span class="math inline">\(w_{gk}^r\)</span>) to account for lower variances in logFCs from genes with larger read counts.</p>
 <p><span class="math display">\[
 f_k^r = \frac{\sum_{g \in G^*} w_{gk}^r M_{gk}^r}{\sum_{g \in G^*}w_{gk}^r}
 \]</span></p>
@@ -1113,9 +1136,7 @@ f_k^r = \frac{\sum_{g \in G^*} w_{gk}^r M_{gk}^r}{\sum_{g \in G^*}w_{gk}^r}
 <span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>            <span class="fu">signif</span>(<span class="fu">sqrt</span>(ratio_true), <span class="at">digits =</span> <span class="dv">5</span>), </span>
 <span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a>            <span class="fu">signif</span>(<span class="dv">1</span><span class="sc">/</span><span class="fu">sqrt</span>(ratio_true), <span class="at">digits =</span> <span class="dv">5</span>)))</span>
 <span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Save </span></span>
-<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "f = log2(TMM) = -1.5895"
 [1] "TMM factor = 2^f (aprox to 1/α) = 0.33229"
@@ -1141,85 +1162,77 @@ f_k^r = \frac{\sum_{g \in G^*} w_{gk}^r M_{gk}^r}{\sum_{g \in G^*}w_{gk}^r}
 [1] "True scaling factors (√1/α for k and 1/√1/α r): 0.43861 2.2799"</code></pre>
 </div>
 </div>
-<p>Note that in case 2 and 3 the factors we compute manually don’t match with the ones returned by edgeR::calcNormFactors because we transformed 0 counts into 1, whereas the function removes</p></li>
-<li><p>These factors are then used to scale the original RNA-seq sample library sizes and normalize counts. Look in the following plots the more homogeneous expression of sample 1 and 5 after normalizing counts by effective (scaled) library sizes.</p></li>
-</ol>
+<p>Note that in case 2 and 3 the factors we compute manually don’t match with the ones returned by <code>calcNormFactors()</code> because we transformed 0 counts into 1s, whereas this <code>edgeR</code> function removes genes with zero counts.</p></li>
+<li><p>These factors are then used to scale the original RNA-seq sample library sizes and normalize counts. Look in the following plots the more homogeneous expression of true non-DEGs in samples 1 and 5 after normalizing counts by effective (scaled) library sizes, recapitulating the true expression patterns shown in the very first heat maps.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(case <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>){</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  rna_seq_expr <span class="ot">&lt;-</span> <span class="fu">eval</span>(<span class="fu">parse_expr</span>(<span class="fu">paste0</span>(<span class="st">"rna_seq_expr_case"</span>, case)))</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(rna_seq_expr) <span class="ot">&lt;-</span> conditions</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  yg <span class="ot">&lt;-</span> rna_seq_expr[, <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">5</span>)]</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(yg) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"k"</span>, <span class="st">"r"</span>)</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Effective lib sizes</span></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  edgeR_NormFactors <span class="ot">&lt;-</span> <span class="fu">get</span>(<span class="fu">paste0</span>(<span class="st">"edgeR_NormFactors_"</span>, case))</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  effective_lib_sizes <span class="ot">&lt;-</span> <span class="dv">650</span> <span class="sc">*</span> edgeR_NormFactors</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  rna_seq_expr_norm <span class="ot">&lt;-</span> <span class="fu">cbind</span>(yg[<span class="st">"k"</span>]<span class="sc">/</span>effective_lib_sizes[<span class="st">"k"</span>],</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>                             yg[<span class="st">"r"</span>]<span class="sc">/</span>effective_lib_sizes[<span class="st">"r"</span>])</span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  h <span class="ot">&lt;-</span> <span class="fu">Heatmap</span>(rna_seq_expr_norm,</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>          <span class="at">name =</span> <span class="st">"RNA-seq counts"</span>, </span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>          <span class="co"># top_annotation = col_anno, </span></span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>          <span class="at">cluster_rows =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>          <span class="at">cluster_columns =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>          <span class="at">col =</span> <span class="fu">colorRamp2</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.0001</span>, <span class="fl">0.5</span>, <span class="dv">1</span>), </span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"gray95"</span>, <span class="st">"linen"</span>, <span class="st">"mistyrose2"</span>, <span class="st">"rosybrown2"</span>)),</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>          <span class="co"># column_split = conditions,</span></span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>          <span class="at">border =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>          <span class="at">show_row_names =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_title =</span> <span class="st">"Samples"</span>,</span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_title_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">10</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_names_side =</span> <span class="st">"top"</span>,</span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">9</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>          <span class="at">row_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">8</span>),</span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>          <span class="at">row_names_side =</span> <span class="st">"left"</span>,</span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_names_rot =</span> <span class="dv">0</span>,</span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>          <span class="at">heatmap_width =</span> <span class="fu">unit</span>(<span class="fl">2.5</span>, <span class="st">"cm"</span>),</span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>          <span class="at">heatmap_height =</span> <span class="fu">unit</span>(<span class="fl">13.5</span>, <span class="st">"cm"</span>)</span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(h)</span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>hs <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>col_anno <span class="ot">&lt;-</span> <span class="fu">HeatmapAnnotation</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Condition =</span> <span class="fu">anno_block</span>(<span class="at">gp =</span> <span class="fu">gpar</span>(<span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"orchid1"</span>, <span class="st">"palegreen1"</span>), </span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">lwd =</span> <span class="fl">0.8</span>),</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                         <span class="at">show_name =</span> T), </span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">annotation_name_gp =</span>  <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">7</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>))</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(case <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>){</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  rna_seq_expr <span class="ot">&lt;-</span> <span class="fu">eval</span>(<span class="fu">parse_expr</span>(<span class="fu">paste0</span>(<span class="st">"rna_seq_expr_case"</span>, case)))</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  yg <span class="ot">&lt;-</span> rna_seq_expr[, <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">5</span>)]</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(yg) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"k"</span>, <span class="st">"r"</span>)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Effective lib sizes (original lib size fixed at 650)</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  edgeR_NormFactors <span class="ot">&lt;-</span> <span class="fu">get</span>(<span class="fu">paste0</span>(<span class="st">"edgeR_NormFactors_"</span>, case))</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  effective_lib_sizes <span class="ot">&lt;-</span> <span class="dv">650</span> <span class="sc">*</span> edgeR_NormFactors</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  rna_seq_expr_norm <span class="ot">&lt;-</span> <span class="fu">cbind</span>(yg[<span class="st">"k"</span>]<span class="sc">/</span>effective_lib_sizes[<span class="st">"k"</span>],</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>                             yg[<span class="st">"r"</span>]<span class="sc">/</span>effective_lib_sizes[<span class="st">"r"</span>])</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  hs[[case]] <span class="ot">&lt;-</span> <span class="fu">Heatmap</span>(rna_seq_expr_norm,</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>          <span class="at">name =</span> <span class="st">"RNA-seq counts"</span>, </span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>          <span class="at">top_annotation =</span> col_anno, </span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>          <span class="at">cluster_rows =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>          <span class="at">cluster_columns =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>          <span class="at">col =</span> <span class="fu">colorRamp2</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.0001</span>, <span class="fl">0.5</span>, <span class="dv">1</span>), </span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"gray95"</span>, <span class="st">"linen"</span>, <span class="st">"mistyrose2"</span>, <span class="st">"rosybrown2"</span>)),</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_split =</span> <span class="fu">c</span>(<span class="st">"k"</span>, <span class="st">"r"</span>), </span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_gap =</span> <span class="fu">unit</span>(<span class="fl">0.5</span>, <span class="st">"mm"</span>),</span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>          <span class="at">border =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>          <span class="at">border_gp =</span> <span class="fu">gpar</span>(<span class="at">lwd =</span> <span class="fl">0.3</span>, <span class="at">col =</span> <span class="st">"black"</span>),</span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>          <span class="at">show_row_names =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>          <span class="at">heatmap_legend_param =</span> <span class="fu">list</span>(</span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend_height =</span> <span class="fu">unit</span>(<span class="dv">1</span>, <span class="st">"cm"</span>),</span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>            <span class="at">grid_width =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>),</span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>            <span class="at">title =</span> <span class="st">"Norm RNA-seq counts"</span>, </span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>            <span class="at">title_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">7</span>, <span class="at">font =</span> <span class="dv">2</span>), </span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>            <span class="at">labels_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">6</span>)),</span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>          <span class="at">show_heatmap_legend =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>)[case], </span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_title =</span> <span class="fu">paste</span>(<span class="st">"Case"</span>, case),</span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_title_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">8</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_names_side =</span> <span class="st">"top"</span>,</span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">7</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>),</span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>          <span class="at">row_names_gp =</span> <span class="fu">gpar</span>(<span class="at">fontsize =</span> <span class="dv">6</span>),</span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>          <span class="at">row_names_side =</span> <span class="st">"left"</span>,</span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>          <span class="at">column_names_rot =</span> <span class="dv">0</span>,</span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>          <span class="at">heatmap_width =</span> <span class="fu">unit</span>(<span class="fl">2.</span>, <span class="st">"cm"</span>),</span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>          <span class="at">heatmap_height =</span> <span class="fu">unit</span>(<span class="fl">9.3</span>, <span class="st">"cm"</span>)</span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>          )</span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(<span class="fu">grid.grabExpr</span>(<span class="fu">draw</span>(hs[[<span class="dv">1</span>]])),</span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>          <span class="fu">grid.grabExpr</span>(<span class="fu">draw</span>(hs[[<span class="dv">2</span>]])),</span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>          <span class="fu">grid.grabExpr</span>(<span class="fu">draw</span>(hs[[<span class="dv">3</span>]])), <span class="at">rel_widths =</span> <span class="fu">c</span>(<span class="fl">0.7</span>, <span class="fl">0.7</span>, <span class="dv">1</span>), </span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>          <span class="at">rel_heights =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>), <span class="at">ncol =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/norm_expr_heatmaps-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="288"></p>
+<p><img src="index_files/figure-html/plot_norm_expr-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="576"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="index_files/figure-html/norm_expr_heatmaps-2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="288"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="index_files/figure-html/norm_expr_heatmaps-3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="288"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>As you may be wondering, what happens with the rest of the samples? have more than two samples. Just as with sample 5, we proceed in the same way using the same reference sample to compute normalization factors for all the others.</p>
-<div class="callout callout-style-default callout-caution callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Caution
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>This procedure assumes that <span class="math inline">\(y_{gk}, y_{gr} &gt;0\)</span>, so an initial filtering of non-expressed genes is desired. Indeed, <code>edgeR::calcNormFactors()</code> removes zero-expressed genes in advance.</p>
-</div>
-</div>
-<p>DGE analysis</p>
+</div></li>
+</ol>
+<p>If you reached this point, you may be wondering what happens with the rest of the samples if we have more than two. We compute normalization factors for all the other samples using the same reference sample. Now the question is … which sample to use as reference for fair sample comparisons?</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1242,9 +1255,16 @@ Which sample to choose as the reference?
 <p>Initially, normalizing expression counts by true biological RNA composition differences seems counterintuitive as those are the differences we aim to detect in DGE analysis. But I hope you have it clear now that the problem arises from sampling effects in RNA-seq data, and that gene read counts depend not only on gene expression levels and length, but also on the inherent properties of the RNA samples from which they come.</p>
 <p>biological differences in the sample transcriptomes across multiple conditions</p>
 <p>Library size normalization is appropiate for replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the similarly-expressed ones.</p>
+<p>The key take-home message for you is that globally biased gene logFCs are likely driven by differences in sample RNA composition and have to be adjusted.</p>
 <p>As we have seen, TMM is a simple but effective method to scale …</p>
 <p>In other words, we approximate Sk/Sr as a global expression logFC between samples based on similarly-expressed genes (e.g.&nbsp;housekeeping genes).</p>
 <p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/" class="uri">https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/</a></p>
+<p>Sources</p>
+<p><a href="https://rdrr.io/bioc/edgeR/src/R/calcNormFactors.R" class="uri">https://rdrr.io/bioc/edgeR/src/R/calcNormFactors.R</a></p>
+<p><a href="https://github.com/broadinstitute/pyqtl/blob/master/qtl/norm.py" class="uri">https://github.com/broadinstitute/pyqtl/blob/master/qtl/norm.py</a></p>
+<p><a href="https://davetang.github.io/muse/edger.html#TMM_normalisation" class="uri">https://davetang.github.io/muse/edger.html#TMM_normalisation</a></p>
+<p>video</p>
+<p><a href="https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html" class="uri">https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html</a></p>
 
 
 

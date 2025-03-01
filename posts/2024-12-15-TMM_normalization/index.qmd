@@ -260,7 +260,7 @@ For this reason, RNA-seq counts suffer from **sampling effects**. In the next se
 
 The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes ([**Case 1**]{.underline}), a greater number of expressed genes ([**Case 2**]{.underline}), or both ([**Case 3**]{.underline}), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression. This is depicted in the previous figure: look how in condition [**A**]{style="color: #EE7AE9"}, in the first case more reads from the highly-expressed genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} are selected; in the second case, reads from the genes [**16**]{style="color: #F5CCE4"}, [**17**]{style="color: #F6CBB7"}, ..., [**29**]{style="color: #8EE5EE"}, [**30**]{style="color: #A2B5CD"}, expressed in condition A only, reduce the number of reads for the other genes, and in the third case most selected reads correspond to the condition A-only highly-expressed genes [**28**]{style="color: #EEAEEE"}, [**29**]{style="color: #8EE5EE"}, and [**30**]{style="color: #A2B5CD"}.
 
-This is known as the [**RNA composition or population bias**]{style="background-color: #FFFACD"}: the molecule sampling in sequencing experiments artificially reduce the expression of under-sampled genes in samples with larger RNA content, and also leads to increased gene expression in samples with lowly-expressed genes, thus implying RNA-seq count data sets need to be further processed to make accurate inferences from them.
+This is known as the [**RNA composition or population bias**]{style="background-color: #FFFACD"}: the molecule sampling in sequencing experiments artificially reduce the expression of under-sampled genes in samples with larger RNA content, and also leads to increased gene expression in samples with lowly-expressed genes. This implies RNA-seq count data sets need to be further processed to make accurate inferences from them.
 
 In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and plotting the proportion that correspond to each gene. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.
 
@@ -502,11 +502,13 @@ Now, the fold change in the expression of a non-DEG $g$ in sample $k$ vs sample 
 
 We cannot estimate $S_k$ and $S_r$ but we can take advantage of the inverse relationship between $\frac{S_k}{S_r}$ and the fold changes of non-DEGs, to approximate it by computing a **global mean expression fold change** across **all (assumed) non-DEGs** for sample $k$ vs $r$.
 
+::: callout-tip
 A visual way to show why we need to estimate $\alpha$ is, instead of selecting a fixed number of reads in the sampling, we can think of selecting a fixed proportion of reads per sample $i$ ($p_i = \frac{N_i}{S_i}$), which would preserve the original true RNA composition of the samples and allow the direct comparison of gene counts between them.
 
-![](images/sampling2.png){fig-align="center"}
+![](images/sampling2.png){fig-align="center" width="2031"}
 
 By selecting the same proportion $p$ of reads from $S_k$ and $S_r$, on average we keep $z_{gk} \times p$ and $z_{gr} \times p$ reads for gene $g$ in samples $k$ and $r$, making the expression estimates comparable between them. But the reality is that we have a fixed number of reads and $p_k ≠ p_r$. Multiplying by $\alpha$ we obtain $\frac{N_k}{S_k} \alpha = \frac{N_r}{S_r}$, making proportions in both samples equal.
+:::
 
 # TMM method for estimating scaling factors
 
@@ -567,8 +569,8 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
           scale_alpha_manual(name = "Gene", values = get(paste0("alphas_case_", case))) +
           geom_hline(yintercept = 0, size = 0.55, linetype = 3, color = "gray40") +
           geom_hline(yintercept = mean(df$M), size = 0.35, linetype = 2, color = "firebrick3") +
-          labs(title = paste("Case", case), x = "A values", 
-               y = "M values", 
+          labs(title = paste("Case", case), x = "A values (A vs B)", 
+               y = "M values (A vs B)", 
                color = "Gene") + 
           theme(plot.title = element_text(face = "bold", size = 10), 
                 axis.text.x = element_text(size = 8), 
@@ -584,10 +586,13 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
       print(plot)
         
     }
-
     ```
 
-Just as we have previously demonstrated, observe how all genes have logFCs ($M$ values) offset from zero, deviating their mean as well (red dashed line).
+    Just as we have previously demonstrated, observe how all genes have logFCs ($M$ values) offset from zero, deviating their mean as well (red dashed line). $M$ vs $A$ plots are useful in exploratory analysis to spot highly-expressed genes (top right corner in Case 1), genes unique to one condition (top left corner in Case 2), and unique highly-expressed genes (top middle in Case 3), that can explain global negative/positive logFCs for a large number of genes, and thus highlighting the need of scaling library sizes.
+
+    ::: callout-caution
+    This procedure assumes that $y_{gk}, y_{gr} >0$, so an initial filtering of non/lowly-expressed genes is desired. Indeed, `edgeR::calcNormFactors()` removes in advance genes with zero counts in any of the samples. Here, however, we replaced 0s with 1s to keep most genes for illustrative purposes.
+    :::
 
 2.  Trim the upper and lower x% (30% by default) of $M$ values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of $A$ values, corresponding to genes with extreme expression. This keeps genes that are [considered non-differentially and moderately expressed]{.underline} and therefore useful to [estimate the global expression fold change]{.underline} between samples.
 
@@ -661,7 +666,7 @@ Just as we have previously demonstrated, observe how all genes have logFCs ($M$ 
     df_trimmed_case_3 <- df_case_3[!df_case_3$trimM & !df_case_3$trimA, ]
     ```
 
-3.  Estimate the average of the $M$ values for not trimmed genes ($G^*$), each weighted by gene inverse variances ($w_{gk}^r$) to account for lower variances in logFCs of genes with larger read counts.
+3.  Estimate the average of the $M$ values for not trimmed genes ($G^*$), each weighted by gene inverse variances ($w_{gk}^r$) to account for lower variances in logFCs from genes with larger read counts.
 
     $$
     f_k^r = \frac{\sum_{g \in G^*} w_{gk}^r M_{gk}^r}{\sum_{g \in G^*}w_{gk}^r} 
@@ -717,65 +722,79 @@ Just as we have previously demonstrated, observe how all genes have logFCs ($M$ 
         print(paste("True scaling factors (√1/α for k and 1/√1/α r):", 
                 signif(sqrt(ratio_true), digits = 5), 
                 signif(1/sqrt(ratio_true), digits = 5)))
-        
-        ## Save 
      
     }
 
     ```
 
-    Note that in case 2 and 3 the factors we compute manually don't match with the ones returned by edgeR::calcNormFactors because we transformed 0 counts into 1, whereas the function removes
+    Note that in case 2 and 3 the factors we compute manually don't match with the ones returned by `calcNormFactors()` because we transformed 0 counts into 1s, whereas this `edgeR` function removes genes with zero counts.
 
-4.  These factors are then used to scale the original RNA-seq sample library sizes and normalize counts. Look in the following plots the more homogeneous expression of sample 1 and 5 after normalizing counts by effective (scaled) library sizes.
+4.  These factors are then used to scale the original RNA-seq sample library sizes and normalize counts. Look in the following plots the more homogeneous expression of true non-DEGs in samples 1 and 5 after normalizing counts by effective (scaled) library sizes, recapitulating the true expression patterns shown in the very first heat maps.
 
-```{r norm_expr_heatmaps, fig.height = 5.6, fig.width = 3, fig.align='center', warning=FALSE, message=FALSE}
-for(case in 1:3){
-  
-  rna_seq_expr <- eval(parse_expr(paste0("rna_seq_expr_case", case)))
-  colnames(rna_seq_expr) <- conditions
-  
-  yg <- rna_seq_expr[, c(1,5)]
-  colnames(yg) <- c("k", "r")
-    
-  ## Effective lib sizes
-  edgeR_NormFactors <- get(paste0("edgeR_NormFactors_", case))
-  effective_lib_sizes <- 650 * edgeR_NormFactors
-  
-  rna_seq_expr_norm <- cbind(yg["k"]/effective_lib_sizes["k"],
-                             yg["r"]/effective_lib_sizes["r"])
-  
-  h <- Heatmap(rna_seq_expr_norm,
-          name = "RNA-seq counts", 
-          # top_annotation = col_anno, 
-          cluster_rows = FALSE,
-          cluster_columns = FALSE,
-          col = colorRamp2(c(0, 0.0001, 0.5, 1), 
-                           c("gray95", "linen", "mistyrose2", "rosybrown2")),
-          # column_split = conditions,
-          border = TRUE,
-          show_row_names = TRUE,
-          column_title = "Samples",
-          column_title_gp = gpar(fontsize = 10, fontface = "bold"),
-          column_names_side = "top",
-          column_names_gp = gpar(fontsize = 9, fontface = "bold"),
-          row_names_gp = gpar(fontsize = 8),
-          row_names_side = "left",
-          column_names_rot = 0,
-          heatmap_width = unit(2.5, "cm"),
-          heatmap_height = unit(13.5, "cm")
-  )
-  print(h)
-  
-}
-```
+    ```{r plot_norm_expr, fig.height = 4, fig.width = 6, fig.align='center', warning=FALSE, message=FALSE}
 
-As you may be wondering, what happens with the rest of the samples? have more than two samples. Just as with sample 5, we proceed in the same way using the same reference sample to compute normalization factors for all the others.
+    hs <- list()
 
-::: callout-caution
-This procedure assumes that $y_{gk}, y_{gr} >0$, so an initial filtering of non-expressed genes is desired. Indeed, `edgeR::calcNormFactors()` removes zero-expressed genes in advance.
-:::
+    col_anno <- HeatmapAnnotation(
+      Condition = anno_block(gp = gpar(fill = c("orchid1", "palegreen1"), 
+                                       col = "black", lwd = 0.8),
+                             show_name = T), 
+      annotation_name_gp =  gpar(fontsize = 7, fontface = "bold"))
 
-DGE analysis
+
+    for(case in 1:3){
+      
+      rna_seq_expr <- eval(parse_expr(paste0("rna_seq_expr_case", case)))
+      yg <- rna_seq_expr[, c(1,5)]
+      colnames(yg) <- c("k", "r")
+        
+      ## Effective lib sizes (original lib size fixed at 650)
+      edgeR_NormFactors <- get(paste0("edgeR_NormFactors_", case))
+      effective_lib_sizes <- 650 * edgeR_NormFactors
+      
+      rna_seq_expr_norm <- cbind(yg["k"]/effective_lib_sizes["k"],
+                                 yg["r"]/effective_lib_sizes["r"])
+        
+      hs[[case]] <- Heatmap(rna_seq_expr_norm,
+              name = "RNA-seq counts", 
+              top_annotation = col_anno, 
+              cluster_rows = FALSE,
+              cluster_columns = FALSE,
+              col = colorRamp2(c(0, 0.0001, 0.5, 1), 
+                               c("gray95", "linen", "mistyrose2", "rosybrown2")),
+              column_split = c("k", "r"), 
+              column_gap = unit(0.5, "mm"),
+              border = TRUE,
+              border_gp = gpar(lwd = 0.3, col = "black"),
+              show_row_names = TRUE,
+              heatmap_legend_param = list(
+                legend_height = unit(1, "cm"),
+                grid_width = unit(0.3, "cm"),
+                title = "Norm RNA-seq counts", 
+                title_gp = gpar(fontsize = 7, font = 2), 
+                labels_gp = gpar(fontsize = 6)),
+              show_heatmap_legend = c(FALSE, FALSE, TRUE)[case], 
+              column_title = paste("Case", case),
+              column_title_gp = gpar(fontsize = 8, fontface = "bold"),
+              column_names_side = "top",
+              column_names_gp = gpar(fontsize = 7, fontface = "bold"),
+              row_names_gp = gpar(fontsize = 6),
+              row_names_side = "left",
+              column_names_rot = 0,
+              heatmap_width = unit(2., "cm"),
+              heatmap_height = unit(9.3, "cm")
+              )
+      
+    }
+
+    plot_grid(grid.grabExpr(draw(hs[[1]])),
+              grid.grabExpr(draw(hs[[2]])),
+              grid.grabExpr(draw(hs[[3]])), rel_widths = c(0.7, 0.7, 1), 
+              rel_heights = c(1,1,1), ncol = 3)
+
+    ```
+
+If you reached this point, you may be wondering what happens with the rest of the samples if we have more than two. We compute normalization factors for all the other samples using the same reference sample. Now the question is ... which sample to use as reference for fair sample comparisons?
 
 ::: callout-note
 ## Which sample to choose as the reference?
@@ -797,8 +816,22 @@ biological differences in the sample transcriptomes across multiple conditions
 
 Library size normalization is appropiate for replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the similarly-expressed ones.
 
+The key take-home message for you is that globally biased gene logFCs are likely driven by differences in sample RNA composition and have to be adjusted.
+
 As we have seen, TMM is a simple but effective method to scale ...
 
 In other words, we approximate Sk/Sr as a global expression logFC between samples based on similarly-expressed genes (e.g. housekeeping genes).
 
 <https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/>
+
+Sources
+
+<https://rdrr.io/bioc/edgeR/src/R/calcNormFactors.R>
+
+<https://github.com/broadinstitute/pyqtl/blob/master/qtl/norm.py>
+
+<https://davetang.github.io/muse/edger.html#TMM_normalisation>
+
+video
+
+<https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html>

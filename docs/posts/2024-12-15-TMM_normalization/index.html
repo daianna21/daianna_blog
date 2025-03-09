@@ -56,27 +56,7 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-  margin-bottom: 0em;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -286,13 +266,13 @@ window.Quarto = {
 <h1>Introduction</h1>
 <p>Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the systematic effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples, and enabling the study of transcriptome dynamics.</p>
 <p>Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample <strong>library size</strong> (i.e.&nbsp;total sum of read counts per sample). This consideration is necessary when comparing expression levels across samples but is not the only factor at play, specially when samples are expected to have very variable transcriptomes across experimental conditions.</p>
-<p>In a <a href="https://doi.org/10.1186/gb-2010-11-3-r25">pioneer paper of 2010</a>, Mark D. Robinson and Alicia Oshlack introduced the issue of the <span style="background-color: #FFFACD"><strong>RNA composition bias</strong></span> in RNA-seq data, and developed the <strong>Trimmed Mean of M-values (TMM)</strong> method to adjust for it <span class="citation" data-cites="robinson2010">(<a href="#ref-robinson2010" role="doc-biblioref">Robinson and Oshlack 2010</a>)</span>. As a widely-implemented normalization scheme, it is important to understand why sample RNA population differences are a concern for normalization and how TMM accounts for it.</p>
+<p>In a <a href="https://doi.org/10.1186/gb-2010-11-3-r25">pioneer paper of 2010</a>, Mark D. Robinson and Alicia Oshlack introduced the issue of the <span style="background-color: #FFF68F"><strong>RNA composition bias</strong></span> in RNA-seq data, and developed the <span style="color: #008B8B; background-color: #FAFAD2"><strong>Trimmed Mean of M-values (TMM)</strong></span> method to adjust for it. As a widely-implemented normalization scheme, it is important to understand why sample RNA population differences are a concern for normalization and how TMM accounts for it.</p>
 </section>
 <section id="what-youll-learn-here" class="level1">
 <h1>What you’ll learn here</h1>
 <ul>
-<li><p>Visualize RNA-seq gene expression estimates as sampling artifacts and the implications of it in downstream differential gene expression (DGE) analysis.</p></li>
-<li><p>Understand the <strong>RNA composition bias</strong>: explore cases of transcriptomes differing between samples and how they introduce a proportionality issue in read count data as a result of sampling effects in RNA-seq.</p></li>
+<li><p>Visualize RNA-seq gene expression estimates as <strong>sampling artifacts</strong> and the implications of it in downstream differential gene expression (DGE) analysis.</p></li>
+<li><p>Understand the RNA composition bias: explore cases of transcriptomes differing between samples and how they introduce a proportionality issue in read count data as a result of sampling effects in RNA-seq.</p></li>
 <li><p>Demonstrate how such RNA composition cases increase the false positive rates in DGE.</p></li>
 <li><p>Learn how the TMM method works to reduce the RNA composition bias.</p></li>
 </ul>
@@ -301,10 +281,10 @@ window.Quarto = {
 <h1>RNA-seq counts: a sampling artifact?</h1>
 <section id="hypothetical-scenarios" class="level2">
 <h2 class="anchored" data-anchor-id="hypothetical-scenarios">Hypothetical scenarios</h2>
-<p>Imagine we have 15 samples across 3 experimental conditions (<span style="color: #EE7AE9"><strong>A</strong></span>, <span style="color: #7CCD7C"><strong>B</strong></span>, and <span style="color: #00B2EE"><strong>C</strong></span>), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression<span style="color: #EE4000">*</span>.</p>
+<p>Imagine we have 15 samples across 3 experimental conditions (<span style="color: #EE7AE9"><strong>A</strong></span>, <span style="color: #90EE90"><strong>B</strong></span>, and <span style="color: #00B2EE"><strong>C</strong></span>), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression<span style="color: #EE4000">*</span>.</p>
 <p>Then, think of the following three cases:</p>
 <ul>
-<li><p><u><strong>Case 1</strong></u><strong>: Highly-expressed genes in one condition only</strong>:</p>
+<li><p><u><strong>Case 1</strong></u><strong>: Highly-expressed genes in one condition</strong>:</p>
 <p>Of the 30 genes, 27 have similar expression levels in all three conditions, and 3 are more highly-expressed in condition <span style="color: #EE7AE9"><strong>A</strong></span> than in the other two conditions (genes <span style="color: #FF4500"><strong>5</strong></span>, <span style="color: #CDCD00"><strong>6</strong></span>, and <span style="color: #AB82FF"><strong>7</strong></span>).</p></li>
 </ul>
 <div class="quarto-figure quarto-figure-center">
@@ -312,7 +292,7 @@ window.Quarto = {
 <p><img src="images/Case1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="6000"></p>
 </figure>
 </div>
-<p>Below, we generate an initial matrix of raw read counts from a negative binomial distribution centered in 50, for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition <span style="color: #EE7AE9"><strong>A</strong></span> only.</p>
+<p>Below, we create a matrix of raw read counts from a negative binomial distribution centered in 50, for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition <span style="color: #EE7AE9"><strong>A</strong></span> only.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ComplexHeatmap)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(circlize)</span>
@@ -371,7 +351,7 @@ window.Quarto = {
 </div>
 <ul>
 <li><p><u><strong>Case 2</strong></u><strong>: Genes expressed uniquely in one condition</strong>:</p>
-<p>In a separate scenario, imagine that of the 30 genes, half are similarly expressed across the three conditions and half are uniquely expressed in condition <span style="color: #EE7AE9"><strong>A</strong></span>, but in the same expression levels as the other genes. In such case, samples of condition <span style="color: #EE7AE9"><strong>A</strong></span> have twice the number of expressed genes that samples have in <span style="color: #7CCD7C"><strong>B</strong></span> and <span style="color: #00B2EE"><strong>C</strong></span>.</p>
+<p>In a separate scenario, imagine that of the 30 genes, half are similarly expressed across the three conditions and half are uniquely expressed in condition <span style="color: #EE7AE9"><strong>A</strong></span>, but at the same level as the other genes. In such way, samples of condition <span style="color: #EE7AE9"><strong>A</strong></span> have twice the number of expressed genes of samples in <span style="color: #90EE90"><strong>B</strong></span> and <span style="color: #00B2EE"><strong>C</strong></span>.</p>
 <p><img src="images/Case2.png" class="img-fluid" width="4800"></p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################</span></span>
@@ -420,8 +400,8 @@ window.Quarto = {
 </div>
 </div>
 </div></li>
-<li><p><u><strong>Case 3</strong></u><strong>: Highly-expressed genes uniquely in one condition</strong>:</p>
-<p>In the third scenario, of the 30 genes, 27 have similar expression levels in all 3 conditions, and 3 are uniquely expressed in condition <span style="color: #EE7AE9"><strong>A</strong></span> and are more high-expressed than the rest of genes (genes <span style="color: #EEAEEE"><strong>28</strong></span>, <span style="color: #8EE5EE"><strong>29</strong></span>, and <span style="color: #A2B5CD"><strong>30</strong></span>).</p>
+<li><p><u><strong>Case 3</strong></u><strong>: Highly-expressed genes unique to one condition</strong>:</p>
+<p>In the third scenario, of the 30 genes, 27 have similar expression levels in all 3 conditions, and 3 are uniquely expressed in condition <span style="color: #EE7AE9"><strong>A</strong></span> and are more highly-expressed than the rest of genes (genes <span style="color: #EEAEEE"><strong>28</strong></span>, <span style="color: #8EE5EE"><strong>29</strong></span>, and <span style="color: #A2B5CD"><strong>30</strong></span>).</p>
 <p><img src="images/Case3.png" class="img-fluid"></p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################</span></span>
@@ -480,13 +460,13 @@ Caution
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span style="color: #EE4000">*</span>The number of reads mapping to a given gene depends on gene expression (number of gene transcripts), but also gene length: larger genes result in more mapping reads. Thus, read counts are not direct estimations of gene expression. In our examples, however, we assumed all genes have the same length so that read counts reflect expression.</p>
+<p><span style="color: #EE4000">*</span>The number of reads mapping to a given gene in a sample depends on gene expression (number of gene transcripts), sequencing depth (number of sequenced reads), and gene length: larger genes result in more mapping reads. Thus, read counts are not direct estimations of gene expression. In our examples, however, we are assuming all existing transcripts in a sample are captured and equally sequenced and genes have the same length, so read counts reflect expression.</p>
 </div>
 </div>
 </section>
 <section id="transcriptomes-that-are-naturally-different" class="level2">
 <h2 class="anchored" data-anchor-id="transcriptomes-that-are-naturally-different">Transcriptomes that are naturally different</h2>
-<p>Something maybe evident but worth showing is that the sizes of the “true” total libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In all cases, samples in condition <span style="color: #EE7AE9"><strong>A</strong></span> have greater libraries because of highly-expressed genes in <u><strong>Case 1</strong></u>, more expressed genes in <u><strong>Case 2</strong></u>, or both in <u><strong>Case 3</strong></u>, as presented in the below bar plots.</p>
+<p>Something perhaps evident but worth showing is that the sizes of the “true” total libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In all cases, samples in condition <span style="color: #EE7AE9"><strong>A</strong></span> have greater libraries because of highly-expressed genes in <u><strong>Case 1</strong></u>, more expressed genes in <u><strong>Case 2</strong></u>, or both in <u><strong>Case 3</strong></u>, as presented in the below bar plots.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -552,7 +532,7 @@ Caution
 <p>The differences in total expression between samples wouldn’t represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per library, meaning not all molecules can be sequenced in each sample but there’s a sampling of molecules from which reads are generated. Think of it as having the pool of reads for all transcripts expressed in a sample, and having to randomly select a fixed number of them.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/sampling.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+<p><img src="images/sampling.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="2525"></p>
 </figure>
 </div>
 <p>For this reason, RNA-seq counts suffer from <strong>sampling effects</strong>. In the next section we’ll clearly see why this property in RNA-seq data represents an issue in downstrem analysis.</p>
@@ -560,9 +540,9 @@ Caution
 </section>
 <section id="the-rna-composition-bias" class="level1">
 <h1>The RNA composition bias</h1>
-<p>The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes (<u><strong>Case 1</strong></u>), a greater number of expressed genes (<u><strong>Case 2</strong></u>), or both (<u><strong>Case 3</strong></u>), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression. This is depicted in the previous figure: look how in condition <span style="color: #EE7AE9"><strong>A</strong></span>, in the first case more reads from the highly-expressed genes <span style="color: #FF4500"><strong>5</strong></span>, <span style="color: #CDCD00"><strong>6</strong></span>, and <span style="color: #AB82FF"><strong>7</strong></span> are selected; in the second case, reads from the genes <span style="color: #F5CCE4"><strong>16</strong></span>, <span style="color: #F6CBB7"><strong>17</strong></span>, …, <span style="color: #8EE5EE"><strong>29</strong></span>, <span style="color: #A2B5CD"><strong>30</strong></span>, expressed in condition A only, reduce the number of reads for the other genes, and in the third case most selected reads correspond to the condition A-only highly-expressed genes <span style="color: #EEAEEE"><strong>28</strong></span>, <span style="color: #8EE5EE"><strong>29</strong></span>, and <span style="color: #A2B5CD"><strong>30</strong></span>.</p>
-<p>This is known as the <span style="background-color: #FFFACD"><strong>RNA composition or population bias</strong></span>: the molecule sampling in sequencing experiments artificially reduce the expression of under-sampled genes in samples with larger RNA content, and also leads to increased gene expression in samples with lowly-expressed genes. This implies RNA-seq count data sets need to be further processed to make accurate inferences from them.</p>
-<p>In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and plotting the proportion that correspond to each gene. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.</p>
+<p>The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes (<u><strong>Case 1</strong></u>), a greater number of expressed genes (<u><strong>Case 2</strong></u>), or both (<u><strong>Case 3</strong></u>), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression. This is depicted in the previous figure: note how in condition <span style="color: #EE7AE9"><strong>A</strong></span>, in the first case more reads from the highly-expressed genes <span style="color: #FF4500"><strong>5</strong></span>, <span style="color: #CDCD00"><strong>6</strong></span>, and <span style="color: #AB82FF"><strong>7</strong></span> are selected; in the second case, reads from the genes <span style="color: #F5CCE4"><strong>16</strong></span>, <span style="color: #F6CBB7"><strong>17</strong></span>, …, <span style="color: #8EE5EE"><strong>29</strong></span>, <span style="color: #A2B5CD"><strong>30</strong></span>, expressed in condition A only, reduce the number of reads for the other genes, and in the third case most selected reads correspond to the condition A-only highly-expressed genes <span style="color: #EEAEEE"><strong>28</strong></span>, <span style="color: #8EE5EE"><strong>29</strong></span>, and <span style="color: #A2B5CD"><strong>30</strong></span>.</p>
+<p>This is known as the <span style="background-color: #FFF68F"><strong>RNA composition or population bias</strong></span>: the molecule sampling in sequencing experiments <u>artificially reduce</u> the expression of <u>under-sampled genes</u> in samples with <u>larger RNA content</u>. Analogously, this can also lead to apparent increments in gene expression in samples with lowly-expressed genes (case not shown here). This implies RNA-seq count data sets need to be processed to make accurate inferences from them.</p>
+<p>In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and we plot the proportion that corresponds to each gene. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlang)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(reshape2)</span>
@@ -713,101 +693,99 @@ Caution
 </div>
 </div>
 </div>
-<p>Confirming the aforementioned, note in the bar plots the dominance in read proportion of highly-expressed and/or unique genes in condition <span style="color: #EE7AE9"><strong>A</strong></span>, and in the heat maps, the consequent reduction in expression of non-highly expressed and shared genes, in the same condition.</p>
+<p>Confirming the aforementioned, note in the bar plots the dominance in read proportion of highly-expressed and/or unique genes in condition <span style="color: #EE7AE9"><strong>A</strong></span>, and in the heat maps, the consequent expression reduction of non-highly expressed and shared genes.</p>
 </section>
 <section id="more-false-positives" class="level1">
 <h1>More false positives …</h1>
-<p>By design, we know that most genes are not differentially expressed (DE). Let’s formally test if the differences in the mean expression of each gene in <span style="background-color: #8DB6CD"><strong>A vs B</strong></span>, <span style="background-color: #FF82AB"><strong>A vs C</strong></span>, and <span style="background-color: #A2CD5A"><strong>B vs C</strong></span> with the original data, are statistically significant with two sample t-tests (but keep in mind this tests assumes data normality and equal variances in both groups).</p>
+<p>By design, we know that most genes are not differentially expressed (DE). Let’s formally test if the differences in the mean expression of each gene in <span style="background-color: #8DB6CD"><strong>A vs B</strong></span>, <span style="background-color: #FF82AB"><strong>A vs C</strong></span>, and <span style="background-color: #A2CD5A"><strong>B vs C</strong></span> with the original raw counts (before sampling), are statistically significant with two sample t-tests (but keep in mind this test assumes data normality and equal variances in both groups).</p>
 <p>Below we are plotting the <em>t</em>-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions. The expression changes that were significant (<em>p</em>-value &lt;0.05) have a “*” above the bar.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="do">## t-test for total or sampled counts</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>t_test_expr <span class="ot">&lt;-</span> <span class="cf">function</span>(expr_counts){</span>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">## t-test for total or sampled counts</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>t_test_expr <span class="ot">&lt;-</span> <span class="cf">function</span>(expr_counts){</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(case <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>){</span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(case <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>){</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Total raw counts</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    expr <span class="ot">&lt;-</span> <span class="fu">eval</span>(<span class="fu">parse_expr</span>(<span class="fu">paste0</span>(expr_counts, <span class="st">"_case"</span>, case))) </span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    expr <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(expr)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(expr) <span class="ot">&lt;-</span> conditions</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>     </span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Create matrices to save gene p-values and t-stats</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    pvals <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="dv">30</span>, <span class="at">ncol =</span> <span class="dv">3</span>)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    tstats <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="dv">30</span>, <span class="at">ncol =</span> <span class="dv">3</span>)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(tstats)  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span>,  <span class="st">"A_vs_C"</span>,  <span class="st">"B_vs_C"</span>)</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rownames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(tstats) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>)</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Iterate over genes</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(expr)){</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      <span class="do">## t-test for gene expr in condition1 vs condition2</span></span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>      condition_pairs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),  <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"C"</span>),  <span class="fu">c</span>(<span class="st">"B"</span>, <span class="st">"C"</span>))</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span>((case <span class="sc">==</span> <span class="dv">2</span> <span class="sc">&amp;</span> i<span class="sc">&gt;</span><span class="dv">15</span>) <span class="sc">|</span> (case <span class="sc">==</span> <span class="dv">3</span> <span class="sc">&amp;</span> i<span class="sc">&gt;</span><span class="dv">27</span>)){</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        condition_pairs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),  <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"C"</span>))</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span>(condition_pair <span class="cf">in</span> condition_pairs){</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>        comparison <span class="ot">&lt;-</span> <span class="fu">paste0</span>(condition_pair[<span class="dv">1</span>], <span class="st">"_vs_"</span>, condition_pair[<span class="dv">2</span>])</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>        gene <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, i)</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>        gene_expr <span class="ot">&lt;-</span> expr[i, <span class="fu">colnames</span>(expr) <span class="sc">%in%</span> condition_pair]</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>        formula <span class="ot">&lt;-</span> gene_expr <span class="sc">~</span> Condition</span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>        results <span class="ot">&lt;-</span> <span class="fu">t.test</span>(<span class="at">formula =</span> formula, </span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>                            <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="st">"Condition"</span> <span class="ot">=</span> conditions[conditions <span class="sc">%in%</span> condition_pair]))</span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>          </span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>          pvals[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>p.value</span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>          tstats[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>statistic</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Total raw counts</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    expr <span class="ot">&lt;-</span> <span class="fu">eval</span>(<span class="fu">parse_expr</span>(<span class="fu">paste0</span>(expr_counts, <span class="st">"_case"</span>, case))) </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    expr <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(expr)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(expr) <span class="ot">&lt;-</span> conditions</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>     </span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Create matrices to save gene p-values and t-stats</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    pvals <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="dv">30</span>, <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    tstats <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="dv">30</span>, <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(tstats)  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span>,  <span class="st">"A_vs_C"</span>,  <span class="st">"B_vs_C"</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rownames</span>(pvals) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(tstats) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Iterate over genes</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(expr)){</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>      <span class="do">## t-test for gene expr in condition1 vs condition2</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>      condition_pairs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),  <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"C"</span>),  <span class="fu">c</span>(<span class="st">"B"</span>, <span class="st">"C"</span>))</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span>((case <span class="sc">==</span> <span class="dv">2</span> <span class="sc">&amp;</span> i<span class="sc">&gt;</span><span class="dv">15</span>) <span class="sc">|</span> (case <span class="sc">==</span> <span class="dv">3</span> <span class="sc">&amp;</span> i<span class="sc">&gt;</span><span class="dv">27</span>)){</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>        condition_pairs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),  <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"C"</span>))</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span>(condition_pair <span class="cf">in</span> condition_pairs){</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>        comparison <span class="ot">&lt;-</span> <span class="fu">paste0</span>(condition_pair[<span class="dv">1</span>], <span class="st">"_vs_"</span>, condition_pair[<span class="dv">2</span>])</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>        gene <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"gene"</span>, i)</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>        gene_expr <span class="ot">&lt;-</span> expr[i, <span class="fu">colnames</span>(expr) <span class="sc">%in%</span> condition_pair]</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>        formula <span class="ot">&lt;-</span> gene_expr <span class="sc">~</span> Condition</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>        results <span class="ot">&lt;-</span> <span class="fu">t.test</span>(<span class="at">formula =</span> formula, </span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>                            <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="st">"Condition"</span> <span class="ot">=</span> conditions[conditions <span class="sc">%in%</span> condition_pair]))</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>          pvals[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>p.value</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>          tstats[gene, comparison] <span class="ot">&lt;-</span> results<span class="sc">$</span>statistic</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>      }</span>
 <span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Plot t-stats (expression change size)</span></span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>    melted_pvals <span class="ot">=</span> <span class="fu">na.omit</span>(<span class="fu">melt</span>(pvals))</span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>    melted_tstats <span class="ot">=</span> <span class="fu">na.omit</span>(<span class="fu">melt</span>(tstats))</span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">=</span> <span class="fu">cbind</span>(melted_pvals, melted_tstats<span class="sc">$</span>value)</span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gene"</span>, <span class="st">"comparison"</span>, <span class="st">"p"</span>, <span class="st">"t"</span>)</span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>    data<span class="sc">$</span>signif <span class="ot">&lt;-</span> <span class="fu">sapply</span>(data<span class="sc">$</span>p, <span class="cf">function</span>(p){ <span class="cf">if</span>(p<span class="sc">&lt;</span><span class="fl">0.05</span>){<span class="st">"*"</span>} <span class="cf">else</span>{<span class="cn">NA</span>}})</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Plot t-stats (expression change size)</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>    melted_pvals <span class="ot">=</span> <span class="fu">na.omit</span>(<span class="fu">melt</span>(pvals))</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>    melted_tstats <span class="ot">=</span> <span class="fu">na.omit</span>(<span class="fu">melt</span>(tstats))</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">=</span> <span class="fu">cbind</span>(melted_pvals, melted_tstats<span class="sc">$</span>value)</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gene"</span>, <span class="st">"comparison"</span>, <span class="st">"p"</span>, <span class="st">"t"</span>)</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>    data<span class="sc">$</span>signif <span class="ot">&lt;-</span> <span class="fu">sapply</span>(data<span class="sc">$</span>p, <span class="cf">function</span>(p){ <span class="cf">if</span>(p<span class="sc">&lt;</span><span class="fl">0.05</span>){<span class="st">"*"</span>} <span class="cf">else</span>{<span class="cn">NA</span>}})</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>    text_pos <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(expr_counts <span class="sc">==</span> <span class="st">"expr"</span>, <span class="fl">0.5</span>, <span class="dv">1</span>)</span>
 <span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>    text_pos <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(expr_counts <span class="sc">==</span> <span class="st">"expr"</span>, <span class="fl">0.5</span>, <span class="dv">1</span>)</span>
-<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>    plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t, <span class="at">fill =</span> comparison, <span class="at">color =</span> comparison)) <span class="sc">+</span> </span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position=</span><span class="st">"dodge"</span>, <span class="at">colour =</span> <span class="st">"black"</span>, </span>
-<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>               <span class="at">width =</span> <span class="fl">0.65</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t <span class="sc">+</span> ((<span class="fu">sign</span>(t))<span class="sc">*</span>text_pos), </span>
-<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>                    <span class="at">label =</span> signif, <span class="at">group =</span> comparison, <span class="at">color =</span> comparison), </span>
-<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>                    <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="fl">0.9</span>), <span class="at">hjust =</span> <span class="fl">0.5</span>,</span>
-<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>                    <span class="at">show.legend =</span> F) <span class="sc">+</span></span>
-<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
-<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Case"</span>, case), </span>
-<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>           <span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"True change in expression"</span>, <span class="at">fill =</span> <span class="st">"Comparison"</span>) <span class="sc">+</span> </span>
-<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"#8DB6CD"</span>, </span>
-<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"#FF82AB"</span>, </span>
-<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"#A2CD5A"</span>), </span>
-<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"A vs B"</span>, <span class="st">"A vs C"</span>, <span class="st">"B vs C"</span>)) <span class="sc">+</span></span>
-<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"#8DB6CD"</span>,</span>
-<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"#FF82AB"</span>,</span>
-<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"#A2CD5A"</span>)) <span class="sc">+</span></span>
-<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">9</span>), </span>
-<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a>            <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>), </span>
-<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a>            <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>), </span>
-<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>            <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
-<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">7</span>), </span>
-<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
-<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>),</span>
-<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>))</span>
-<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(plot)</span>
-<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>    plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t, <span class="at">fill =</span> comparison, <span class="at">color =</span> comparison)) <span class="sc">+</span> </span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position=</span><span class="st">"dodge"</span>, <span class="at">colour =</span> <span class="st">"black"</span>, </span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>               <span class="at">width =</span> <span class="fl">0.65</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> gene, <span class="at">y =</span> t <span class="sc">+</span> ((<span class="fu">sign</span>(t))<span class="sc">*</span>text_pos), </span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>                    <span class="at">label =</span> signif, <span class="at">group =</span> comparison, <span class="at">color =</span> comparison), </span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>                    <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="fl">0.9</span>), <span class="at">hjust =</span> <span class="fl">0.5</span>,</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>                    <span class="at">show.legend =</span> F) <span class="sc">+</span></span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Case"</span>, case), </span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>           <span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"True change in expression"</span>, <span class="at">fill =</span> <span class="st">"Comparison"</span>) <span class="sc">+</span> </span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"#8DB6CD"</span>, </span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"#FF82AB"</span>, </span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"#A2CD5A"</span>), </span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"A vs B"</span>, <span class="st">"A vs C"</span>, <span class="st">"B vs C"</span>)) <span class="sc">+</span></span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"A_vs_B"</span> <span class="ot">=</span> <span class="st">"#8DB6CD"</span>,</span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"A_vs_C"</span> <span class="ot">=</span> <span class="st">"#FF82AB"</span>,</span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"B_vs_C"</span> <span class="ot">=</span> <span class="st">"#A2CD5A"</span>)) <span class="sc">+</span></span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">9</span>), </span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a>            <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>), </span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a>            <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>), </span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a>            <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">7</span>), </span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>), </span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>),</span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.3</span>, <span class="st">"cm"</span>))</span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(plot)</span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a><span class="fu">t_test_expr</span>(<span class="at">expr_counts =</span> <span class="st">"expr"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a><span class="fu">t_test_expr</span>(<span class="at">expr_counts =</span> <span class="st">"expr"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -830,8 +808,8 @@ Caution
 </div>
 </div>
 </div>
-<p>Not surprisingly, highly-expressed and unique genes in condition <span style="color: #FF83FA"><strong>A</strong></span> have significantly higher expression when compared to the other two conditions, and the rest of the genes don’t show significant expression changes except for a few false positives.</p>
-<p>Now, as you may suspect, the decrease in counts for genes in condition <span style="color: #FF83FA"><strong>A</strong></span> after sampling result in false discoveries of differential expression.</p>
+<p>Not surprisingly, highly-expressed and unique genes in condition <span style="color: #FF83FA"><strong>A</strong></span> have significantly higher expression when compared to the other two conditions, and except for a few false positives, the rest of genes don’t present significant expression changes.</p>
+<p>Now, as you may suspect, the decrease in counts for genes in condition <span style="color: #FF83FA"><strong>A</strong></span> after sampling results in false discoveries of negative differential expression.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t_test_expr</span>(<span class="at">expr_counts =</span> <span class="st">"rna_seq_expr"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -856,26 +834,13 @@ Caution
 </div>
 </div>
 </div>
-<div class="callout callout-style-default callout-important callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Important
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>TODO: This proportionality issue can also decrease the power to detect true differentially expressed genes. For instance, in <u><strong>Case 1</strong></u> look how after read sampling, the expression of highly-expressed genes reduces in condition A and becomes more similar to that of the other conditions (heat map), and consequently, the decreased sizes in their expression changes (bar plot).</p>
-</div>
-</div>
 </section>
 <section id="how-to-solve-the-problem" class="level1">
 <h1>How to solve the problem?</h1>
-<p>Let’s denote the true and unknown total library size of each sample <span class="math inline">\(i\)</span> by <span class="math inline">\(S_i\)</span> (i.e.&nbsp;the complete pool of reads per sample), and the RNA-seq library size by <span class="math inline">\(N_i\)</span> (reads selected after sampling). We define the total (and unknown) read counts of gene <span class="math inline">\(g\)</span> in samples <span class="math inline">\(k\)</span> and <span class="math inline">\(r\)</span> as <span class="math inline">\(z_{gk}\)</span> and <span class="math inline">\(z_{gr}\)</span>, respectively.</p>
-<p>Then, the number of reads after sampling for <span class="math inline">\(g\)</span> in samples <span class="math inline">\(k\)</span> and <span class="math inline">\(r\)</span> are given by <span class="math inline">\(y_{gk} = \frac{z_{gk}}{S_k}N_k\)</span> and <span class="math inline">\(y_{gr} = \frac{z_{gr}}{S_r}N_r\)</span>, respectively. These correspond to the RNA-seq counts to which we have access. We know that <span class="math inline">\(S_k\)</span> is <span class="math inline">\(\alpha\)</span> times greater than <span class="math inline">\(S_r\)</span>, i.e.&nbsp;<span class="math inline">\(S_k = \alpha S_r\)</span>.</p>
-<p>If gene <span class="math inline">\(g\)</span> is a <strong>true non-DEG</strong> between these two samples, then <span class="math inline">\(z_{gk} = z_{gr}\)</span> and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., <span class="math inline">\(y_{gk} = y_{gr}\)</span>. But we know that’s not satisfied since <span class="math inline">\(y_{gk} = \frac{z_{gk}}{S_k}N_k = \frac{z_{gr}}{\alpha S_r}N_k\)</span> and given that we fixed the number of selected reads, <span class="math inline">\(N_k = N_r\)</span> and <span class="math inline">\(y_{gk} = \frac{z_{gr}}{\alpha S_r}N_r ≠ \frac{z_{gr}}{S_r}N_r = y_{gr}\)</span>. We have that <span class="math inline">\(y_{gk} \alpha = y_{gr}\)</span> and we aim to estimate such factor <span class="math inline">\(\alpha = \frac{S_k}{S_r}\)</span> to scale read counts in sample <span class="math inline">\(k\)</span> to equal them to those in <span class="math inline">\(r\)</span>. With library size-normalized counts, we’d have <span class="math inline">\(\frac{y_{gk}}{N_k} \alpha= \frac{y_{gr}}{N_r}\)</span>, which is the same as <span class="math inline">\(\frac{y_{gk}}{N_k} \sqrt{\alpha^2} = \frac{y_{gr}}{N_r}\)</span> and results in <span class="math inline">\(\frac{y_{gk}}{N_k} \sqrt{\alpha} = \frac{y_{gr}}{N_r \sqrt{\alpha}}\)</span>, which in turn is equivalent to divide library <span class="math inline">\(N_k\)</span> by <span class="math inline">\(\sqrt{\alpha}\)</span> and multiply library <span class="math inline">\(N_r\)</span> by <span class="math inline">\(\sqrt{\alpha}\)</span>; that’s what we refer to with the scaling of library sizes.</p>
-<p>Now, the fold change in the expression of a non-DEG <span class="math inline">\(g\)</span> in sample <span class="math inline">\(k\)</span> vs sample <span class="math inline">\(r\)</span>, <u>after sampling</u>, is given by <span class="math inline">\(\frac{y_{gk}}{y_{gr}} = \alpha ^{-1} = \frac{S_r}{S_k}\)</span>. So we are basically aiming to scale library sizes by the inverse of the expression fold change of a non-DEG. This applies to all true non-DEGs.</p>
+<p>Let’s denote the true and unknown total library size of each sample <span class="math inline">\(i\)</span> by <span class="math inline">\(S_i\)</span> (i.e.&nbsp;the complete pool of reads per sample), and the RNA-seq library size by <span class="math inline">\(N_i\)</span> (reads selected after sampling). We define the total and unknown read counts of gene <span class="math inline">\(g\)</span> in samples <span class="math inline">\(k\)</span> and <span class="math inline">\(r\)</span> as <span class="math inline">\(z_{gk}\)</span> and <span class="math inline">\(z_{gr}\)</span>, respectively. We know that <span class="math inline">\(S_k\)</span> is <span class="math inline">\(\alpha\)</span> times greater than <span class="math inline">\(S_r\)</span>, i.e.&nbsp;<span class="math inline">\(S_k = \alpha S_r\)</span>.</p>
+<p>Then, the number of reads after sampling for <span class="math inline">\(g\)</span> in samples <span class="math inline">\(k\)</span> and <span class="math inline">\(r\)</span> are given by <span class="math inline">\(y_{gk} = \frac{z_{gk}}{S_k}N_k\)</span> and <span class="math inline">\(y_{gr} = \frac{z_{gr}}{S_r}N_r\)</span>, respectively. These correspond to the RNA-seq counts to which we have access.</p>
+<p>If gene <span class="math inline">\(g\)</span> is a <span style="background-color: #F0FFF0"><strong>true non-DEG</strong></span> between these two samples, then <span class="math inline">\(z_{gk} = z_{gr}\)</span> and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., <span class="math inline">\(y_{gk} = y_{gr}\)</span>. But we know that’s not satisfied since <span class="math inline">\(y_{gk} = \frac{z_{gk}}{S_k}N_k = \frac{z_{gr}}{\alpha S_r}N_k\)</span> and given that we fixed the number of selected reads, <span class="math inline">\(N_k = N_r\)</span> and <span class="math inline">\(y_{gk} = \frac{z_{gr}}{\alpha S_r}N_r ≠ \frac{z_{gr}}{S_r}N_r = y_{gr}\)</span>. We have that <span class="math inline">\(y_{gk} \alpha = y_{gr}\)</span> and we aim to estimate such factor <span class="math inline">\(\alpha = \frac{S_k}{S_r}\)</span> to scale read counts in sample <span class="math inline">\(k\)</span> to equal them to those in <span class="math inline">\(r\)</span>. With library size-normalized counts, we’d have <span class="math inline">\(\frac{y_{gk}}{N_k} \alpha= \frac{y_{gr}}{N_r}\)</span>, which is the same as <span class="math inline">\(\frac{y_{gk}}{N_k} \sqrt{\alpha^2} = \frac{y_{gr}}{N_r}\)</span> and results in <span class="math inline">\(\frac{y_{gk}}{N_k} \sqrt{\alpha} = \frac{y_{gr}}{N_r \sqrt{\alpha}}\)</span>, which in turn is equivalent to divide library <span class="math inline">\(N_k\)</span> by <span class="math inline">\(\sqrt{\alpha}\)</span> and multiply library <span class="math inline">\(N_r\)</span> by <span class="math inline">\(\sqrt{\alpha}\)</span>; that’s what we refer to with the scaling of library sizes.</p>
+<p>Now, the fold change in the expression of a non-DEG <span class="math inline">\(g\)</span> in sample <span class="math inline">\(k\)</span> vs sample <span class="math inline">\(r\)</span>, <em>after sampling</em>, is given by <span class="math inline">\(\frac{y_{gk}}{y_{gr}} = \alpha ^{-1} = \frac{S_r}{S_k}\)</span>. So we are basically aiming to scale library sizes by the inverse of the expression fold change of a non-DEG. This applies to all true non-DEGs.</p>
 <p>We cannot estimate <span class="math inline">\(S_k\)</span> and <span class="math inline">\(S_r\)</span> but we can take advantage of the inverse relationship between <span class="math inline">\(\frac{S_k}{S_r}\)</span> and the fold changes of non-DEGs, to approximate it by computing a <strong>global mean expression fold change</strong> across <strong>all (assumed) non-DEGs</strong> for sample <span class="math inline">\(k\)</span> vs <span class="math inline">\(r\)</span>.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -1003,7 +968,7 @@ Caution
 <p>This procedure assumes that <span class="math inline">\(y_{gk}, y_{gr} &gt;0\)</span>, so an initial filtering of non/lowly-expressed genes is desired. Indeed, <code>edgeR::calcNormFactors()</code> removes in advance genes with zero counts in any of the samples. Here, however, we replaced 0s with 1s to keep most genes for illustrative purposes.</p>
 </div>
 </div></li>
-<li><p>Trim the upper and lower x% (30% by default) of <span class="math inline">\(M\)</span> values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of <span class="math inline">\(A\)</span> values, corresponding to genes with extreme expression. This keeps genes that are <u>considered non-differentially and moderately expressed</u> and therefore useful to <u>estimate the global expression fold change</u> between samples.</p>
+<li><p>Trim the upper and lower x% (30% by default) of <span class="math inline">\(M\)</span> values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of <span class="math inline">\(A\)</span> values, corresponding to genes with extreme expression. This keeps genes that are <u>considered non-differentially and moderately expressed</u> (assumed to be most of the genes) and therefore useful to <u>estimate the global expression fold change</u> between samples.</p>
 <p>Given the very few genes we have in our simulated data, in total we’ll trim 20% of <span class="math inline">\(M\)</span> values (10% up and 10% low) and 10% of <span class="math inline">\(A\)</span> values (5% up and 5% low).</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
@@ -1254,10 +1219,11 @@ Which sample to choose as the reference?
 <h1>Conclusion</h1>
 <p>Initially, normalizing expression counts by true biological RNA composition differences seems counterintuitive as those are the differences we aim to detect in DGE analysis. But I hope you have it clear now that the problem arises from sampling effects in RNA-seq data, and that gene read counts depend not only on gene expression levels and length, but also on the inherent properties of the RNA samples from which they come.</p>
 <p>biological differences in the sample transcriptomes across multiple conditions</p>
-<p>Library size normalization is appropiate for replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the similarly-expressed ones.</p>
-<p>The key take-home message for you is that globally biased gene logFCs are likely driven by differences in sample RNA composition and have to be adjusted.</p>
+<p>Library size normalization is appropriate in cases where samples are expected to have similar total mRNA amounts, such replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the similarly-expressed ones.</p>
+<p>The key take-home message for you is that if DGE analysis results in globally-shifted gene logFCs, these are likely driven by differences in sample RNA composition and have to be adjusted. TMM can be used to effectively scale library sizes under the assumption that most genes are non-DEGs. But as a note, TMM is not designed nor optimal to deal with cases of large assymetric differential expression, where a high proportion of genes are DE in one direction, and thus end up having similar read proportions after sampling across conditions.</p>
 <p>As we have seen, TMM is a simple but effective method to scale …</p>
 <p>In other words, we approximate Sk/Sr as a global expression logFC between samples based on similarly-expressed genes (e.g.&nbsp;housekeeping genes).</p>
+<p>Proper normalization is necessary to draw correct conclusions from RNA-seq data</p>
 <p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/" class="uri">https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/</a></p>
 <p>Sources</p>
 <p><a href="https://rdrr.io/bioc/edgeR/src/R/calcNormFactors.R" class="uri">https://rdrr.io/bioc/edgeR/src/R/calcNormFactors.R</a></p>
@@ -1267,14 +1233,9 @@ Which sample to choose as the reference?
 <p><a href="https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html" class="uri">https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html</a></p>
 
 
-
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
-<div id="ref-robinson2010" class="csl-entry" role="listitem">
-Robinson, Mark D, and Alicia Oshlack. 2010. <span>“A Scaling Normalization Method for Differential Expression Analysis of RNA-Seq Data.”</span> <em>Genome Biology</em> 11 (3). <a href="https://doi.org/10.1186/gb-2010-11-3-r25">https://doi.org/10.1186/gb-2010-11-3-r25</a>.
-</div>
-</div></section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

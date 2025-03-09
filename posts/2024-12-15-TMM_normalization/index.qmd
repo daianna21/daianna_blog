@@ -24,13 +24,13 @@ Normalization is a critical processing step in RNA-seq data analysis. By normali
 
 Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample **library size** (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression levels across samples but is not the only factor at play, specially when samples are expected to have very variable transcriptomes across experimental conditions.
 
-In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. Robinson and Alicia Oshlack introduced the issue of the [**RNA composition bias**]{style="background-color: #FFFACD"} in RNA-seq data, and developed the **Trimmed Mean of M-values (TMM)** method to adjust for it [@robinson2010]. As a widely-implemented normalization scheme, it is important to understand why sample RNA population differences are a concern for normalization and how TMM accounts for it.
+In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. Robinson and Alicia Oshlack introduced the issue of the [**RNA composition bias**]{style="background-color: #FFF68F"} in RNA-seq data, and developed the [**Trimmed Mean of M-values (TMM)**]{style="color: #008B8B; background-color: #FAFAD2"} method to adjust for it. As a widely-implemented normalization scheme, it is important to understand why sample RNA population differences are a concern for normalization and how TMM accounts for it.
 
 # What you'll learn here
 
--   Visualize RNA-seq gene expression estimates as sampling artifacts and the implications of it in downstream differential gene expression (DGE) analysis.
+-   Visualize RNA-seq gene expression estimates as **sampling artifacts** and the implications of it in downstream differential gene expression (DGE) analysis.
 
--   Understand the **RNA composition bias**: explore cases of transcriptomes differing between samples and how they introduce a proportionality issue in read count data as a result of sampling effects in RNA-seq.
+-   Understand the RNA composition bias: explore cases of transcriptomes differing between samples and how they introduce a proportionality issue in read count data as a result of sampling effects in RNA-seq.
 
 -   Demonstrate how such RNA composition cases increase the false positive rates in DGE.
 
@@ -40,17 +40,17 @@ In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. 
 
 ## Hypothetical scenarios
 
-Imagine we have 15 samples across 3 experimental conditions ([**A**]{style="color: #EE7AE9"}, [**B**]{style="color: #7CCD7C"}, and [**C**]{style="color: #00B2EE"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression[\*]{style="color: #EE4000"}.
+Imagine we have 15 samples across 3 experimental conditions ([**A**]{style="color: #EE7AE9"}, [**B**]{style="color: #90EE90"}, and [**C**]{style="color: #00B2EE"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression[\*]{style="color: #EE4000"}.
 
 Then, think of the following three cases:
 
--   [**Case 1**]{.underline}**: Highly-expressed genes in one condition only**:
+-   [**Case 1**]{.underline}**: Highly-expressed genes in one condition**:
 
     Of the 30 genes, 27 have similar expression levels in all three conditions, and 3 are more highly-expressed in condition [**A**]{style="color: #EE7AE9"} than in the other two conditions (genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"}).
 
 ![](images/Case1.png){fig-align="center" width="6000"}
 
-Below, we generate an initial matrix of raw read counts from a negative binomial distribution centered in 50, for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #EE7AE9"} only.
+Below, we create a matrix of raw read counts from a negative binomial distribution centered in 50, for all 30 genes across the 15 samples. Then, we introduce the 3 highly-expressed genes (counts from 1,000 to 2,000) in condition [**A**]{style="color: #EE7AE9"} only.
 
 ```{r plot_raw_expr_case1, fig.height = 5, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -106,7 +106,7 @@ Heatmap(expr_case1,
 
 -   [**Case 2**]{.underline}**: Genes expressed uniquely in one condition**:
 
-    In a separate scenario, imagine that of the 30 genes, half are similarly expressed across the three conditions and half are uniquely expressed in condition [**A**]{style="color: #EE7AE9"}, but in the same expression levels as the other genes. In such case, samples of condition [**A**]{style="color: #EE7AE9"} have twice the number of expressed genes that samples have in [**B**]{style="color: #7CCD7C"} and [**C**]{style="color: #00B2EE"}.
+    In a separate scenario, imagine that of the 30 genes, half are similarly expressed across the three conditions and half are uniquely expressed in condition [**A**]{style="color: #EE7AE9"}, but at the same level as the other genes. In such way, samples of condition [**A**]{style="color: #EE7AE9"} have twice the number of expressed genes of samples in [**B**]{style="color: #90EE90"} and [**C**]{style="color: #00B2EE"}.
 
     ![](images/Case2.png){width="4800"}
 
@@ -152,9 +152,9 @@ Heatmap(expr_case1,
     )
     ```
 
--   [**Case 3**]{.underline}**: Highly-expressed genes uniquely in one condition**:
+-   [**Case 3**]{.underline}**: Highly-expressed genes unique to one condition**:
 
-    In the third scenario, of the 30 genes, 27 have similar expression levels in all 3 conditions, and 3 are uniquely expressed in condition [**A**]{style="color: #EE7AE9"} and are more high-expressed than the rest of genes (genes [**28**]{style="color: #EEAEEE"}, [**29**]{style="color: #8EE5EE"}, and [**30**]{style="color: #A2B5CD"}).
+    In the third scenario, of the 30 genes, 27 have similar expression levels in all 3 conditions, and 3 are uniquely expressed in condition [**A**]{style="color: #EE7AE9"} and are more highly-expressed than the rest of genes (genes [**28**]{style="color: #EEAEEE"}, [**29**]{style="color: #8EE5EE"}, and [**30**]{style="color: #A2B5CD"}).
 
     ![](images/Case3.png)
 
@@ -201,12 +201,12 @@ Heatmap(expr_case1,
     ```
 
 ::: callout-caution
-[\*]{style="color: #EE4000"}The number of reads mapping to a given gene depends on gene expression (number of gene transcripts), but also gene length: larger genes result in more mapping reads. Thus, read counts are not direct estimations of gene expression. In our examples, however, we assumed all genes have the same length so that read counts reflect expression.
+[\*]{style="color: #EE4000"}The number of reads mapping to a given gene in a sample depends on gene expression (number of gene transcripts), sequencing depth (number of sequenced reads), and gene length: larger genes result in more mapping reads. Thus, read counts are not direct estimations of gene expression. In our examples, however, we are assuming all existing transcripts in a sample are captured and equally sequenced and genes have the same length, so read counts reflect expression.
 :::
 
-## Transcriptomes that are naturally different 
+## Transcriptomes that are naturally different
 
-Something maybe evident but worth showing is that the sizes of the "true" total libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In all cases, samples in condition [**A**]{style="color: #EE7AE9"} have greater libraries because of highly-expressed genes in [**Case 1**]{.underline}, more expressed genes in [**Case 2**]{.underline}, or both in [**Case 3**]{.underline}, as presented in the below bar plots.
+Something perhaps evident but worth showing is that the sizes of the "true" total libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In all cases, samples in condition [**A**]{style="color: #EE7AE9"} have greater libraries because of highly-expressed genes in [**Case 1**]{.underline}, more expressed genes in [**Case 2**]{.underline}, or both in [**Case 3**]{.underline}, as presented in the below bar plots.
 
 ```{r plot_lib_sizes, fig.align='center', warning=FALSE, message=FALSE}
 library(ggplot2)
@@ -252,17 +252,17 @@ for(case in 1:3){
 
 The differences in total expression between samples wouldn't represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per library, meaning not all molecules can be sequenced in each sample but there's a sampling of molecules from which reads are generated. Think of it as having the pool of reads for all transcripts expressed in a sample, and having to randomly select a fixed number of them.
 
-![](images/sampling.png){fig-align="center"}
+![](images/sampling.png){fig-align="center" width="2525"}
 
 For this reason, RNA-seq counts suffer from **sampling effects**. In the next section we'll clearly see why this property in RNA-seq data represents an issue in downstrem analysis.
 
 # The RNA composition bias
 
-The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes ([**Case 1**]{.underline}), a greater number of expressed genes ([**Case 2**]{.underline}), or both ([**Case 3**]{.underline}), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression. This is depicted in the previous figure: look how in condition [**A**]{style="color: #EE7AE9"}, in the first case more reads from the highly-expressed genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} are selected; in the second case, reads from the genes [**16**]{style="color: #F5CCE4"}, [**17**]{style="color: #F6CBB7"}, ..., [**29**]{style="color: #8EE5EE"}, [**30**]{style="color: #A2B5CD"}, expressed in condition A only, reduce the number of reads for the other genes, and in the third case most selected reads correspond to the condition A-only highly-expressed genes [**28**]{style="color: #EEAEEE"}, [**29**]{style="color: #8EE5EE"}, and [**30**]{style="color: #A2B5CD"}.
+The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes ([**Case 1**]{.underline}), a greater number of expressed genes ([**Case 2**]{.underline}), or both ([**Case 3**]{.underline}), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression. This is depicted in the previous figure: note how in condition [**A**]{style="color: #EE7AE9"}, in the first case more reads from the highly-expressed genes [**5**]{style="color: #FF4500"}, [**6**]{style="color: #CDCD00"}, and [**7**]{style="color: #AB82FF"} are selected; in the second case, reads from the genes [**16**]{style="color: #F5CCE4"}, [**17**]{style="color: #F6CBB7"}, ..., [**29**]{style="color: #8EE5EE"}, [**30**]{style="color: #A2B5CD"}, expressed in condition A only, reduce the number of reads for the other genes, and in the third case most selected reads correspond to the condition A-only highly-expressed genes [**28**]{style="color: #EEAEEE"}, [**29**]{style="color: #8EE5EE"}, and [**30**]{style="color: #A2B5CD"}.
 
-This is known as the [**RNA composition or population bias**]{style="background-color: #FFFACD"}: the molecule sampling in sequencing experiments artificially reduce the expression of under-sampled genes in samples with larger RNA content, and also leads to increased gene expression in samples with lowly-expressed genes. This implies RNA-seq count data sets need to be further processed to make accurate inferences from them.
+This is known as the [**RNA composition or population bias**]{style="background-color: #FFF68F"}: the molecule sampling in sequencing experiments [artificially reduce]{.underline} the expression of [under-sampled genes]{.underline} in samples with [larger RNA content]{.underline}. Analogously, this can also lead to apparent increments in gene expression in samples with lowly-expressed genes (case not shown here). This implies RNA-seq count data sets need to be processed to make accurate inferences from them.
 
-In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and plotting the proportion that correspond to each gene. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.
+In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and we plot the proportion that corresponds to each gene. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.
 
 ```{r plot_gene_props, fig.align='center', warning=FALSE, message=FALSE}
 library(rlang)
@@ -377,17 +377,15 @@ for(case in 1:3){
 
 ```
 
-Confirming the aforementioned, note in the bar plots the dominance in read proportion of highly-expressed and/or unique genes in condition [**A**]{style="color: #EE7AE9"}, and in the heat maps, the consequent reduction in expression of non-highly expressed and shared genes, in the same condition.
+Confirming the aforementioned, note in the bar plots the dominance in read proportion of highly-expressed and/or unique genes in condition [**A**]{style="color: #EE7AE9"}, and in the heat maps, the consequent expression reduction of non-highly expressed and shared genes.
 
-# More false positives ... 
+# More false positives ...
 
-By design, we know that most genes are not differentially expressed (DE). Let's formally test if the differences in the mean expression of each gene in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"} with the original data, are statistically significant with two sample t-tests (but keep in mind this tests assumes data normality and equal variances in both groups).
+By design, we know that most genes are not differentially expressed (DE). Let's formally test if the differences in the mean expression of each gene in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"} with the original raw counts (before sampling), are statistically significant with two sample t-tests (but keep in mind this test assumes data normality and equal variances in both groups).
 
 Below we are plotting the *t*-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions. The expression changes that were significant (*p*-value \<0.05) have a "\*" above the bar.
 
 ```{r t_test_raw_counts, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
-library(ggrepel)
-
 ## t-test for total or sampled counts
 t_test_expr <- function(expr_counts){
   
@@ -477,28 +475,24 @@ t_test_expr(expr_counts = "expr")
 
 ```
 
-Not surprisingly, highly-expressed and unique genes in condition [**A**]{style="color: #FF83FA"} have significantly higher expression when compared to the other two conditions, and the rest of the genes don't show significant expression changes except for a few false positives.
+Not surprisingly, highly-expressed and unique genes in condition [**A**]{style="color: #FF83FA"} have significantly higher expression when compared to the other two conditions, and except for a few false positives, the rest of genes don't present significant expression changes.
 
-Now, as you may suspect, the decrease in counts for genes in condition [**A**]{style="color: #FF83FA"} after sampling result in false discoveries of differential expression.
+Now, as you may suspect, the decrease in counts for genes in condition [**A**]{style="color: #FF83FA"} after sampling results in false discoveries of negative differential expression.
 
 ```{r t_tests_RNAseq_data, fig.align='center', warning=FALSE, message=FALSE}
 
 t_test_expr(expr_counts = "rna_seq_expr")
 ```
 
-::: callout-important
-TODO: This proportionality issue can also decrease the power to detect true differentially expressed genes. For instance, in [**Case 1**]{.underline} look how after read sampling, the expression of highly-expressed genes reduces in condition A and becomes more similar to that of the other conditions (heat map), and consequently, the decreased sizes in their expression changes (bar plot).
-:::
-
 # How to solve the problem?
 
-Let's denote the true and unknown total library size of each sample $i$ by $S_i$ (i.e. the complete pool of reads per sample), and the RNA-seq library size by $N_i$ (reads selected after sampling). We define the total (and unknown) read counts of gene $g$ in samples $k$ and $r$ as $z_{gk}$ and $z_{gr}$, respectively.
+Let's denote the true and unknown total library size of each sample $i$ by $S_i$ (i.e. the complete pool of reads per sample), and the RNA-seq library size by $N_i$ (reads selected after sampling). We define the total and unknown read counts of gene $g$ in samples $k$ and $r$ as $z_{gk}$ and $z_{gr}$, respectively. We know that $S_k$ is $\alpha$ times greater than $S_r$, i.e. $S_k = \alpha S_r$.
 
-Then, the number of reads after sampling for $g$ in samples $k$ and $r$ are given by $y_{gk} = \frac{z_{gk}}{S_k}N_k$ and $y_{gr} = \frac{z_{gr}}{S_r}N_r$, respectively. These correspond to the RNA-seq counts to which we have access. We know that $S_k$ is $\alpha$ times greater than $S_r$, i.e. $S_k = \alpha S_r$.
+Then, the number of reads after sampling for $g$ in samples $k$ and $r$ are given by $y_{gk} = \frac{z_{gk}}{S_k}N_k$ and $y_{gr} = \frac{z_{gr}}{S_r}N_r$, respectively. These correspond to the RNA-seq counts to which we have access.
 
-If gene $g$ is a **true non-DEG** between these two samples, then $z_{gk} = z_{gr}$ and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., $y_{gk} = y_{gr}$. But we know that's not satisfied since $y_{gk} = \frac{z_{gk}}{S_k}N_k = \frac{z_{gr}}{\alpha S_r}N_k$ and given that we fixed the number of selected reads, $N_k = N_r$ and $y_{gk} = \frac{z_{gr}}{\alpha S_r}N_r ≠ \frac{z_{gr}}{S_r}N_r = y_{gr}$. We have that $y_{gk} \alpha = y_{gr}$ and we aim to estimate such factor $\alpha = \frac{S_k}{S_r}$ to scale read counts in sample $k$ to equal them to those in $r$. With library size-normalized counts, we'd have $\frac{y_{gk}}{N_k} \alpha= \frac{y_{gr}}{N_r}$, which is the same as $\frac{y_{gk}}{N_k} \sqrt{\alpha^2} = \frac{y_{gr}}{N_r}$ and results in $\frac{y_{gk}}{N_k} \sqrt{\alpha} = \frac{y_{gr}}{N_r \sqrt{\alpha}}$, which in turn is equivalent to divide library $N_k$ by $\sqrt{\alpha}$ and multiply library $N_r$ by $\sqrt{\alpha}$; that's what we refer to with the scaling of library sizes.
+If gene $g$ is a [**true non-DEG**]{style="background-color: #F0FFF0"} between these two samples, then $z_{gk} = z_{gr}$ and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., $y_{gk} = y_{gr}$. But we know that's not satisfied since $y_{gk} = \frac{z_{gk}}{S_k}N_k = \frac{z_{gr}}{\alpha S_r}N_k$ and given that we fixed the number of selected reads, $N_k = N_r$ and $y_{gk} = \frac{z_{gr}}{\alpha S_r}N_r ≠ \frac{z_{gr}}{S_r}N_r = y_{gr}$. We have that $y_{gk} \alpha = y_{gr}$ and we aim to estimate such factor $\alpha = \frac{S_k}{S_r}$ to scale read counts in sample $k$ to equal them to those in $r$. With library size-normalized counts, we'd have $\frac{y_{gk}}{N_k} \alpha= \frac{y_{gr}}{N_r}$, which is the same as $\frac{y_{gk}}{N_k} \sqrt{\alpha^2} = \frac{y_{gr}}{N_r}$ and results in $\frac{y_{gk}}{N_k} \sqrt{\alpha} = \frac{y_{gr}}{N_r \sqrt{\alpha}}$, which in turn is equivalent to divide library $N_k$ by $\sqrt{\alpha}$ and multiply library $N_r$ by $\sqrt{\alpha}$; that's what we refer to with the scaling of library sizes.
 
-Now, the fold change in the expression of a non-DEG $g$ in sample $k$ vs sample $r$, [after sampling]{.underline}, is given by $\frac{y_{gk}}{y_{gr}} = \alpha ^{-1} = \frac{S_r}{S_k}$. So we are basically aiming to scale library sizes by the inverse of the expression fold change of a non-DEG. This applies to all true non-DEGs.
+Now, the fold change in the expression of a non-DEG $g$ in sample $k$ vs sample $r$, *after sampling*, is given by $\frac{y_{gk}}{y_{gr}} = \alpha ^{-1} = \frac{S_r}{S_k}$. So we are basically aiming to scale library sizes by the inverse of the expression fold change of a non-DEG. This applies to all true non-DEGs.
 
 We cannot estimate $S_k$ and $S_r$ but we can take advantage of the inverse relationship between $\frac{S_k}{S_r}$ and the fold changes of non-DEGs, to approximate it by computing a **global mean expression fold change** across **all (assumed) non-DEGs** for sample $k$ vs $r$.
 
@@ -594,7 +588,7 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
     This procedure assumes that $y_{gk}, y_{gr} >0$, so an initial filtering of non/lowly-expressed genes is desired. Indeed, `edgeR::calcNormFactors()` removes in advance genes with zero counts in any of the samples. Here, however, we replaced 0s with 1s to keep most genes for illustrative purposes.
     :::
 
-2.  Trim the upper and lower x% (30% by default) of $M$ values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of $A$ values, corresponding to genes with extreme expression. This keeps genes that are [considered non-differentially and moderately expressed]{.underline} and therefore useful to [estimate the global expression fold change]{.underline} between samples.
+2.  Trim the upper and lower x% (30% by default) of $M$ values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of $A$ values, corresponding to genes with extreme expression. This keeps genes that are [considered non-differentially and moderately expressed]{.underline} (assumed to be most of the genes) and therefore useful to [estimate the global expression fold change]{.underline} between samples.
 
     Given the very few genes we have in our simulated data, in total we'll trim 20% of $M$ values (10% up and 10% low) and 10% of $A$ values (5% up and 5% low).
 
@@ -814,13 +808,15 @@ Initially, normalizing expression counts by true biological RNA composition diff
 
 biological differences in the sample transcriptomes across multiple conditions
 
-Library size normalization is appropiate for replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the similarly-expressed ones.
+Library size normalization is appropriate in cases where samples are expected to have similar total mRNA amounts, such replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the similarly-expressed ones.
 
-The key take-home message for you is that globally biased gene logFCs are likely driven by differences in sample RNA composition and have to be adjusted.
+The key take-home message for you is that if DGE analysis results in globally-shifted gene logFCs, these are likely driven by differences in sample RNA composition and have to be adjusted. TMM can be used to effectively scale library sizes under the assumption that most genes are non-DEGs. But as a note, TMM is not designed nor optimal to deal with cases of large assymetric differential expression, where a high proportion of genes are DE in one direction, and thus end up having similar read proportions after sampling across conditions.
 
 As we have seen, TMM is a simple but effective method to scale ...
 
 In other words, we approximate Sk/Sr as a global expression logFC between samples based on similarly-expressed genes (e.g. housekeeping genes).
+
+Proper normalization is necessary to draw correct conclusions from RNA-seq data
 
 <https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/>
 

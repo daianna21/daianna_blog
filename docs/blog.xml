@@ -273,7 +273,7 @@ font-style: inherit;">dim</span>(rse)</span></code></pre></div>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
 <p>Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the systematic effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples, and enabling the study of transcriptome dynamics.</p>
-<p>Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample <strong>library size</strong> (i.e.&nbsp;total sum of read counts per sample). This consideration is necessary when comparing expression levels across samples but is not the only factor at play, specially when samples are expected to have very variable transcriptomes across experimental conditions.</p>
+<p>Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample <strong>library size</strong> (i.e.&nbsp;total sum of read counts per sample). This consideration is necessary when comparing expression levels across samples but is not the only factor at play, specially when samples are expected to have very variable <strong>transcriptome sizes</strong> across experimental conditions.</p>
 <p>In a <a href="https://doi.org/10.1186/gb-2010-11-3-r25">pioneer paper of 2010</a>, Mark D. Robinson and Alicia Oshlack introduced the issue of the <span style="background-color: #FFF68F"><strong>RNA composition bias</strong></span> in RNA-seq data, and developed the <span style="color: #008B8B; background-color: #FAFAD2"><strong>Trimmed Mean of M-values (TMM)</strong></span> method to adjust for it. As a widely-implemented normalization scheme, it is important to understand why sample RNA population differences are a concern for normalization and how TMM accounts for it.</p>
 </section>
 <section id="what-youll-learn-here" class="level1">
@@ -282,14 +282,14 @@ font-style: inherit;">dim</span>(rse)</span></code></pre></div>
 <li><p>Visualize RNA-seq gene expression estimates as <strong>sampling artifacts</strong> and the implications of it in downstream differential gene expression (DGE) analysis.</p></li>
 <li><p>Understand the RNA composition bias: explore cases of transcriptomes differing between samples and how they introduce a proportionality issue in read count data as a result of sampling effects in RNA-seq.</p></li>
 <li><p>Demonstrate how such RNA composition cases increase the false positive rates in DGE.</p></li>
-<li><p>Learn how the TMM method works to reduce the RNA composition bias.</p></li>
+<li><p>Learn how the TMM method works to eliminate the RNA composition bias.</p></li>
 </ul>
 </section>
 <section id="rna-seq-counts-a-sampling-artifact" class="level1">
 <h1>RNA-seq counts: a sampling artifact?</h1>
 <section id="hypothetical-scenarios" class="level2">
 <h2 class="anchored" data-anchor-id="hypothetical-scenarios">Hypothetical scenarios</h2>
-<p>Imagine we have 15 samples across 3 experimental conditions (<span style="color: #EE7AE9"><strong>A</strong></span>, <span style="color: #90EE90"><strong>B</strong></span>, and <span style="color: #00B2EE"><strong>C</strong></span>), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression<span style="color: #EE4000">*</span>.</p>
+<p>Imagine we have 15 samples across 3 experimental conditions (<span style="color: #EE7AE9"><strong>A</strong></span>, <span style="color: #90EE90"><strong>B</strong></span>, and <span style="color: #00B2EE"><strong>C</strong></span>), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This fictional scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression<span style="color: #EE4000">*</span>.</p>
 <p>Then, think of the following three cases:</p>
 <ul>
 <li><p><u><strong>Case 1</strong></u><strong>: Highly-expressed genes in one condition</strong>:</p>
@@ -1168,7 +1168,7 @@ Caution
 </section>
 <section id="transcriptomes-that-are-naturally-different" class="level2">
 <h2 class="anchored" data-anchor-id="transcriptomes-that-are-naturally-different">Transcriptomes that are naturally different</h2>
-<p>Something perhaps evident but worth showing is that the sizes of the “true” total libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In all cases, samples in condition <span style="color: #EE7AE9"><strong>A</strong></span> have greater libraries because of highly-expressed genes in <u><strong>Case 1</strong></u>, more expressed genes in <u><strong>Case 2</strong></u>, or both in <u><strong>Case 3</strong></u>, as presented in the below bar plots.</p>
+<p>Something perhaps evident but worth showing is that the sizes of the “true” total libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In all cases, samples in condition <span style="color: #EE7AE9"><strong>A</strong></span> have greater library sizes because of highly-expressed genes in <u><strong>Case 1</strong></u>, more expressed genes in <u><strong>Case 2</strong></u>, or both in <u><strong>Case 3</strong></u>, as presented in the below bar plots.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -1471,21 +1471,21 @@ font-style: inherit;">print</span>(plot)</span>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/plot_lib_sizes-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/plot_lib_sizes-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="604"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/plot_lib_sizes-2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/plot_lib_sizes-2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="604"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/plot_lib_sizes-3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/plot_lib_sizes-3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="604"></p>
 </figure>
 </div>
 </div>
@@ -1496,7 +1496,7 @@ font-style: inherit;">print</span>(plot)</span>
 <p>The differences in total expression between samples wouldn’t represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per library, meaning not all molecules can be sequenced in each sample but there’s a sampling of molecules from which reads are generated. Think of it as having the pool of reads for all transcripts expressed in a sample, and having to randomly select a fixed number of them.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/images/sampling.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="2525"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/images/sampling.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin-bottom: 0; margin-top: 0" width="2525"></p>
 </figure>
 </div>
 <p>For this reason, RNA-seq counts suffer from <strong>sampling effects</strong>. In the next section we’ll clearly see why this property in RNA-seq data represents an issue in downstrem analysis.</p>
@@ -1506,7 +1506,7 @@ font-style: inherit;">print</span>(plot)</span>
 <h1>The RNA composition bias</h1>
 <p>The sampling of molecules introduces a proportionality problem in the RNA-seq count data: in those samples with greater total expression, caused by a number of highly-expressed genes (<u><strong>Case 1</strong></u>), a greater number of expressed genes (<u><strong>Case 2</strong></u>), or both (<u><strong>Case 3</strong></u>), a greater proportion of reads will come from such genes, taking away reads for all the other genes and apparently reducing their expression. This is depicted in the previous figure: note how in condition <span style="color: #EE7AE9"><strong>A</strong></span>, in the first case more reads from the highly-expressed genes <span style="color: #FF4500"><strong>5</strong></span>, <span style="color: #CDCD00"><strong>6</strong></span>, and <span style="color: #AB82FF"><strong>7</strong></span> are selected; in the second case, reads from the genes <span style="color: #F5CCE4"><strong>16</strong></span>, <span style="color: #F6CBB7"><strong>17</strong></span>, …, <span style="color: #8EE5EE"><strong>29</strong></span>, <span style="color: #A2B5CD"><strong>30</strong></span>, expressed in condition A only, reduce the number of reads for the other genes, and in the third case most selected reads correspond to the condition A-only highly-expressed genes <span style="color: #EEAEEE"><strong>28</strong></span>, <span style="color: #8EE5EE"><strong>29</strong></span>, and <span style="color: #A2B5CD"><strong>30</strong></span>.</p>
 <p>This is known as the <span style="background-color: #FFF68F"><strong>RNA composition or population bias</strong></span>: the molecule sampling in sequencing experiments <u>artificially reduce</u> the expression of <u>under-sampled genes</u> in samples with <u>larger RNA content</u>. Analogously, this can also lead to apparent increments in gene expression in samples with lowly-expressed genes (case not shown here). This implies RNA-seq count data sets need to be processed to make accurate inferences from them.</p>
-<p>In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and we plot the proportion that corresponds to each gene. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.</p>
+<p>In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and we plot the proportion of selected reads that correspond to each gene. Note that by selecting the same number of reads in all samples, library size is held constant and no differences in read counts are due to sequencing depth.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2259,12 +2259,12 @@ font-style: inherit;">print</span>(h)</span>
 </section>
 <section id="more-false-positives" class="level1">
 <h1>More false positives …</h1>
-<p>By design, we know that most genes are not differentially expressed (DE). Let’s formally test if the differences in the mean expression of each gene in <span style="background-color: #8DB6CD"><strong>A vs B</strong></span>, <span style="background-color: #FF82AB"><strong>A vs C</strong></span>, and <span style="background-color: #A2CD5A"><strong>B vs C</strong></span> with the original raw counts (before sampling), are statistically significant with two sample t-tests (but keep in mind this test assumes data normality and equal variances in both groups).</p>
-<p>Below we are plotting the <em>t</em>-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions. The expression changes that were significant (<em>p</em>-value &lt;0.05) have a “*” above the bar.</p>
+<p>By design, we know that in all three cases most genes are not differentially expressed (DE) between conditions. Let’s formally test if the differences in the mean expression of each gene in <span style="background-color: #8DB6CD"><strong>A vs B</strong></span>, <span style="background-color: #FF82AB"><strong>A vs C</strong></span>, and <span style="background-color: #A2CD5A"><strong>B vs C</strong></span> with the original raw counts (before sampling), are statistically significant with two sample t-tests (but keep in mind this test assumes data normality and equal variances in both groups).</p>
+<p>Below we are plotting the <em>t</em>-statistics per gene for each comparison and in each case. These statistics capture the sign and size of the difference in gene expression between conditions. The expression changes that were significant (<em>p</em>-value &lt;0.05) have a “*” above the bar.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## t-test for total or sampled counts</span></span>
+font-style: italic;">## t-test per gene based on counts before and after sampling </span></span>
 <span id="cb7-2">t_test_expr <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
@@ -2285,7 +2285,7 @@ font-style: inherit;">3</span>){</span>
 <span id="cb7-5">  </span>
 <span id="cb7-6">    <span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## Total raw counts</span></span>
+font-style: italic;">## Count matrix</span></span>
 <span id="cb7-7">    expr <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
@@ -2536,35 +2536,34 @@ background-color: null;
 font-style: inherit;">$</span>statistic</span>
 <span id="cb7-39">      </span>
 <span id="cb7-40">      }</span>
-<span id="cb7-41">      </span>
-<span id="cb7-42">    }</span>
-<span id="cb7-43">    </span>
-<span id="cb7-44">    <span class="do" style="color: #5E5E5E;
+<span id="cb7-41">    }</span>
+<span id="cb7-42">    </span>
+<span id="cb7-43">    <span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Plot t-stats (expression change size)</span></span>
-<span id="cb7-45">    melted_pvals <span class="ot" style="color: #003B4F;
+<span id="cb7-44">    melted_pvals <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">na.omit</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">melt</span>(pvals))</span>
-<span id="cb7-46">    melted_tstats <span class="ot" style="color: #003B4F;
+<span id="cb7-45">    melted_tstats <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">na.omit</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">melt</span>(tstats))</span>
-<span id="cb7-47">    </span>
-<span id="cb7-48">    data <span class="ot" style="color: #003B4F;
+<span id="cb7-46">    </span>
+<span id="cb7-47">    data <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">cbind</span>(melted_pvals, melted_tstats<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>value)</span>
-<span id="cb7-49">    <span class="fu" style="color: #4758AB;
+<span id="cb7-48">    <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">colnames</span>(data) <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -2579,7 +2578,7 @@ background-color: null;
 font-style: inherit;">"p"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"t"</span>)</span>
-<span id="cb7-50">    data<span class="sc" style="color: #5E5E5E;
+<span id="cb7-49">    data<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>signif <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -2602,8 +2601,8 @@ background-color: null;
 font-style: inherit;">else</span>{<span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">NA</span>}})</span>
-<span id="cb7-51">    </span>
-<span id="cb7-52">    text_pos <span class="ot" style="color: #003B4F;
+<span id="cb7-50">    </span>
+<span id="cb7-51">    text_pos <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2616,8 +2615,8 @@ background-color: null;
 font-style: inherit;">0.5</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>)</span>
-<span id="cb7-53">    </span>
-<span id="cb7-54">    plot <span class="ot" style="color: #003B4F;
+<span id="cb7-52">    </span>
+<span id="cb7-53">    plot <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2634,7 +2633,7 @@ background-color: null;
 font-style: inherit;">color =</span> comparison)) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb7-55">      <span class="fu" style="color: #4758AB;
+<span id="cb7-54">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_bar</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -2649,7 +2648,7 @@ background-color: null;
 font-style: inherit;">colour =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"black"</span>, </span>
-<span id="cb7-56">               <span class="at" style="color: #657422;
+<span id="cb7-55">               <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">width =</span> <span class="fl" style="color: #AD0000;
 background-color: null;
@@ -2660,7 +2659,7 @@ background-color: null;
 font-style: inherit;">0.3</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb7-57">      <span class="fu" style="color: #4758AB;
+<span id="cb7-56">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_text</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2675,14 +2674,14 @@ background-color: null;
 font-style: inherit;">sign</span>(t))<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">*</span>text_pos), </span>
-<span id="cb7-58">                    <span class="at" style="color: #657422;
+<span id="cb7-57">                    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">label =</span> signif, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">group =</span> comparison, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">color =</span> comparison), </span>
-<span id="cb7-59">                    <span class="at" style="color: #657422;
+<span id="cb7-58">                    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">position =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2693,17 +2692,17 @@ background-color: null;
 font-style: inherit;">hjust =</span> <span class="fl" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0.5</span>,</span>
-<span id="cb7-60">                    <span class="at" style="color: #657422;
+<span id="cb7-59">                    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">show.legend =</span> F) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb7-61">      <span class="fu" style="color: #4758AB;
+<span id="cb7-60">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme_bw</span>() <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb7-62">      <span class="fu" style="color: #4758AB;
+<span id="cb7-61">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -2712,7 +2711,7 @@ background-color: null;
 font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Case"</span>, case), </span>
-<span id="cb7-63">           <span class="at" style="color: #657422;
+<span id="cb7-62">           <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">x =</span> <span class="st" style="color: #20794D;
 background-color: null;
@@ -2727,7 +2726,7 @@ background-color: null;
 font-style: inherit;">"Comparison"</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb7-64">      <span class="fu" style="color: #4758AB;
+<span id="cb7-63">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">scale_fill_manual</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -2740,21 +2739,21 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"#8DB6CD"</span>, </span>
-<span id="cb7-65">                                   <span class="st" style="color: #20794D;
+<span id="cb7-64">                                   <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"A_vs_C"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"#FF82AB"</span>, </span>
-<span id="cb7-66">                                   <span class="st" style="color: #20794D;
+<span id="cb7-65">                                   <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"B_vs_C"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"#A2CD5A"</span>), </span>
-<span id="cb7-67">                                   <span class="at" style="color: #657422;
+<span id="cb7-66">                                   <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">labels =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2767,7 +2766,7 @@ background-color: null;
 font-style: inherit;">"B vs C"</span>)) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb7-68">      <span class="fu" style="color: #4758AB;
+<span id="cb7-67">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">scale_color_manual</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -2780,14 +2779,14 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"#8DB6CD"</span>,</span>
-<span id="cb7-69">                                    <span class="st" style="color: #20794D;
+<span id="cb7-68">                                    <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"A_vs_C"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"#FF82AB"</span>,</span>
-<span id="cb7-70">                                    <span class="st" style="color: #20794D;
+<span id="cb7-69">                                    <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"B_vs_C"</span> <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -2796,7 +2795,7 @@ background-color: null;
 font-style: inherit;">"#A2CD5A"</span>)) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb7-71">      <span class="fu" style="color: #4758AB;
+<span id="cb7-70">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -2811,7 +2810,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">9</span>), </span>
-<span id="cb7-72">            <span class="at" style="color: #657422;
+<span id="cb7-71">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">axis.text.x =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2828,7 +2827,7 @@ background-color: null;
 font-style: inherit;">hjust =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>), </span>
-<span id="cb7-73">            <span class="at" style="color: #657422;
+<span id="cb7-72">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">axis.title.y =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2837,7 +2836,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">8</span>), </span>
-<span id="cb7-74">            <span class="at" style="color: #657422;
+<span id="cb7-73">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">axis.text.y =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2846,7 +2845,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">6</span>), </span>
-<span id="cb7-75">            <span class="at" style="color: #657422;
+<span id="cb7-74">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.title =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2859,7 +2858,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">7</span>), </span>
-<span id="cb7-76">            <span class="at" style="color: #657422;
+<span id="cb7-75">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.text =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2868,7 +2867,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">6</span>), </span>
-<span id="cb7-77">            <span class="at" style="color: #657422;
+<span id="cb7-76">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.key.width =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2877,7 +2876,7 @@ background-color: null;
 font-style: inherit;">0.3</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>),</span>
-<span id="cb7-78">            <span class="at" style="color: #657422;
+<span id="cb7-77">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.key.height =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2886,16 +2885,16 @@ background-color: null;
 font-style: inherit;">0.3</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>))</span>
-<span id="cb7-79">    </span>
-<span id="cb7-80">    <span class="fu" style="color: #4758AB;
+<span id="cb7-78">    </span>
+<span id="cb7-79">    <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">print</span>(plot)</span>
-<span id="cb7-81">  }</span>
-<span id="cb7-82"></span>
-<span id="cb7-83">}</span>
+<span id="cb7-80">  }</span>
+<span id="cb7-81"></span>
+<span id="cb7-82">}</span>
+<span id="cb7-83"></span>
 <span id="cb7-84"></span>
-<span id="cb7-85"></span>
-<span id="cb7-86"><span class="fu" style="color: #4758AB;
+<span id="cb7-85"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">t_test_expr</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -2905,27 +2904,27 @@ font-style: inherit;">"expr"</span>)</span></code></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_test_raw_counts-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="624"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_test_counts-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="624"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_test_raw_counts-2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="624"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_test_counts-2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="624"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_test_raw_counts-3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="624"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_test_counts-3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="624"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>Not surprisingly, highly-expressed and unique genes in condition <span style="color: #FF83FA"><strong>A</strong></span> have significantly higher expression when compared to the other two conditions, and except for a few false positives, the rest of genes don’t present significant expression changes.</p>
-<p>Now, as you may suspect, the decrease in counts for genes in condition <span style="color: #FF83FA"><strong>A</strong></span> after sampling results in false discoveries of negative differential expression.</p>
+<p>Now, as you may be suspecting, the decrease in counts for genes in condition <span style="color: #FF83FA"><strong>A</strong></span> after sampling results in false discoveries of negative differential expression.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -2937,21 +2936,21 @@ font-style: inherit;">"rna_seq_expr"</span>)</span></code></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_tests_RNAseq_data-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_tests_RNAseq_data-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="624"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_tests_RNAseq_data-2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_tests_RNAseq_data-2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="624"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_tests_RNAseq_data-3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/index_files/figure-html/t_tests_RNAseq_data-3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="624"></p>
 </figure>
 </div>
 </div>
@@ -2961,9 +2960,9 @@ font-style: inherit;">"rna_seq_expr"</span>)</span></code></pre></div>
 <h1>How to solve the problem?</h1>
 <p>Let’s denote the true and unknown total library size of each sample <img src="https://latex.codecogs.com/png.latex?i"> by <img src="https://latex.codecogs.com/png.latex?S_i"> (i.e.&nbsp;the complete pool of reads per sample), and the RNA-seq library size by <img src="https://latex.codecogs.com/png.latex?N_i"> (reads selected after sampling). We define the total and unknown read counts of gene <img src="https://latex.codecogs.com/png.latex?g"> in samples <img src="https://latex.codecogs.com/png.latex?k"> and <img src="https://latex.codecogs.com/png.latex?r"> as <img src="https://latex.codecogs.com/png.latex?z_%7Bgk%7D"> and <img src="https://latex.codecogs.com/png.latex?z_%7Bgr%7D">, respectively. We know that <img src="https://latex.codecogs.com/png.latex?S_k"> is <img src="https://latex.codecogs.com/png.latex?%5Calpha"> times greater than <img src="https://latex.codecogs.com/png.latex?S_r">, i.e.&nbsp;<img src="https://latex.codecogs.com/png.latex?S_k%20=%20%5Calpha%20S_r">.</p>
 <p>Then, the number of reads after sampling for <img src="https://latex.codecogs.com/png.latex?g"> in samples <img src="https://latex.codecogs.com/png.latex?k"> and <img src="https://latex.codecogs.com/png.latex?r"> are given by <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D%20=%20%5Cfrac%7Bz_%7Bgk%7D%7D%7BS_k%7DN_k"> and <img src="https://latex.codecogs.com/png.latex?y_%7Bgr%7D%20=%20%5Cfrac%7Bz_%7Bgr%7D%7D%7BS_r%7DN_r">, respectively. These correspond to the RNA-seq counts to which we have access.</p>
-<p>If gene <img src="https://latex.codecogs.com/png.latex?g"> is a <span style="background-color: #F0FFF0"><strong>true non-DEG</strong></span> between these two samples, then <img src="https://latex.codecogs.com/png.latex?z_%7Bgk%7D%20=%20z_%7Bgr%7D"> and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D%20=%20y_%7Bgr%7D">. But we know that’s not satisfied since <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D%20=%20%5Cfrac%7Bz_%7Bgk%7D%7D%7BS_k%7DN_k%20=%20%5Cfrac%7Bz_%7Bgr%7D%7D%7B%5Calpha%20S_r%7DN_k"> and given that we fixed the number of selected reads, <img src="https://latex.codecogs.com/png.latex?N_k%20=%20N_r"> and <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D%20=%20%5Cfrac%7Bz_%7Bgr%7D%7D%7B%5Calpha%20S_r%7DN_r%20%E2%89%A0%20%5Cfrac%7Bz_%7Bgr%7D%7D%7BS_r%7DN_r%20=%20y_%7Bgr%7D">. We have that <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D%20%5Calpha%20=%20y_%7Bgr%7D"> and we aim to estimate such factor <img src="https://latex.codecogs.com/png.latex?%5Calpha%20=%20%5Cfrac%7BS_k%7D%7BS_r%7D"> to scale read counts in sample <img src="https://latex.codecogs.com/png.latex?k"> to equal them to those in <img src="https://latex.codecogs.com/png.latex?r">. With library size-normalized counts, we’d have <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7By_%7Bgk%7D%7D%7BN_k%7D%20%5Calpha=%20%5Cfrac%7By_%7Bgr%7D%7D%7BN_r%7D">, which is the same as <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7By_%7Bgk%7D%7D%7BN_k%7D%20%5Csqrt%7B%5Calpha%5E2%7D%20=%20%5Cfrac%7By_%7Bgr%7D%7D%7BN_r%7D"> and results in <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7By_%7Bgk%7D%7D%7BN_k%7D%20%5Csqrt%7B%5Calpha%7D%20=%20%5Cfrac%7By_%7Bgr%7D%7D%7BN_r%20%5Csqrt%7B%5Calpha%7D%7D">, which in turn is equivalent to divide library <img src="https://latex.codecogs.com/png.latex?N_k"> by <img src="https://latex.codecogs.com/png.latex?%5Csqrt%7B%5Calpha%7D"> and multiply library <img src="https://latex.codecogs.com/png.latex?N_r"> by <img src="https://latex.codecogs.com/png.latex?%5Csqrt%7B%5Calpha%7D">; that’s what we refer to with the scaling of library sizes.</p>
+<p>If gene <img src="https://latex.codecogs.com/png.latex?g"> is a <strong>true non-DEG</strong> between these two samples, then <img src="https://latex.codecogs.com/png.latex?z_%7Bgk%7D%20=%20z_%7Bgr%7D"> and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D%20=%20y_%7Bgr%7D">. But we know that’s not met since <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D%20=%20%5Cfrac%7Bz_%7Bgk%7D%7D%7BS_k%7DN_k%20=%20%5Cfrac%7Bz_%7Bgr%7D%7D%7B%5Calpha%20S_r%7DN_k"> and given that we fixed the number of selected reads, <img src="https://latex.codecogs.com/png.latex?N_k%20=%20N_r"> and <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D%20=%20%5Cfrac%7Bz_%7Bgr%7D%7D%7B%5Calpha%20S_r%7DN_r%20%E2%89%A0%20%5Cfrac%7Bz_%7Bgr%7D%7D%7BS_r%7DN_r%20=%20y_%7Bgr%7D">. We have that <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D%20%5Calpha%20=%20y_%7Bgr%7D"> and we aim to estimate such factor <img src="https://latex.codecogs.com/png.latex?%5Calpha%20=%20%5Cfrac%7BS_k%7D%7BS_r%7D"> to scale read counts in sample <img src="https://latex.codecogs.com/png.latex?k"> to equal them to those in <img src="https://latex.codecogs.com/png.latex?r">. With library size-normalized counts, we’d have <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7By_%7Bgk%7D%7D%7BN_k%7D%20%5Calpha=%20%5Cfrac%7By_%7Bgr%7D%7D%7BN_r%7D">, which is the same as <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7By_%7Bgk%7D%7D%7BN_k%7D%20%5Csqrt%7B%5Calpha%5E2%7D%20=%20%5Cfrac%7By_%7Bgr%7D%7D%7BN_r%7D"> and equals to <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7By_%7Bgk%7D%7D%7BN_k%7D%20%5Csqrt%7B%5Calpha%7D%20=%20%5Cfrac%7By_%7Bgr%7D%7D%7BN_r%20%5Csqrt%7B%5Calpha%7D%7D">, which in turn is equivalent to divide library <img src="https://latex.codecogs.com/png.latex?N_k"> by <img src="https://latex.codecogs.com/png.latex?%5Csqrt%7B%5Calpha%7D"> and multiply library <img src="https://latex.codecogs.com/png.latex?N_r"> by <img src="https://latex.codecogs.com/png.latex?%5Csqrt%7B%5Calpha%7D">; that’s what we refer to with the <strong>scaling of sample library sizes</strong>.</p>
 <p>Now, the fold change in the expression of a non-DEG <img src="https://latex.codecogs.com/png.latex?g"> in sample <img src="https://latex.codecogs.com/png.latex?k"> vs sample <img src="https://latex.codecogs.com/png.latex?r">, <em>after sampling</em>, is given by <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7By_%7Bgk%7D%7D%7By_%7Bgr%7D%7D%20=%20%5Calpha%20%5E%7B-1%7D%20=%20%5Cfrac%7BS_r%7D%7BS_k%7D">. So we are basically aiming to scale library sizes by the inverse of the expression fold change of a non-DEG. This applies to all true non-DEGs.</p>
-<p>We cannot estimate <img src="https://latex.codecogs.com/png.latex?S_k"> and <img src="https://latex.codecogs.com/png.latex?S_r"> but we can take advantage of the inverse relationship between <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7BS_k%7D%7BS_r%7D"> and the fold changes of non-DEGs, to approximate it by computing a <strong>global mean expression fold change</strong> across <strong>all (assumed) non-DEGs</strong> for sample <img src="https://latex.codecogs.com/png.latex?k"> vs <img src="https://latex.codecogs.com/png.latex?r">.</p>
+<p>We cannot estimate <img src="https://latex.codecogs.com/png.latex?S_k"> and <img src="https://latex.codecogs.com/png.latex?S_r"> but we can take advantage of the inverse relationship between <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7BS_k%7D%7BS_r%7D"> and the fold changes of non-DEGs, to approximate it by computing a <span style="background-color: #FFF68F"><strong>global mean expression fold change across all (assumed) non-DEGs</strong></span> for sample <img src="https://latex.codecogs.com/png.latex?k"> vs <img src="https://latex.codecogs.com/png.latex?r">.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2977,7 +2976,7 @@ Tip
 <p>A visual way to show why we need to estimate <img src="https://latex.codecogs.com/png.latex?%5Calpha"> is, instead of selecting a fixed number of reads in the sampling, we can think of selecting a fixed proportion of reads per sample <img src="https://latex.codecogs.com/png.latex?i"> (<img src="https://latex.codecogs.com/png.latex?p_i%20=%20%5Cfrac%7BN_i%7D%7BS_i%7D">), which would preserve the original true RNA composition of the samples and allow the direct comparison of gene counts between them.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/images/sampling2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="2031"></p>
+<p><img src="https://daianna21.github.io/daianna_blog/posts/2024-12-15-TMM_normalization/images/sampling2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="margin: 0" width="2031"></p>
 </figure>
 </div>
 <p>By selecting the same proportion <img src="https://latex.codecogs.com/png.latex?p"> of reads from <img src="https://latex.codecogs.com/png.latex?S_k"> and <img src="https://latex.codecogs.com/png.latex?S_r">, on average we keep <img src="https://latex.codecogs.com/png.latex?z_%7Bgk%7D%20%5Ctimes%20p"> and <img src="https://latex.codecogs.com/png.latex?z_%7Bgr%7D%20%5Ctimes%20p"> reads for gene <img src="https://latex.codecogs.com/png.latex?g"> in samples <img src="https://latex.codecogs.com/png.latex?k"> and <img src="https://latex.codecogs.com/png.latex?r">, making the expression estimates comparable between them. But the reality is that we have a fixed number of reads and <img src="https://latex.codecogs.com/png.latex?p_k%20%E2%89%A0%20p_r">. Multiplying by <img src="https://latex.codecogs.com/png.latex?%5Calpha"> we obtain <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7BN_k%7D%7BS_k%7D%20%5Calpha%20=%20%5Cfrac%7BN_r%7D%7BS_r%7D">, making proportions in both samples equal.</p>
@@ -2986,19 +2985,17 @@ Tip
 </section>
 <section id="tmm-method-for-estimating-scaling-factors" class="level1">
 <h1>TMM method for estimating scaling factors</h1>
-<p>What Mark D. Robinson and Alicia Oshlack proposed with their <span style="background-color: #FFD700"><strong>Trim Mean of M-values</strong></span> method is an empirical approach to approximate <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7BS_r%7D%7BS_k%7D">, which can be summarized as follows:</p>
+<p>What Mark D. Robinson and Alicia Oshlack proposed with their <span style="background-color: #FFD700"><strong>Trim Mean of M-values</strong></span> method, implemented in <a href="https://bioconductor.org/packages/release/bioc/html/edgeR.html"><em>edgeR</em></a> <span class="citation" data-cites="edgeR">(Chen et al. 2025)</span>, is an empirical approach to approximate <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7BS_r%7D%7BS_k%7D">, which can be summarized as follows:</p>
 <ol type="1">
-<li><p>Compute gene-wise log-normalized expression ratios between samples <img src="https://latex.codecogs.com/png.latex?k"> and <img src="https://latex.codecogs.com/png.latex?r">:</p>
+<li><p>Compute gene-wise log-normalized expression ratios between samples <img src="https://latex.codecogs.com/png.latex?k"> and <img src="https://latex.codecogs.com/png.latex?r"> (log-fold changes or logFCs):</p>
 <p><img src="https://latex.codecogs.com/png.latex?%0AM_%7Bgk%7D%5Er%20=%20log_2(%5Cfrac%7By_%7Bgk%7D%7D%7BN_k%7D%20/%5Cfrac%7By_%7Bgr%7D%7D%7BN_r%7D%20)%0A"></p>
 <p>and the mean gene log-normalized expression across both samples as:</p>
-<p><img src="https://latex.codecogs.com/png.latex?%0AA_g%20=%20%5Cfrac%7Blog_2(%5Cfrac%7By_%7Bgk%7D%7D%7BN_k%7D)%20+%20log_2(%5Cfrac%7By_%7Bgr%7D%7D%7BN_r%7D)%7D%7B2%7D%0A"> where <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D"> and <img src="https://latex.codecogs.com/png.latex?y_%7Bgr%7D"> are the RNA-seq counts of gene <img src="https://latex.codecogs.com/png.latex?g"> in samples <img src="https://latex.codecogs.com/png.latex?k"> and <img src="https://latex.codecogs.com/png.latex?r"> (after sampling).</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0AA_g%20=%20%5Cfrac%7Blog_2(%5Cfrac%7By_%7Bgk%7D%7D%7BN_k%7D)%20+%20log_2(%5Cfrac%7By_%7Bgr%7D%7D%7BN_r%7D)%7D%7B2%7D%0A"> where <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D"> and <img src="https://latex.codecogs.com/png.latex?y_%7Bgr%7D"> are the RNA-seq counts of gene <img src="https://latex.codecogs.com/png.latex?g"> in samples <img src="https://latex.codecogs.com/png.latex?k"> and <img src="https://latex.codecogs.com/png.latex?r">, respectively.</p>
 <p>In the next code we compute the <img src="https://latex.codecogs.com/png.latex?M"> and <img src="https://latex.codecogs.com/png.latex?A"> values for all genes in each case, comparing sample 1 of condition <span style="color: #EE7AE9"><strong>A</strong></span> vs sample 5 of condition <span style="color: #7CCD7C"><strong>B</strong></span>. We then plot <img src="https://latex.codecogs.com/png.latex?M"> vs <img src="https://latex.codecogs.com/png.latex?A"> values to spot up and down differentially expressed genes.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1">MA_plots <span class="ot" style="color: #003B4F;
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">list</span>()</span>
+font-style: italic;">## MA plots</span></span>
 <span id="cb9-2"><span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">for</span>(case <span class="cf" style="color: #003B4F;
@@ -3122,7 +3119,7 @@ font-style: inherit;">2</span></span>
 <span id="cb9-20"></span>
 <span id="cb9-21">    <span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## Variance weights x gene (see step 3)</span></span>
+font-style: italic;">## Variance weight per gene (see step 3)</span></span>
 <span id="cb9-22">    vg <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> ((Nk <span class="sc" style="color: #5E5E5E;
@@ -3323,7 +3320,7 @@ font-style: inherit;">"Case"</span>, case), <span class="at" style="color: #6574
 background-color: null;
 font-style: inherit;">x =</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"A values (A vs B)"</span>, </span>
+font-style: inherit;">"A values (A + B)"</span>, </span>
 <span id="cb9-41">           <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">y =</span> <span class="st" style="color: #20794D;
@@ -3427,15 +3424,11 @@ background-color: null;
 font-style: inherit;">0.25</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>))</span>
-<span id="cb9-52"></span>
-<span id="cb9-53">  MA_plots[[case]] <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> plot</span>
-<span id="cb9-54">  <span class="fu" style="color: #4758AB;
+<span id="cb9-52">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">print</span>(plot)</span>
-<span id="cb9-55"></span>
-<span id="cb9-56">}</span></code></pre></div>
+<span id="cb9-53"></span>
+<span id="cb9-54">}</span></code></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -3458,7 +3451,7 @@ font-style: inherit;">print</span>(plot)</span>
 </div>
 </div>
 </div>
-<p>Just as we have previously demonstrated, observe how all genes have logFCs (<img src="https://latex.codecogs.com/png.latex?M"> values) offset from zero, deviating their mean as well (red dashed line). <img src="https://latex.codecogs.com/png.latex?M"> vs <img src="https://latex.codecogs.com/png.latex?A"> plots are useful in exploratory analysis to spot highly-expressed genes (top right corner in Case 1), genes unique to one condition (top left corner in Case 2), and unique highly-expressed genes (top middle in Case 3), that can explain global negative/positive logFCs for a large number of genes, and thus highlighting the need of scaling library sizes.</p>
+<p>Just as we have previously demonstrated, observe how all genes have logFCs (<img src="https://latex.codecogs.com/png.latex?M"> values) offset from zero, deviating their mean as well (red dashed line). <img src="https://latex.codecogs.com/png.latex?M"> vs <img src="https://latex.codecogs.com/png.latex?A"> plots are useful in exploratory analysis to spot highly-expressed genes (top right corner in <u><strong>Case 1</strong></u>), genes unique to one condition (top left corner in <u><strong>Case 2</strong></u>), and unique highly-expressed genes (top middle in <u><strong>Case 3</strong></u>), which explain the observed negative logFCs for the remaining genes, and thus highlighting the need to scale library sizes to move these logFCs towards zero.</p>
 <div class="callout callout-style-default callout-caution callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -3469,7 +3462,7 @@ Caution
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>This procedure assumes that <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D,%20y_%7Bgr%7D%20%3E0">, so an initial filtering of non/lowly-expressed genes is desired. Indeed, <code>edgeR::calcNormFactors()</code> removes in advance genes with zero counts in any of the samples. Here, however, we replaced 0s with 1s to keep most genes for illustrative purposes.</p>
+<p>This procedure assumes that <img src="https://latex.codecogs.com/png.latex?y_%7Bgk%7D,%20y_%7Bgr%7D%20%3E0">, so an initial filtering of non/lowly-expressed genes is desired (see <a href="https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html">Lun, A. 2018</a>). Indeed, <code>edgeR::calcNormFactors()</code> removes in advance genes with zero counts in any of the samples. Here, however, we replaced 0s with 1s to keep most genes for illustrative purposes.</p>
 </div>
 </div></li>
 <li><p>Trim the upper and lower x% (30% by default) of <img src="https://latex.codecogs.com/png.latex?M"> values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of <img src="https://latex.codecogs.com/png.latex?A"> values, corresponding to genes with extreme expression. This keeps genes that are <u>considered non-differentially and moderately expressed</u> (assumed to be most of the genes) and therefore useful to <u>estimate the global expression fold change</u> between samples.</p>
@@ -3491,7 +3484,10 @@ font-style: inherit;">"M"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"A"</span>)){</span>
 <span id="cb10-4"></span>
-<span id="cb10-5">  x <span class="ot" style="color: #003B4F;
+<span id="cb10-5">  <span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## % to trim</span></span>
+<span id="cb10-6">  x <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3504,13 +3500,13 @@ background-color: null;
 font-style: inherit;">0.1</span>, <span class="fl" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0.05</span>)</span>
-<span id="cb10-6"></span>
-<span id="cb10-7">  plots <span class="ot" style="color: #003B4F;
+<span id="cb10-7"></span>
+<span id="cb10-8">  plots <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">list</span>()</span>
-<span id="cb10-8">  <span class="cf" style="color: #003B4F;
+<span id="cb10-9">  <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">for</span>(case <span class="cf" style="color: #003B4F;
 background-color: null;
@@ -3521,8 +3517,8 @@ background-color: null;
 font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">3</span>){</span>
-<span id="cb10-9"></span>
-<span id="cb10-10">    df <span class="ot" style="color: #003B4F;
+<span id="cb10-10"></span>
+<span id="cb10-11">    df <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3531,11 +3527,11 @@ background-color: null;
 font-style: inherit;">paste0</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"df_case_"</span>, case))</span>
-<span id="cb10-11"></span>
-<span id="cb10-12">    <span class="do" style="color: #5E5E5E;
+<span id="cb10-12"></span>
+<span id="cb10-13">    <span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Trim upper and lower % </span></span>
-<span id="cb10-13">    df[, <span class="fu" style="color: #4758AB;
+<span id="cb10-14">    df[, <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">paste0</span>(<span class="st" style="color: #20794D;
 background-color: null;
@@ -3544,7 +3540,7 @@ background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">FALSE</span></span>
-<span id="cb10-14">    extremes <span class="ot" style="color: #003B4F;
+<span id="cb10-15">    extremes <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3561,7 +3557,7 @@ background-color: null;
 font-style: inherit;">nrow</span>(df) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">*</span> x)], </span>
-<span id="cb10-15">                  <span class="fu" style="color: #4758AB;
+<span id="cb10-16">                  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">rev</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3576,7 +3572,7 @@ background-color: null;
 font-style: inherit;">nrow</span>(df) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">*</span> x)])</span>
-<span id="cb10-16">    df[extremes, <span class="fu" style="color: #4758AB;
+<span id="cb10-17">    df[extremes, <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">paste0</span>(<span class="st" style="color: #20794D;
 background-color: null;
@@ -3585,11 +3581,11 @@ background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">TRUE</span></span>
-<span id="cb10-17"></span>
-<span id="cb10-18">    <span class="do" style="color: #5E5E5E;
+<span id="cb10-18"></span>
+<span id="cb10-19">    <span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Box plot</span></span>
-<span id="cb10-19">    pos <span class="ot" style="color: #003B4F;
+<span id="cb10-20">    pos <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3602,8 +3598,8 @@ background-color: null;
 font-style: inherit;">seed =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">12242024</span>)</span>
-<span id="cb10-20"></span>
-<span id="cb10-21">    plot <span class="ot" style="color: #003B4F;
+<span id="cb10-21"></span>
+<span id="cb10-22">    plot <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3620,7 +3616,7 @@ background-color: null;
 font-style: inherit;">get</span>(metric))) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb10-22">        <span class="fu" style="color: #4758AB;
+<span id="cb10-23">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_point</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3637,14 +3633,14 @@ background-color: null;
 font-style: inherit;">position =</span> pos) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb10-23">        <span class="fu" style="color: #4758AB;
+<span id="cb10-24">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">scale_color_manual</span>(<span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">values =</span> col_palette) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb10-24">        <span class="fu" style="color: #4758AB;
+<span id="cb10-25">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">scale_alpha_manual</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -3657,7 +3653,7 @@ background-color: null;
 font-style: inherit;">"alphas_case_"</span>, case))) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb10-25">        <span class="fu" style="color: #4758AB;
+<span id="cb10-26">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_point</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3674,7 +3670,7 @@ background-color: null;
 font-style: inherit;">color =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"darkred"</span>,</span>
-<span id="cb10-26">                   <span class="at" style="color: #657422;
+<span id="cb10-27">                   <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">size =</span> <span class="fl" style="color: #AD0000;
 background-color: null;
@@ -3687,7 +3683,7 @@ background-color: null;
 font-style: inherit;">position =</span> pos) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb10-27">        <span class="fu" style="color: #4758AB;
+<span id="cb10-28">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">scale_shape_manual</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -3708,7 +3704,7 @@ background-color: null;
 font-style: inherit;">NA</span>)) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb10-28">        <span class="fu" style="color: #4758AB;
+<span id="cb10-29">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_boxplot</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -3729,7 +3725,7 @@ background-color: null;
 font-style: inherit;">"gray40"</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb10-29">        <span class="fu" style="color: #4758AB;
+<span id="cb10-30">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">guides</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -3738,7 +3734,7 @@ background-color: null;
 font-style: inherit;">"none"</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb10-30">        <span class="fu" style="color: #4758AB;
+<span id="cb10-31">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">labs</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -3757,7 +3753,7 @@ background-color: null;
 font-style: inherit;">paste0</span>(metric, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">" values"</span>), </span>
-<span id="cb10-31">             <span class="at" style="color: #657422;
+<span id="cb10-32">             <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">color =</span> <span class="st" style="color: #20794D;
 background-color: null;
@@ -3768,12 +3764,12 @@ background-color: null;
 font-style: inherit;">"Trimmed"</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb10-32">        <span class="fu" style="color: #4758AB;
+<span id="cb10-33">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme_bw</span>() <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb10-33">        <span class="fu" style="color: #4758AB;
+<span id="cb10-34">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -3788,7 +3784,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">10</span>), </span>
-<span id="cb10-34">              <span class="at" style="color: #657422;
+<span id="cb10-35">              <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">axis.ticks.length.x =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3797,7 +3793,7 @@ background-color: null;
 font-style: inherit;">0</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>),</span>
-<span id="cb10-35">              <span class="at" style="color: #657422;
+<span id="cb10-36">              <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">axis.text.y =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3806,7 +3802,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">8</span>), </span>
-<span id="cb10-36">              <span class="at" style="color: #657422;
+<span id="cb10-37">              <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">axis.title.y =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3815,7 +3811,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">9</span>), </span>
-<span id="cb10-37">              <span class="at" style="color: #657422;
+<span id="cb10-38">              <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.title =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3828,7 +3824,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">9</span>), </span>
-<span id="cb10-38">              <span class="at" style="color: #657422;
+<span id="cb10-39">              <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.text =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3837,7 +3833,7 @@ background-color: null;
 font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">8</span>), </span>
-<span id="cb10-39">              <span class="at" style="color: #657422;
+<span id="cb10-40">              <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.key.width =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3846,7 +3842,7 @@ background-color: null;
 font-style: inherit;">0.35</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>),</span>
-<span id="cb10-40">              <span class="at" style="color: #657422;
+<span id="cb10-41">              <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend.key.height =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3855,20 +3851,20 @@ background-color: null;
 font-style: inherit;">0.35</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>))</span>
-<span id="cb10-41"></span>
-<span id="cb10-42">      <span class="cf" style="color: #003B4F;
+<span id="cb10-42"></span>
+<span id="cb10-43">      <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">if</span>(metric <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">==</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"M"</span>){</span>
-<span id="cb10-43">        plot <span class="ot" style="color: #003B4F;
+<span id="cb10-44">        plot <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> plot <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> </span>
-<span id="cb10-44">          <span class="fu" style="color: #4758AB;
+<span id="cb10-45">          <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">geom_hline</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -3887,23 +3883,23 @@ background-color: null;
 font-style: inherit;">color =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"gray40"</span>) </span>
-<span id="cb10-45"></span>
-<span id="cb10-46">        <span class="cf" style="color: #003B4F;
+<span id="cb10-46"></span>
+<span id="cb10-47">        <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">if</span>(case <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>){</span>
-<span id="cb10-47">          legend <span class="ot" style="color: #003B4F;
+<span id="cb10-48">          legend <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">get_legend</span>(plot)</span>
-<span id="cb10-48">        }</span>
-<span id="cb10-49">      }</span>
-<span id="cb10-50"></span>
-<span id="cb10-51">      plot <span class="ot" style="color: #003B4F;
+<span id="cb10-49">        }</span>
+<span id="cb10-50">      }</span>
+<span id="cb10-51"></span>
+<span id="cb10-52">      plot <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> plot <span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -3918,19 +3914,19 @@ background-color: null;
 font-style: inherit;">shape =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"none"</span>)</span>
-<span id="cb10-52">      plots[[case]] <span class="ot" style="color: #003B4F;
+<span id="cb10-53">      plots[[case]] <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> plot</span>
-<span id="cb10-53">      <span class="fu" style="color: #4758AB;
+<span id="cb10-54">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">assign</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">paste0</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"df_case_"</span>, case), df)</span>
-<span id="cb10-54">  }</span>
-<span id="cb10-55"></span>
-<span id="cb10-56">  <span class="fu" style="color: #4758AB;
+<span id="cb10-55">  }</span>
+<span id="cb10-56"></span>
+<span id="cb10-57">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">print</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3941,7 +3937,7 @@ background-color: null;
 font-style: inherit;">2</span>]], plots[[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">3</span>]], legend, </span>
-<span id="cb10-57">                  <span class="at" style="color: #657422;
+<span id="cb10-58">                  <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">ncol =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
@@ -3958,8 +3954,8 @@ background-color: null;
 font-style: inherit;">1</span>,<span class="fl" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0.6</span>)))</span>
-<span id="cb10-58"></span>
-<span id="cb10-59">}</span></code></pre></div>
+<span id="cb10-59"></span>
+<span id="cb10-60">}</span></code></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -4017,10 +4013,12 @@ font-style: inherit;">!</span>df_case_3<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>trimA, ]</span></code></pre></div>
 </div></li>
-<li><p>Estimate the average of the <img src="https://latex.codecogs.com/png.latex?M"> values for not trimmed genes (<img src="https://latex.codecogs.com/png.latex?G%5E*">), each weighted by gene inverse variances (<img src="https://latex.codecogs.com/png.latex?w_%7Bgk%7D%5Er">) to account for lower variances in logFCs from genes with larger read counts.</p>
+<li><p>Estimate the average of the <img src="https://latex.codecogs.com/png.latex?M"> values for not trimmed genes (<img src="https://latex.codecogs.com/png.latex?G%5E*">), each weighted by gene inverse variances (<img src="https://latex.codecogs.com/png.latex?w_%7Bgk%7D%5Er">) to account for smaller variances in logFCs of genes with larger read counts.</p>
 <p><img src="https://latex.codecogs.com/png.latex?%0Af_k%5Er%20=%20%5Cfrac%7B%5Csum_%7Bg%20%5Cin%20G%5E*%7D%20w_%7Bgk%7D%5Er%20M_%7Bgk%7D%5Er%7D%7B%5Csum_%7Bg%20%5Cin%20G%5E*%7Dw_%7Bgk%7D%5Er%7D%0A"></p>
 <p>where <img src="https://latex.codecogs.com/png.latex?w_%7Bgk%7D%5Er%20=%201/v_%7Bgk%7D%5Er"> and <img src="https://latex.codecogs.com/png.latex?v_%7Bgk%7D%5Er%20=%20%5Cfrac%7BN_k-Y_%7Bgk%7D%7D%7BN_kY_%7Bgk%7D%7D%20+%20%5Cfrac%7BN_r-Y_%7Bgr%7D%7D%7BN_rY_%7Bgr%7D%7D">.</p>
-<p>Then, we define the normalization factor <img src="https://latex.codecogs.com/png.latex?TMM_k%5Er%20%20=%202%5E%7Bf_k%5Er%7D"> as an estimate of <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B1%7D%7B%5Calpha%7D=%5Cfrac%7BS_r%7D%7BS_k%7D"> and we scale the library <img src="https://latex.codecogs.com/png.latex?k"> by <img src="https://latex.codecogs.com/png.latex?%5Csqrt%20%7BTMM_k%5Er%7D"> and library <img src="https://latex.codecogs.com/png.latex?r"> by <img src="https://latex.codecogs.com/png.latex?1/%5Csqrt%7BTMM_k%5Er%7D">. <img src="https://latex.codecogs.com/png.latex?TMM"> is the global fold change in expression of sample <img src="https://latex.codecogs.com/png.latex?k"> compared to sample <img src="https://latex.codecogs.com/png.latex?r"> after sampling reads.</p>
+<p>Then, we define the normalization factor <img src="https://latex.codecogs.com/png.latex?TMM_k%5Er%20%20=%202%5E%7Bf_k%5Er%7D"> as an estimate of <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B1%7D%7B%5Calpha%7D=%5Cfrac%7BS_r%7D%7BS_k%7D"> and we scale the library <img src="https://latex.codecogs.com/png.latex?k"> by <img src="https://latex.codecogs.com/png.latex?%5Csqrt%20%7BTMM_k%5Er%7D"> and library <img src="https://latex.codecogs.com/png.latex?r"> by <img src="https://latex.codecogs.com/png.latex?1/%5Csqrt%7BTMM_k%5Er%7D">.</p>
+<p><img src="https://latex.codecogs.com/png.latex?TMM"> is the global fold change in expression of sample <img src="https://latex.codecogs.com/png.latex?k"> compared to sample <img src="https://latex.codecogs.com/png.latex?r"> after sampling reads.</p>
+<p>In the next code we manually find this factor and compare it with the one returned by <code>edgeR::calcNormFactors()</code> and with the true known value of <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7BS_r%7D%7BS_k%7D">.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4105,7 +4103,7 @@ background-color: null;
 font-style: italic;">## Scaling factors for k and r libraries</span></span>
 <span id="cb12-18">    <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">message</span>(<span class="fu" style="color: #4758AB;
+font-style: inherit;">print</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">paste0</span>(<span class="st" style="color: #20794D;
 background-color: null;
@@ -4118,7 +4116,7 @@ font-style: inherit;">print</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"f = log2(TMM) ="</span>, <span class="fu" style="color: #4758AB;
+font-style: inherit;">"Manually-computed f = log2(TMM) ="</span>, <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">signif</span>(f, <span class="at" style="color: #657422;
 background-color: null;
@@ -4131,7 +4129,7 @@ font-style: inherit;">print</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"TMM factor = 2^f (aprox to 1/α) ="</span>, <span class="fu" style="color: #4758AB;
+font-style: inherit;">"Manually-computed TMM factor = 2^f (aprox to 1/α) ="</span>, <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">signif</span>(tmm, <span class="at" style="color: #657422;
 background-color: null;
@@ -4284,7 +4282,7 @@ font-style: inherit;">print</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"True FC = 1/α = Sr/S_k = "</span>, <span class="fu" style="color: #4758AB;
+font-style: inherit;">"True FC = 1/α = Sr/Sk = "</span>, <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">signif</span>(ratio_true, <span class="at" style="color: #657422;
 background-color: null;
@@ -4320,48 +4318,58 @@ background-color: null;
 font-style: inherit;">digits =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">5</span>)))</span>
-<span id="cb12-45"></span>
-<span id="cb12-46">}</span></code></pre></div>
+<span id="cb12-45">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">cat</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb12-46"></span>
+<span id="cb12-47">}</span></code></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "f = log2(TMM) = -1.5895"
-[1] "TMM factor = 2^f (aprox to 1/α) = 0.33229"
+<pre><code>[1] "Case 1:"
+[1] "Manually-computed f = log2(TMM) = -1.5895"
+[1] "Manually-computed TMM factor = 2^f (aprox to 1/α) = 0.33229"
 [1] "Manually-computed scaling factors (√TMM for k and 1/√TMM r): 0.57644 1.7348"
 [1] "edgeR scaling factors for k and r: 0.57644 1.7348"
-[1] "True FC = 1/α = Sr/S_k =  0.25899"
-[1] "True scaling factors (√1/α for k and 1/√1/α r): 0.50891 1.965"</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "f = log2(TMM) = -0.45766"
-[1] "TMM factor = 2^f (aprox to 1/α) = 0.72817"
+[1] "True FC = 1/α = Sr/Sk =  0.25899"
+[1] "True scaling factors (√1/α for k and 1/√1/α r): 0.50891 1.965"
+
+[1] "Case 2:"
+[1] "Manually-computed f = log2(TMM) = -0.45766"
+[1] "Manually-computed TMM factor = 2^f (aprox to 1/α) = 0.72817"
 [1] "Manually-computed scaling factors (√TMM for k and 1/√TMM r): 0.85333 1.1719"
 [1] "edgeR scaling factors for k and r: 0.72308 1.383"
-[1] "True FC = 1/α = Sr/S_k =  0.52249"
-[1] "True scaling factors (√1/α for k and 1/√1/α r): 0.72284 1.3834"</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "f = log2(TMM) = -1.8317"
-[1] "TMM factor = 2^f (aprox to 1/α) = 0.28093"
+[1] "True FC = 1/α = Sr/Sk =  0.52249"
+[1] "True scaling factors (√1/α for k and 1/√1/α r): 0.72284 1.3834"
+
+[1] "Case 3:"
+[1] "Manually-computed f = log2(TMM) = -1.8317"
+[1] "Manually-computed TMM factor = 2^f (aprox to 1/α) = 0.28093"
 [1] "Manually-computed scaling factors (√TMM for k and 1/√TMM r): 0.53003 1.8867"
 [1] "edgeR scaling factors for k and r: 0.49584 2.0168"
-[1] "True FC = 1/α = Sr/S_k =  0.19238"
+[1] "True FC = 1/α = Sr/Sk =  0.19238"
 [1] "True scaling factors (√1/α for k and 1/√1/α r): 0.43861 2.2799"</code></pre>
 </div>
 </div>
 <p>Note that in case 2 and 3 the factors we compute manually don’t match with the ones returned by <code>calcNormFactors()</code> because we transformed 0 counts into 1s, whereas this <code>edgeR</code> function removes genes with zero counts.</p></li>
 <li><p>These factors are then used to scale the original RNA-seq sample library sizes and normalize counts. Look in the following plots the more homogeneous expression of true non-DEGs in samples 1 and 5 after normalizing counts by effective (scaled) library sizes, recapitulating the true expression patterns shown in the very first heat maps.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1">hs <span class="ot" style="color: #003B4F;
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1">hs <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">list</span>()</span>
-<span id="cb16-2"></span>
-<span id="cb16-3">col_anno <span class="ot" style="color: #003B4F;
+<span id="cb14-2"></span>
+<span id="cb14-3">col_anno <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">HeatmapAnnotation</span>(</span>
-<span id="cb16-4">  <span class="at" style="color: #657422;
+<span id="cb14-4">  <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">Condition =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4378,7 +4386,7 @@ background-color: null;
 font-style: inherit;">"orchid1"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"palegreen1"</span>), </span>
-<span id="cb16-5">                                   <span class="at" style="color: #657422;
+<span id="cb14-5">                                   <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">col =</span> <span class="st" style="color: #20794D;
 background-color: null;
@@ -4387,10 +4395,10 @@ background-color: null;
 font-style: inherit;">lwd =</span> <span class="fl" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0.8</span>),</span>
-<span id="cb16-6">                         <span class="at" style="color: #657422;
+<span id="cb14-6">                         <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">show_name =</span> T), </span>
-<span id="cb16-7">  <span class="at" style="color: #657422;
+<span id="cb14-7">  <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">annotation_name_gp =</span>  <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4403,9 +4411,9 @@ background-color: null;
 font-style: inherit;">fontface =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"bold"</span>))</span>
-<span id="cb16-8"></span>
-<span id="cb16-9"></span>
-<span id="cb16-10"><span class="cf" style="color: #003B4F;
+<span id="cb14-8"></span>
+<span id="cb14-9"></span>
+<span id="cb14-10"><span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">for</span>(case <span class="cf" style="color: #003B4F;
 background-color: null;
@@ -4416,8 +4424,8 @@ background-color: null;
 font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">3</span>){</span>
-<span id="cb16-11"></span>
-<span id="cb16-12">  rna_seq_expr <span class="ot" style="color: #003B4F;
+<span id="cb14-11"></span>
+<span id="cb14-12">  rna_seq_expr <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4428,7 +4436,7 @@ background-color: null;
 font-style: inherit;">paste0</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"rna_seq_expr_case"</span>, case)))</span>
-<span id="cb16-13">  yg <span class="ot" style="color: #003B4F;
+<span id="cb14-13">  yg <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> rna_seq_expr[, <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4437,7 +4445,7 @@ background-color: null;
 font-style: inherit;">1</span>,<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">5</span>)]</span>
-<span id="cb16-14">  <span class="fu" style="color: #4758AB;
+<span id="cb14-14">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">colnames</span>(yg) <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -4448,11 +4456,11 @@ background-color: null;
 font-style: inherit;">"k"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"r"</span>)</span>
-<span id="cb16-15"></span>
-<span id="cb16-16">  <span class="do" style="color: #5E5E5E;
+<span id="cb14-15"></span>
+<span id="cb14-16">  <span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Effective lib sizes (original lib size fixed at 650)</span></span>
-<span id="cb16-17">  edgeR_NormFactors <span class="ot" style="color: #003B4F;
+<span id="cb14-17">  edgeR_NormFactors <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4461,15 +4469,15 @@ background-color: null;
 font-style: inherit;">paste0</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"edgeR_NormFactors_"</span>, case))</span>
-<span id="cb16-18">  effective_lib_sizes <span class="ot" style="color: #003B4F;
+<span id="cb14-18">  effective_lib_sizes <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">650</span> <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">*</span> edgeR_NormFactors</span>
-<span id="cb16-19"></span>
-<span id="cb16-20">  rna_seq_expr_norm <span class="ot" style="color: #003B4F;
+<span id="cb14-19"></span>
+<span id="cb14-20">  rna_seq_expr_norm <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4480,38 +4488,38 @@ background-color: null;
 font-style: inherit;">/</span>effective_lib_sizes[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"k"</span>],</span>
-<span id="cb16-21">                             yg[<span class="st" style="color: #20794D;
+<span id="cb14-21">                             yg[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"r"</span>]<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">/</span>effective_lib_sizes[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"r"</span>])</span>
-<span id="cb16-22"></span>
-<span id="cb16-23">  hs[[case]] <span class="ot" style="color: #003B4F;
+<span id="cb14-22"></span>
+<span id="cb14-23">  hs[[case]] <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">Heatmap</span>(rna_seq_expr_norm,</span>
-<span id="cb16-24">          <span class="at" style="color: #657422;
+<span id="cb14-24">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">name =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"RNA-seq counts"</span>, </span>
-<span id="cb16-25">          <span class="at" style="color: #657422;
+<span id="cb14-25">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">top_annotation =</span> col_anno, </span>
-<span id="cb16-26">          <span class="at" style="color: #657422;
+<span id="cb14-26">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">cluster_rows =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">FALSE</span>,</span>
-<span id="cb16-27">          <span class="at" style="color: #657422;
+<span id="cb14-27">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">cluster_columns =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">FALSE</span>,</span>
-<span id="cb16-28">          <span class="at" style="color: #657422;
+<span id="cb14-28">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">col =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4526,7 +4534,7 @@ background-color: null;
 font-style: inherit;">0.5</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>), </span>
-<span id="cb16-29">                           <span class="fu" style="color: #4758AB;
+<span id="cb14-29">                           <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
 background-color: null;
@@ -4537,7 +4545,7 @@ background-color: null;
 font-style: inherit;">"mistyrose2"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"rosybrown2"</span>)),</span>
-<span id="cb16-30">          <span class="at" style="color: #657422;
+<span id="cb14-30">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">column_split =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4546,7 +4554,7 @@ background-color: null;
 font-style: inherit;">"k"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"r"</span>), </span>
-<span id="cb16-31">          <span class="at" style="color: #657422;
+<span id="cb14-31">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">column_gap =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4555,12 +4563,12 @@ background-color: null;
 font-style: inherit;">0.5</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"mm"</span>),</span>
-<span id="cb16-32">          <span class="at" style="color: #657422;
+<span id="cb14-32">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">border =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">TRUE</span>,</span>
-<span id="cb16-33">          <span class="at" style="color: #657422;
+<span id="cb14-33">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">border_gp =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4573,17 +4581,17 @@ background-color: null;
 font-style: inherit;">col =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"black"</span>),</span>
-<span id="cb16-34">          <span class="at" style="color: #657422;
+<span id="cb14-34">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">show_row_names =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">TRUE</span>,</span>
-<span id="cb16-35">          <span class="at" style="color: #657422;
+<span id="cb14-35">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">heatmap_legend_param =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">list</span>(</span>
-<span id="cb16-36">            <span class="at" style="color: #657422;
+<span id="cb14-36">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">legend_height =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4592,7 +4600,7 @@ background-color: null;
 font-style: inherit;">1</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>),</span>
-<span id="cb16-37">            <span class="at" style="color: #657422;
+<span id="cb14-37">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">grid_width =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4601,12 +4609,12 @@ background-color: null;
 font-style: inherit;">0.3</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>),</span>
-<span id="cb16-38">            <span class="at" style="color: #657422;
+<span id="cb14-38">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Norm RNA-seq counts"</span>, </span>
-<span id="cb16-39">            <span class="at" style="color: #657422;
+<span id="cb14-39">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">title_gp =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4619,7 +4627,7 @@ background-color: null;
 font-style: inherit;">font =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2</span>), </span>
-<span id="cb16-40">            <span class="at" style="color: #657422;
+<span id="cb14-40">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">labels_gp =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4628,7 +4636,7 @@ background-color: null;
 font-style: inherit;">fontsize =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">6</span>)),</span>
-<span id="cb16-41">          <span class="at" style="color: #657422;
+<span id="cb14-41">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">show_heatmap_legend =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4639,14 +4647,14 @@ background-color: null;
 font-style: inherit;">FALSE</span>, <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">TRUE</span>)[case], </span>
-<span id="cb16-42">          <span class="at" style="color: #657422;
+<span id="cb14-42">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">column_title =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Case"</span>, case),</span>
-<span id="cb16-43">          <span class="at" style="color: #657422;
+<span id="cb14-43">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">column_title_gp =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4659,12 +4667,12 @@ background-color: null;
 font-style: inherit;">fontface =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"bold"</span>),</span>
-<span id="cb16-44">          <span class="at" style="color: #657422;
+<span id="cb14-44">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">column_names_side =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"top"</span>,</span>
-<span id="cb16-45">          <span class="at" style="color: #657422;
+<span id="cb14-45">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">column_names_gp =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4677,7 +4685,7 @@ background-color: null;
 font-style: inherit;">fontface =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"bold"</span>),</span>
-<span id="cb16-46">          <span class="at" style="color: #657422;
+<span id="cb14-46">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">row_names_gp =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4686,17 +4694,17 @@ background-color: null;
 font-style: inherit;">fontsize =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">6</span>),</span>
-<span id="cb16-47">          <span class="at" style="color: #657422;
+<span id="cb14-47">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">row_names_side =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"left"</span>,</span>
-<span id="cb16-48">          <span class="at" style="color: #657422;
+<span id="cb14-48">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">column_names_rot =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">0</span>,</span>
-<span id="cb16-49">          <span class="at" style="color: #657422;
+<span id="cb14-49">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">heatmap_width =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4705,7 +4713,7 @@ background-color: null;
 font-style: inherit;">2.</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>),</span>
-<span id="cb16-50">          <span class="at" style="color: #657422;
+<span id="cb14-50">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">heatmap_height =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4714,11 +4722,11 @@ background-color: null;
 font-style: inherit;">9.3</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"cm"</span>)</span>
-<span id="cb16-51">          )</span>
-<span id="cb16-52"></span>
-<span id="cb16-53">}</span>
-<span id="cb16-54"></span>
-<span id="cb16-55"><span class="fu" style="color: #4758AB;
+<span id="cb14-51">          )</span>
+<span id="cb14-52"></span>
+<span id="cb14-53">}</span>
+<span id="cb14-54"></span>
+<span id="cb14-55"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">plot_grid</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4727,14 +4735,14 @@ background-color: null;
 font-style: inherit;">draw</span>(hs[[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>]])),</span>
-<span id="cb16-56">          <span class="fu" style="color: #4758AB;
+<span id="cb14-56">          <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">grid.grabExpr</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">draw</span>(hs[[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2</span>]])),</span>
-<span id="cb16-57">          <span class="fu" style="color: #4758AB;
+<span id="cb14-57">          <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">grid.grabExpr</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4751,7 +4759,7 @@ background-color: null;
 font-style: inherit;">0.7</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>), </span>
-<span id="cb16-58">          <span class="at" style="color: #657422;
+<span id="cb14-58">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">rel_heights =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4775,7 +4783,7 @@ font-style: inherit;">3</span>)</span></code></pre></div>
 </div>
 </div></li>
 </ol>
-<p>If you reached this point, you may be wondering what happens with the rest of the samples if we have more than two. We compute normalization factors for all the other samples using the same reference sample. Now the question is … which sample to use as reference for fair sample comparisons?</p>
+<p>If you’ve made it this far, you might be wondering what’s to do with all the other samples. TMM uses the same chosen reference sample to normalize all of the other samples against and centers the computed scaling factors across all samples around 1.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -4786,24 +4794,37 @@ Which sample to choose as the reference?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If not specified, the TMM method, as implemented in <code>edgeR</code>, selects as the reference the sample whose expression is closer to the average expression across all samples. More specifically, it chooses the sample whose 75th expression quantile, normalized by library size, is closer to the mean of the normalized quantiles for all samples. Check an example <a href="https://www.google.com/search?client=safari&amp;rls=en&amp;q=tmm+reference+sample&amp;ie=UTF-8&amp;oe=UTF-8#fpstate=ive&amp;vld=cid:a7c9a19a,vid:Wdt6jdi-NQo,st:151">here</a>.</p>
+<p>If not specified, the TMM method, as implemented in <code>edgeR</code>, selects as the reference the sample whose expression is closer to the average expression across all samples. More specifically, it chooses the sample whose 75th expression quantile, normalized by library size, is closer to the mean of the normalized 75th quantiles for all samples. Check an example <a href="https://www.youtube.com/watch?v=Wdt6jdi-NQo">here</a>.</p>
 </div>
 </div>
-<p>the … to adjust</p>
-<p>Normalization factors</p>
-<p>Scaling factors</p>
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
 <p>Initially, normalizing expression counts by true biological RNA composition differences seems counterintuitive as those are the differences we aim to detect in DGE analysis. But I hope you have it clear now that the problem arises from sampling effects in RNA-seq data, and that gene read counts depend not only on gene expression levels and length, but also on the inherent properties of the RNA samples from which they come.</p>
-<p>biological differences in the sample transcriptomes across multiple conditions</p>
-<p>Library size normalization is appropriate in cases where samples are expected to have similar total mRNA amounts, such replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the similarly-expressed ones.</p>
-<p>The key take-home message for you is that if DGE analysis results in globally-shifted gene logFCs, these are likely driven by differences in sample RNA composition and have to be adjusted. TMM can be used to effectively scale library sizes under the assumption that most genes are non-DEGs. But as a note, TMM is not designed nor optimal to deal with cases of large assymetric differential expression, where a high proportion of genes are DE in one direction, and thus end up having similar read proportions after sampling across conditions.</p>
-<p>As we have seen, TMM is a simple but effective method to scale …</p>
-<p>In other words, we approximate Sk/Sr as a global expression logFC between samples based on similarly-expressed genes (e.g.&nbsp;housekeeping genes).</p>
-<p>Proper normalization is necessary to draw correct conclusions from RNA-seq data</p>
+<p>Library size normalization is appropriate in cases where samples are expected to have similar total mRNA amounts, such as replicate samples within the same condition. But when working with multiple experimental conditions such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the non-differentially expressed ones.</p>
+<p>The key take-home message for you is that if DGE analysis results in globally-shifted gene logFCs, these are likely driven by differences in sample RNA composition and have to be adjusted. As we have seen, TMM is a simple but effective method to scale library sizes under the assumption that most genes are non-DEGs. But as a note, TMM is not designed nor optimal to deal with cases of large asymmetric differential expression, where a high proportion of genes are DE in one direction and thus end up having similar read proportions across conditions after sampling <span class="citation" data-cites="evans2017">(Evans, Hardin, and Stoebel 2017)</span>.</p>
+</section>
+<section id="relevant-links-and-bibliography" class="level1">
+<h1>Relevant links and bibliography</h1>
+<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
+<div class="line-block">📑 <strong>Original publication for TMM:</strong><br>
+de Leeuw, C. A., Mooij, J. M., Heskes, T., &amp; Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data.&nbsp;<em>PLoS computational biology</em>,&nbsp;<em>11</em>(4), e1004219. <a href="https://doi.org/10.1371/journal.pcbi.1004219https://doi.org/10.1371/journal.pcbi.1004219">https://doi.org/10.1371/journal.pcbi.1004219</a></div>
+</div>
+<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
+<div class="line-block">📁 <strong>Supplemental Methods for MAGMA:</strong><br>
+de Leeuw, C. A., Mooij, J. M., Heskes, T., &amp; Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data.&nbsp;<em>PLoS computational biology</em>,&nbsp;<em>11</em>(4, Suppl.), e1004219. Available here: <a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219#sec016" class="uri">https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219#sec016</a></div>
+</div>
+<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
+<div class="line-block">📓 <strong>MAGMA manual (version 1.09):</strong><br>
+Available here: <a href="https://ibg.colorado.edu/cdrom2021/Day10-posthuma/magma_session/manual_v1.09a.pdf" class="uri">https://ibg.colorado.edu/cdrom2021/Day10-posthuma/magma_session/manual_v1.09a.pdf</a></div>
+</div>
+<div style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px">
+<div class="line-block">🔎 <strong>MAGMA website:</strong><br>
+Available here: <a href="https://cncr.nl/research/magma/" class="uri">https://cncr.nl/research/magma/</a></div>
+</div>
+<p><a href="https://doi.org/10.1186/gb-2010-11-3-r25">10.1186/gb-2010-11-3-r25</a></p>
 <p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/" class="uri">https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/</a></p>
-<p>Sources</p>
+<p><a href="https://doi.org/10.1093/bib/bbx008" class="uri">https://doi.org/10.1093/bib/bbx008</a></p>
 <p><a href="https://rdrr.io/bioc/edgeR/src/R/calcNormFactors.R" class="uri">https://rdrr.io/bioc/edgeR/src/R/calcNormFactors.R</a></p>
 <p><a href="https://github.com/broadinstitute/pyqtl/blob/master/qtl/norm.py" class="uri">https://github.com/broadinstitute/pyqtl/blob/master/qtl/norm.py</a></p>
 <p><a href="https://davetang.github.io/muse/edger.html#TMM_normalisation" class="uri">https://davetang.github.io/muse/edger.html#TMM_normalisation</a></p>
@@ -4811,12 +4832,22 @@ Which sample to choose as the reference?
 <p><a href="https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html" class="uri">https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html</a></p>
 
 
+
 </section>
 
- ]]></description>
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0">
+<div id="ref-edgeR" class="csl-entry">
+Chen, Yunshun, Lizhong Chen, Aaron T L Lun, Pedro Baldoni, and Gordon K Smyth. 2025. <span>“<span></span>edgeR<span></span> V4: Powerful Differential Analysis of Sequencing Data with Expanded Functionality and Improved Support for Small Counts and Larger Datasets”</span> 53: gkaf018. <a href="https://doi.org/10.1093/nar/gkaf018">https://doi.org/10.1093/nar/gkaf018</a>.
+</div>
+<div id="ref-evans2017" class="csl-entry">
+Evans, Ciaran, Johanna Hardin, and Daniel M Stoebel. 2017. <span>“Selecting Between-Sample RNA-Seq Normalization Methods from the Perspective of Their Assumptions.”</span> <em>Briefings in Bioinformatics</em> 19 (5): 776–92. <a href="https://doi.org/10.1093/bib/bbx008">https://doi.org/10.1093/bib/bbx008</a>.
+</div>
+</div></section></div> ]]></description>
   <category>Normalization</category>
   <category>RNA composition bias</category>
   <category>Trimmed Mean of M-values</category>
+  <category>Library size</category>
+  <category>Normalization factor</category>
   <category>Highly-expressed genes</category>
   <category>Differential Gene Expression</category>
   <category>RNA-seq</category>

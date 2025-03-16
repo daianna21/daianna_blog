@@ -8,6 +8,8 @@ categories:
   - "Normalization"
   - "RNA composition bias"
   - "Trimmed Mean of M-values"
+  - "Library size"
+  - "Normalization factor"
   - "Highly-expressed genes"
   - "Differential Gene Expression"
   - "RNA-seq"
@@ -22,7 +24,7 @@ bibliography: references.bib
 
 Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the systematic effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples, and enabling the study of transcriptome dynamics.
 
-Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample **library size** (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression levels across samples but is not the only factor at play, specially when samples are expected to have very variable transcriptomes across experimental conditions.
+Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample **library size** (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression levels across samples but is not the only factor at play, specially when samples are expected to have very variable **transcriptome sizes** across experimental conditions.
 
 In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. Robinson and Alicia Oshlack introduced the issue of the [**RNA composition bias**]{style="background-color: #FFF68F"} in RNA-seq data, and developed the [**Trimmed Mean of M-values (TMM)**]{style="color: #008B8B; background-color: #FAFAD2"} method to adjust for it. As a widely-implemented normalization scheme, it is important to understand why sample RNA population differences are a concern for normalization and how TMM accounts for it.
 
@@ -34,13 +36,13 @@ In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. 
 
 -   Demonstrate how such RNA composition cases increase the false positive rates in DGE.
 
--   Learn how the TMM method works to reduce the RNA composition bias.
+-   Learn how the TMM method works to eliminate the RNA composition bias.
 
 # RNA-seq counts: a sampling artifact?
 
 ## Hypothetical scenarios
 
-Imagine we have 15 samples across 3 experimental conditions ([**A**]{style="color: #EE7AE9"}, [**B**]{style="color: #90EE90"}, and [**C**]{style="color: #00B2EE"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This artificial scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression[\*]{style="color: #EE4000"}.
+Imagine we have 15 samples across 3 experimental conditions ([**A**]{style="color: #EE7AE9"}, [**B**]{style="color: #90EE90"}, and [**C**]{style="color: #00B2EE"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This fictional scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression[\*]{style="color: #EE4000"}.
 
 Then, think of the following three cases:
 
@@ -206,9 +208,9 @@ Heatmap(expr_case1,
 
 ## Transcriptomes that are naturally different
 
-Something perhaps evident but worth showing is that the sizes of the "true" total libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In all cases, samples in condition [**A**]{style="color: #EE7AE9"} have greater libraries because of highly-expressed genes in [**Case 1**]{.underline}, more expressed genes in [**Case 2**]{.underline}, or both in [**Case 3**]{.underline}, as presented in the below bar plots.
+Something perhaps evident but worth showing is that the sizes of the "true" total libraries we just generated, vary considerably between samples in these three hypothetical but not unlikely scenarios. In all cases, samples in condition [**A**]{style="color: #EE7AE9"} have greater library sizes because of highly-expressed genes in [**Case 1**]{.underline}, more expressed genes in [**Case 2**]{.underline}, or both in [**Case 3**]{.underline}, as presented in the below bar plots.
 
-```{r plot_lib_sizes, fig.align='center', warning=FALSE, message=FALSE}
+```{r plot_lib_sizes, fig.width=6.3, fig.height=4.3, fig.align='center', warning=FALSE, message=FALSE}
 library(ggplot2)
 
 ## Sample library sizes and conditions
@@ -252,7 +254,7 @@ for(case in 1:3){
 
 The differences in total expression between samples wouldn't represent a major issue if we had the capacity to sequence all molecules present in each sample, just as we have been assuming. But in reality, in RNA-sequencing experiments we have a fixed number of reads per library, meaning not all molecules can be sequenced in each sample but there's a sampling of molecules from which reads are generated. Think of it as having the pool of reads for all transcripts expressed in a sample, and having to randomly select a fixed number of them.
 
-![](images/sampling.png){fig-align="center" width="2525"}
+![](images/sampling.png){style="margin-bottom: 0; margin-top: 0" fig-align="center" width="2525"}
 
 For this reason, RNA-seq counts suffer from **sampling effects**. In the next section we'll clearly see why this property in RNA-seq data represents an issue in downstrem analysis.
 
@@ -262,7 +264,7 @@ The sampling of molecules introduces a proportionality problem in the RNA-seq co
 
 This is known as the [**RNA composition or population bias**]{style="background-color: #FFF68F"}: the molecule sampling in sequencing experiments [artificially reduce]{.underline} the expression of [under-sampled genes]{.underline} in samples with [larger RNA content]{.underline}. Analogously, this can also lead to apparent increments in gene expression in samples with lowly-expressed genes (case not shown here). This implies RNA-seq count data sets need to be processed to make accurate inferences from them.
 
-In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and we plot the proportion that corresponds to each gene. Note that by selecting the same number of reads across samples, library size is held constant and no differences in read counts are due to sequencing depth.
+In the next code we simulate this read sampling by randomly selecting 650 reads per sample in each case and we plot the proportion of selected reads that correspond to each gene. Note that by selecting the same number of reads in all samples, library size is held constant and no differences in read counts are due to sequencing depth.
 
 ```{r plot_gene_props, fig.align='center', warning=FALSE, message=FALSE}
 library(rlang)
@@ -381,17 +383,17 @@ Confirming the aforementioned, note in the bar plots the dominance in read propo
 
 # More false positives ...
 
-By design, we know that most genes are not differentially expressed (DE). Let's formally test if the differences in the mean expression of each gene in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"} with the original raw counts (before sampling), are statistically significant with two sample t-tests (but keep in mind this test assumes data normality and equal variances in both groups).
+By design, we know that in all three cases most genes are not differentially expressed (DE) between conditions. Let's formally test if the differences in the mean expression of each gene in [**A vs B**]{style="background-color: #8DB6CD"}, [**A vs C**]{style="background-color: #FF82AB"}, and [**B vs C**]{style="background-color: #A2CD5A"} with the original raw counts (before sampling), are statistically significant with two sample t-tests (but keep in mind this test assumes data normality and equal variances in both groups).
 
-Below we are plotting the *t*-statistics per gene for each comparison, which capture the sign and size of the difference in gene expression between conditions. The expression changes that were significant (*p*-value \<0.05) have a "\*" above the bar.
+Below we are plotting the *t*-statistics per gene for each comparison and in each case. These statistics capture the sign and size of the difference in gene expression between conditions. The expression changes that were significant (*p*-value \<0.05) have a "\*" above the bar.
 
-```{r t_test_raw_counts, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
-## t-test for total or sampled counts
+```{r t_test_counts, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
+## t-test per gene based on counts before and after sampling 
 t_test_expr <- function(expr_counts){
   
   for(case in 1:3){
   
-    ## Total raw counts
+    ## Count matrix
     expr <- eval(parse_expr(paste0(expr_counts, "_case", case))) 
     expr <- as.matrix(expr)
     colnames(expr) <- conditions
@@ -426,7 +428,6 @@ t_test_expr <- function(expr_counts){
           tstats[gene, comparison] <- results$statistic
       
       }
-      
     }
     
     ## Plot t-stats (expression change size)
@@ -477,9 +478,9 @@ t_test_expr(expr_counts = "expr")
 
 Not surprisingly, highly-expressed and unique genes in condition [**A**]{style="color: #FF83FA"} have significantly higher expression when compared to the other two conditions, and except for a few false positives, the rest of genes don't present significant expression changes.
 
-Now, as you may suspect, the decrease in counts for genes in condition [**A**]{style="color: #FF83FA"} after sampling results in false discoveries of negative differential expression.
+Now, as you may be suspecting, the decrease in counts for genes in condition [**A**]{style="color: #FF83FA"} after sampling results in false discoveries of negative differential expression.
 
-```{r t_tests_RNAseq_data, fig.align='center', warning=FALSE, message=FALSE}
+```{r t_tests_RNAseq_data, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
 
 t_test_expr(expr_counts = "rna_seq_expr")
 ```
@@ -490,25 +491,25 @@ Let's denote the true and unknown total library size of each sample $i$ by $S_i$
 
 Then, the number of reads after sampling for $g$ in samples $k$ and $r$ are given by $y_{gk} = \frac{z_{gk}}{S_k}N_k$ and $y_{gr} = \frac{z_{gr}}{S_r}N_r$, respectively. These correspond to the RNA-seq counts to which we have access.
 
-If gene $g$ is a [**true non-DEG**]{style="background-color: #F0FFF0"} between these two samples, then $z_{gk} = z_{gr}$ and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., $y_{gk} = y_{gr}$. But we know that's not satisfied since $y_{gk} = \frac{z_{gk}}{S_k}N_k = \frac{z_{gr}}{\alpha S_r}N_k$ and given that we fixed the number of selected reads, $N_k = N_r$ and $y_{gk} = \frac{z_{gr}}{\alpha S_r}N_r ≠ \frac{z_{gr}}{S_r}N_r = y_{gr}$. We have that $y_{gk} \alpha = y_{gr}$ and we aim to estimate such factor $\alpha = \frac{S_k}{S_r}$ to scale read counts in sample $k$ to equal them to those in $r$. With library size-normalized counts, we'd have $\frac{y_{gk}}{N_k} \alpha= \frac{y_{gr}}{N_r}$, which is the same as $\frac{y_{gk}}{N_k} \sqrt{\alpha^2} = \frac{y_{gr}}{N_r}$ and results in $\frac{y_{gk}}{N_k} \sqrt{\alpha} = \frac{y_{gr}}{N_r \sqrt{\alpha}}$, which in turn is equivalent to divide library $N_k$ by $\sqrt{\alpha}$ and multiply library $N_r$ by $\sqrt{\alpha}$; that's what we refer to with the scaling of library sizes.
+If gene $g$ is a **true non-DEG** between these two samples, then $z_{gk} = z_{gr}$ and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., $y_{gk} = y_{gr}$. But we know that's not met since $y_{gk} = \frac{z_{gk}}{S_k}N_k = \frac{z_{gr}}{\alpha S_r}N_k$ and given that we fixed the number of selected reads, $N_k = N_r$ and $y_{gk} = \frac{z_{gr}}{\alpha S_r}N_r ≠ \frac{z_{gr}}{S_r}N_r = y_{gr}$. We have that $y_{gk} \alpha = y_{gr}$ and we aim to estimate such factor $\alpha = \frac{S_k}{S_r}$ to scale read counts in sample $k$ to equal them to those in $r$. With library size-normalized counts, we'd have $\frac{y_{gk}}{N_k} \alpha= \frac{y_{gr}}{N_r}$, which is the same as $\frac{y_{gk}}{N_k} \sqrt{\alpha^2} = \frac{y_{gr}}{N_r}$ and equals to $\frac{y_{gk}}{N_k} \sqrt{\alpha} = \frac{y_{gr}}{N_r \sqrt{\alpha}}$, which in turn is equivalent to divide library $N_k$ by $\sqrt{\alpha}$ and multiply library $N_r$ by $\sqrt{\alpha}$; that's what we refer to with the **scaling of sample library sizes**.
 
 Now, the fold change in the expression of a non-DEG $g$ in sample $k$ vs sample $r$, *after sampling*, is given by $\frac{y_{gk}}{y_{gr}} = \alpha ^{-1} = \frac{S_r}{S_k}$. So we are basically aiming to scale library sizes by the inverse of the expression fold change of a non-DEG. This applies to all true non-DEGs.
 
-We cannot estimate $S_k$ and $S_r$ but we can take advantage of the inverse relationship between $\frac{S_k}{S_r}$ and the fold changes of non-DEGs, to approximate it by computing a **global mean expression fold change** across **all (assumed) non-DEGs** for sample $k$ vs $r$.
+We cannot estimate $S_k$ and $S_r$ but we can take advantage of the inverse relationship between $\frac{S_k}{S_r}$ and the fold changes of non-DEGs, to approximate it by computing a [**global mean expression fold change across all (assumed) non-DEGs**]{style="background-color: #FFF68F"} for sample $k$ vs $r$.
 
 ::: callout-tip
 A visual way to show why we need to estimate $\alpha$ is, instead of selecting a fixed number of reads in the sampling, we can think of selecting a fixed proportion of reads per sample $i$ ($p_i = \frac{N_i}{S_i}$), which would preserve the original true RNA composition of the samples and allow the direct comparison of gene counts between them.
 
-![](images/sampling2.png){fig-align="center" width="2031"}
+![](images/sampling2.png){style="margin: 0" fig-align="center" width="2031"}
 
 By selecting the same proportion $p$ of reads from $S_k$ and $S_r$, on average we keep $z_{gk} \times p$ and $z_{gr} \times p$ reads for gene $g$ in samples $k$ and $r$, making the expression estimates comparable between them. But the reality is that we have a fixed number of reads and $p_k ≠ p_r$. Multiplying by $\alpha$ we obtain $\frac{N_k}{S_k} \alpha = \frac{N_r}{S_r}$, making proportions in both samples equal.
 :::
 
 # TMM method for estimating scaling factors
 
-What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-values**]{style="background-color: #FFD700"} method is an empirical approach to approximate $\frac{S_r}{S_k}$, which can be summarized as follows:
+What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-values**]{style="background-color: #FFD700"} method, implemented in [*edgeR*](https://bioconductor.org/packages/release/bioc/html/edgeR.html) [@edgeR], is an empirical approach to approximate $\frac{S_r}{S_k}$, which can be summarized as follows:
 
-1.  Compute gene-wise log-normalized expression ratios between samples $k$ and $r$:
+1.  Compute gene-wise log-normalized expression ratios between samples $k$ and $r$ (log-fold changes or logFCs):
 
     $$
     M_{gk}^r = log_2(\frac{y_{gk}}{N_k} /\frac{y_{gr}}{N_r} )
@@ -518,13 +519,13 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
 
     $$
     A_g = \frac{log_2(\frac{y_{gk}}{N_k}) + log_2(\frac{y_{gr}}{N_r})}{2}
-    $$ where $y_{gk}$ and $y_{gr}$ are the RNA-seq counts of gene $g$ in samples $k$ and $r$ (after sampling).
+    $$ where $y_{gk}$ and $y_{gr}$ are the RNA-seq counts of gene $g$ in samples $k$ and $r$, respectively.
 
     In the next code we compute the $M$ and $A$ values for all genes in each case, comparing sample 1 of condition [**A**]{style="color: #EE7AE9"} vs sample 5 of condition [**B**]{style="color: #7CCD7C"}. We then plot $M$ vs $A$ values to spot up and down differentially expressed genes.
 
     ```{r MA_plots, fig.height = 3, fig.width = 4.55, fig.align='center', warning=FALSE, message=FALSE}
 
-    MA_plots <- list()
+    ## MA plots
     for(case in 1:3){
        
        ## Select sample 1 as k and 5 as r
@@ -544,7 +545,7 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
                           (yg[,"r"] / Nr) )
         A_values <- (log2(yg[,"k"] / Nk) + log2(yg[,"r"] / Nr)) / 2
         
-        ## Variance weights x gene (see step 3)
+        ## Variance weight per gene (see step 3)
         vg <- ((Nk - yg[, "k"])/(Nk * yg[, "k"])) + ((Nr - yg[, "r"])/(Nr * yg[, "r"]))
       
         df <- data.frame("M" = M_values, 
@@ -563,7 +564,7 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
           scale_alpha_manual(name = "Gene", values = get(paste0("alphas_case_", case))) +
           geom_hline(yintercept = 0, size = 0.55, linetype = 3, color = "gray40") +
           geom_hline(yintercept = mean(df$M), size = 0.35, linetype = 2, color = "firebrick3") +
-          labs(title = paste("Case", case), x = "A values (A vs B)", 
+          labs(title = paste("Case", case), x = "A values (A + B)", 
                y = "M values (A vs B)", 
                color = "Gene") + 
           theme(plot.title = element_text(face = "bold", size = 10), 
@@ -575,17 +576,15 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
                 legend.text = element_text(size = 6.5), 
                 legend.key.width = unit(0.25, "cm"),
                 legend.key.height = unit(0.25, "cm"))
-        
-      MA_plots[[case]] <- plot
       print(plot)
         
     }
     ```
 
-    Just as we have previously demonstrated, observe how all genes have logFCs ($M$ values) offset from zero, deviating their mean as well (red dashed line). $M$ vs $A$ plots are useful in exploratory analysis to spot highly-expressed genes (top right corner in Case 1), genes unique to one condition (top left corner in Case 2), and unique highly-expressed genes (top middle in Case 3), that can explain global negative/positive logFCs for a large number of genes, and thus highlighting the need of scaling library sizes.
+    Just as we have previously demonstrated, observe how all genes have logFCs ($M$ values) offset from zero, deviating their mean as well (red dashed line). $M$ vs $A$ plots are useful in exploratory analysis to spot highly-expressed genes (top right corner in [**Case 1**]{.underline}), genes unique to one condition (top left corner in [**Case 2**]{.underline}), and unique highly-expressed genes (top middle in [**Case 3**]{.underline}), which explain the observed negative logFCs for the remaining genes, and thus highlighting the need to scale library sizes to move these logFCs towards zero.
 
     ::: callout-caution
-    This procedure assumes that $y_{gk}, y_{gr} >0$, so an initial filtering of non/lowly-expressed genes is desired. Indeed, `edgeR::calcNormFactors()` removes in advance genes with zero counts in any of the samples. Here, however, we replaced 0s with 1s to keep most genes for illustrative purposes.
+    This procedure assumes that $y_{gk}, y_{gr} >0$, so an initial filtering of non/lowly-expressed genes is desired (see [Lun, A. 2018](https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html)). Indeed, `edgeR::calcNormFactors()` removes in advance genes with zero counts in any of the samples. Here, however, we replaced 0s with 1s to keep most genes for illustrative purposes.
     :::
 
 2.  Trim the upper and lower x% (30% by default) of $M$ values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of $A$ values, corresponding to genes with extreme expression. This keeps genes that are [considered non-differentially and moderately expressed]{.underline} (assumed to be most of the genes) and therefore useful to [estimate the global expression fold change]{.underline} between samples.
@@ -598,6 +597,7 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
 
     for(metric in c("M", "A")){
       
+      ## % to trim
       x = ifelse(metric == "M", 0.1, 0.05)
       
       plots <- list()
@@ -660,7 +660,7 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
     df_trimmed_case_3 <- df_case_3[!df_case_3$trimM & !df_case_3$trimA, ]
     ```
 
-3.  Estimate the average of the $M$ values for not trimmed genes ($G^*$), each weighted by gene inverse variances ($w_{gk}^r$) to account for lower variances in logFCs from genes with larger read counts.
+3.  Estimate the average of the $M$ values for not trimmed genes ($G^*$), each weighted by gene inverse variances ($w_{gk}^r$) to account for smaller variances in logFCs of genes with larger read counts.
 
     $$
     f_k^r = \frac{\sum_{g \in G^*} w_{gk}^r M_{gk}^r}{\sum_{g \in G^*}w_{gk}^r} 
@@ -668,7 +668,11 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
 
     where $w_{gk}^r = 1/v_{gk}^r$ and $v_{gk}^r = \frac{N_k-Y_{gk}}{N_kY_{gk}} + \frac{N_r-Y_{gr}}{N_rY_{gr}}$.
 
-    Then, we define the normalization factor $TMM_k^r  = 2^{f_k^r}$ as an estimate of $\frac{1}{\alpha}=\frac{S_r}{S_k}$ and we scale the library $k$ by $\sqrt {TMM_k^r}$ and library $r$ by $1/\sqrt{TMM_k^r}$. $TMM$ is the global fold change in expression of sample $k$ compared to sample $r$ after sampling reads.
+    Then, we define the normalization factor $TMM_k^r  = 2^{f_k^r}$ as an estimate of $\frac{1}{\alpha}=\frac{S_r}{S_k}$ and we scale the library $k$ by $\sqrt {TMM_k^r}$ and library $r$ by $1/\sqrt{TMM_k^r}$.
+
+    $TMM$ is the global fold change in expression of sample $k$ compared to sample $r$ after sampling reads.
+
+    In the next code we manually find this factor and compare it with the one returned by `edgeR::calcNormFactors()` and with the true known value of $\frac{S_r}{S_k}$.
 
     ```{r compute_factors, fig.height = 3.6, fig.width = 10, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -689,9 +693,9 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
         tmm <- 2 ** f
         
         ## Scaling factors for k and r libraries
-        message(paste0("Case ", case, ":"))
-        print(paste("f = log2(TMM) =", signif(f, digits = 5)))
-        print(paste("TMM factor = 2^f (aprox to 1/α) =", signif(tmm, digits = 5)))
+        print(paste0("Case ", case, ":"))
+        print(paste("Manually-computed f = log2(TMM) =", signif(f, digits = 5)))
+        print(paste("Manually-computed TMM factor = 2^f (aprox to 1/α) =", signif(tmm, digits = 5)))
         print(paste("Manually-computed scaling factors (√TMM for k and 1/√TMM r):", 
                     signif(sqrt(tmm), digits = 5), 
                     signif(1/sqrt(tmm), digits = 5)))
@@ -712,10 +716,11 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
         ## True Sr/Sk
         ratio_true <- library_sizes[5, paste0("lib_size_case", case)] / 
                       library_sizes[1, paste0("lib_size_case", case)] 
-        print(paste("True FC = 1/α = Sr/S_k = ", signif(ratio_true, digits = 5)))
+        print(paste("True FC = 1/α = Sr/Sk = ", signif(ratio_true, digits = 5)))
         print(paste("True scaling factors (√1/α for k and 1/√1/α r):", 
                 signif(sqrt(ratio_true), digits = 5), 
                 signif(1/sqrt(ratio_true), digits = 5)))
+        cat("\n")
      
     }
 
@@ -788,39 +793,49 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
 
     ```
 
-If you reached this point, you may be wondering what happens with the rest of the samples if we have more than two. We compute normalization factors for all the other samples using the same reference sample. Now the question is ... which sample to use as reference for fair sample comparisons?
+If you've made it this far, you might be wondering what's to do with all the other samples. TMM uses the same chosen reference sample to normalize all of the other samples against and centers the computed scaling factors across all samples around 1.
 
 ::: callout-note
 ## Which sample to choose as the reference?
 
-If not specified, the TMM method, as implemented in `edgeR`, selects as the reference the sample whose expression is closer to the average expression across all samples. More specifically, it chooses the sample whose 75th expression quantile, normalized by library size, is closer to the mean of the normalized quantiles for all samples. Check an example [here](https://www.google.com/search?client=safari&rls=en&q=tmm+reference+sample&ie=UTF-8&oe=UTF-8#fpstate=ive&vld=cid:a7c9a19a,vid:Wdt6jdi-NQo,st:151).
+If not specified, the TMM method, as implemented in `edgeR`, selects as the reference the sample whose expression is closer to the average expression across all samples. More specifically, it chooses the sample whose 75th expression quantile, normalized by library size, is closer to the mean of the normalized 75th quantiles for all samples. Check an example [here](https://www.youtube.com/watch?v=Wdt6jdi-NQo).
 :::
-
-the ... to adjust
-
-Normalization factors
-
-Scaling factors
 
 # Conclusion
 
 Initially, normalizing expression counts by true biological RNA composition differences seems counterintuitive as those are the differences we aim to detect in DGE analysis. But I hope you have it clear now that the problem arises from sampling effects in RNA-seq data, and that gene read counts depend not only on gene expression levels and length, but also on the inherent properties of the RNA samples from which they come.
 
-biological differences in the sample transcriptomes across multiple conditions
+Library size normalization is appropriate in cases where samples are expected to have similar total mRNA amounts, such as replicate samples within the same condition. But when working with multiple experimental conditions such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the non-differentially expressed ones.
 
-Library size normalization is appropriate in cases where samples are expected to have similar total mRNA amounts, such replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the similarly-expressed ones.
+The key take-home message for you is that if DGE analysis results in globally-shifted gene logFCs, these are likely driven by differences in sample RNA composition and have to be adjusted. As we have seen, TMM is a simple but effective method to scale library sizes under the assumption that most genes are non-DEGs. But as a note, TMM is not designed nor optimal to deal with cases of large asymmetric differential expression, where a high proportion of genes are DE in one direction and thus end up having similar read proportions across conditions after sampling [@evans2017].
 
-The key take-home message for you is that if DGE analysis results in globally-shifted gene logFCs, these are likely driven by differences in sample RNA composition and have to be adjusted. TMM can be used to effectively scale library sizes under the assumption that most genes are non-DEGs. But as a note, TMM is not designed nor optimal to deal with cases of large assymetric differential expression, where a high proportion of genes are DE in one direction, and thus end up having similar read proportions after sampling across conditions.
+# Relevant links and bibliography
 
-As we have seen, TMM is a simple but effective method to scale ...
+::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
+| 📑 **Original publication for TMM:**
+| de Leeuw, C. A., Mooij, J. M., Heskes, T., & Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data. *PLoS computational biology*, *11*(4), e1004219. [https://doi.org/10.1371/journal.pcbi.1004219](https://doi.org/10.1371/journal.pcbi.1004219https://doi.org/10.1371/journal.pcbi.1004219)
+:::
 
-In other words, we approximate Sk/Sr as a global expression logFC between samples based on similarly-expressed genes (e.g. housekeeping genes).
+::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
+| 📁 **Supplemental Methods for MAGMA:**
+| de Leeuw, C. A., Mooij, J. M., Heskes, T., & Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data. *PLoS computational biology*, *11*(4, Suppl.), e1004219. Available here: <https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219#sec016>
+:::
 
-Proper normalization is necessary to draw correct conclusions from RNA-seq data
+::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
+| 📓 **MAGMA manual (version 1.09):**
+| Available here: <https://ibg.colorado.edu/cdrom2021/Day10-posthuma/magma_session/manual_v1.09a.pdf>
+:::
+
+::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
+| 🔎 **MAGMA website:**
+| Available here: <https://cncr.nl/research/magma/>
+:::
+
+[10.1186/gb-2010-11-3-r25](https://doi.org/10.1186/gb-2010-11-3-r25)
 
 <https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/>
 
-Sources
+<https://doi.org/10.1093/bib/bbx008>
 
 <https://rdrr.io/bioc/edgeR/src/R/calcNormFactors.R>
 

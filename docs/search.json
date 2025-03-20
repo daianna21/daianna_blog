@@ -284,7 +284,7 @@
     "href": "posts/2024-12-15-TMM_normalization/index.html",
     "title": "Trimmed Mean of M-values",
     "section": "",
-    "text": "⚠️ This page is under development."
+    "text": "Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the systematic effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples, and enabling the study of transcriptome dynamics.\nVarying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample library size (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression levels across samples but is not the only factor at play, specially when samples are expected to have very variable transcriptome sizes across experimental conditions.\nIn a pioneer paper of 2010, Mark D. Robinson and Alicia Oshlack introduced the issue of the RNA composition bias in RNA-seq data, and developed the Trimmed Mean of M-values (TMM) method to adjust for it. As a widely-implemented normalization scheme, it is important to understand why sample RNA population differences are a concern for normalization and how TMM accounts for it."
   },
   {
     "objectID": "posts/2024-12-15-TMM_normalization/index.html#counts-per-million",

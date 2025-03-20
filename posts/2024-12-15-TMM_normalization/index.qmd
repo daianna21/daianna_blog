@@ -14,11 +14,9 @@ categories:
   - "Differential Gene Expression"
   - "RNA-seq"
   
-image: "images/TODO"
+image: "images/TMM_logo.png"
 bibliography: references.bib
 ---
-
-⚠️ This page is under development.
 
 # Introduction
 
@@ -587,7 +585,7 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
     This procedure assumes that $y_{gk}, y_{gr} >0$, so an initial filtering of non/lowly-expressed genes is desired (see [Lun, A. 2018](https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html)). Indeed, `edgeR::calcNormFactors()` removes in advance genes with zero counts in any of the samples. Here, however, we replaced 0s with 1s to keep most genes for illustrative purposes.
     :::
 
-2.  Trim the upper and lower x% (30% by default) of $M$ values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of $A$ values, corresponding to genes with extreme expression. This keeps genes that are [considered non-differentially and moderately expressed]{.underline} (assumed to be most of the genes) and therefore useful to [estimate the global expression fold change]{.underline} between samples.
+2.  Trim the upper and lower x% (30% by default) of $M$ values that represent genes with biased expression towards one condition, as well as the upper and lower y% (5% by default) of $A$ values, corresponding to genes with extreme expression. This keeps genes that are [considered non-differentially and moderately expressed]{.underline} (assumed to be the majority of the genes) and therefore useful to [estimate the global expression fold change]{.underline} between samples.
 
     Given the very few genes we have in our simulated data, in total we'll trim 20% of $M$ values (10% up and 10% low) and 10% of $A$ values (5% up and 5% low).
 
@@ -726,7 +724,7 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
 
     ```
 
-    Note that in case 2 and 3 the factors we compute manually don't match with the ones returned by `calcNormFactors()` because we transformed 0 counts into 1s, whereas this `edgeR` function removes genes with zero counts.
+    Note that in case 2 and 3 the factors we compute manually don't match with the ones returned by `calcNormFactors()` because we transformed 0 counts into 1s, whereas this *edgeR* function removes genes with zero counts.
 
 4.  These factors are then used to scale the original RNA-seq sample library sizes and normalize counts. Look in the following plots the more homogeneous expression of true non-DEGs in samples 1 and 5 after normalizing counts by effective (scaled) library sizes, recapitulating the true expression patterns shown in the very first heat maps.
 
@@ -798,51 +796,29 @@ If you've made it this far, you might be wondering what's to do with all the oth
 ::: callout-note
 ## Which sample to choose as the reference?
 
-If not specified, the TMM method, as implemented in `edgeR`, selects as the reference the sample whose expression is closer to the average expression across all samples. More specifically, it chooses the sample whose 75th expression quantile, normalized by library size, is closer to the mean of the normalized 75th quantiles for all samples. Check an example [here](https://www.youtube.com/watch?v=Wdt6jdi-NQo).
+If not specified, the TMM method, as implemented in *edgeR*, selects as the reference the sample whose expression is closer to the average expression across all samples. More specifically, it chooses the sample whose 75th expression quantile, normalized by library size, is closer to the mean of the normalized 75th quantiles for all samples. Check an example [here](https://www.youtube.com/watch?v=Wdt6jdi-NQo).
 :::
 
 # Conclusion
 
 Initially, normalizing expression counts by true biological RNA composition differences seems counterintuitive as those are the differences we aim to detect in DGE analysis. But I hope you have it clear now that the problem arises from sampling effects in RNA-seq data, and that gene read counts depend not only on gene expression levels and length, but also on the inherent properties of the RNA samples from which they come.
 
-Library size normalization is appropriate in cases where samples are expected to have similar total mRNA amounts, such as replicate samples within the same condition. But when working with multiple experimental conditions such as tissues and diagnostic groups, that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the non-differentially expressed ones.
+Library size normalization is appropriate in cases where samples are expected to have similar total mRNA amounts, such as replicate samples within the same condition. But when working with multiple experimental conditions, such as tissues and diagnostic groups that are expected to markedly vary in their transcriptomes, adjusting for RNA composition differences is required to discover genes with true expression changes and discard the non-differentially expressed ones.
 
-The key take-home message for you is that if DGE analysis results in globally-shifted gene logFCs, these are likely driven by differences in sample RNA composition and have to be adjusted. As we have seen, TMM is a simple but effective method to scale library sizes under the assumption that most genes are non-DEGs. But as a note, TMM is not designed nor optimal to deal with cases of large asymmetric differential expression, where a high proportion of genes are DE in one direction and thus end up having similar read proportions across conditions after sampling [@evans2017].
+The key take-home message for you is that if DGE analysis results in globally-shifted gene logFCs, these are likely driven by differences in the sizes of sample RNA populations and have to be adjusted. As we have seen, TMM is a straightforward and effective method to scale library sizes under the assumption that most genes are non-DEGs. But as a note, TMM is not designed nor optimal to deal with cases of large asymmetric differential expression, where a high proportion of genes are DE in one direction and thus end up having similar read proportions across conditions after sampling [@evans2017].
 
 # Relevant links and bibliography
 
 ::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
-| 📑 **Original publication for TMM:**
-| de Leeuw, C. A., Mooij, J. M., Heskes, T., & Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data. *PLoS computational biology*, *11*(4), e1004219. [https://doi.org/10.1371/journal.pcbi.1004219](https://doi.org/10.1371/journal.pcbi.1004219https://doi.org/10.1371/journal.pcbi.1004219)
+| **📄 Original publication for TMM:**
+| Robinson, M.D., Oshlack, A. A scaling normalization method for differential expression analysis of RNA-seq data. *Genome Biol* 11, R25 (2010). [https://doi.org/10.1186/gb-2010-11-3-r25](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25)
 :::
 
 ::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
-| 📁 **Supplemental Methods for MAGMA:**
-| de Leeuw, C. A., Mooij, J. M., Heskes, T., & Posthuma, D. (2015). MAGMA: generalized gene-set analysis of GWAS data. *PLoS computational biology*, *11*(4, Suppl.), e1004219. Available here: <https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219#sec016>
+| ![](images/clipboard-439834626.png){width="22"}  **Source code for TMM implementation in `edgeR::calcNormFactors()`:** <https://rdrr.io/bioc/edgeR/src/R/calcNormFactors.R>
 :::
 
 ::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
-| 📓 **MAGMA manual (version 1.09):**
-| Available here: <https://ibg.colorado.edu/cdrom2021/Day10-posthuma/magma_session/manual_v1.09a.pdf>
+| ![](https://em-content.zobj.net/content/2020/04/05/yt.png){width="17"}   **Video explaining TMM steps:**
+| Starmer, J. (2018). *StatQuest: edgeR, part 1, Library Normalization*\[Video\]. YouTube: <https://www.youtube.com/watch?v=Wdt6jdi-NQo>
 :::
-
-::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
-| 🔎 **MAGMA website:**
-| Available here: <https://cncr.nl/research/magma/>
-:::
-
-[10.1186/gb-2010-11-3-r25](https://doi.org/10.1186/gb-2010-11-3-r25)
-
-<https://pmc.ncbi.nlm.nih.gov/articles/PMC11107385/>
-
-<https://doi.org/10.1093/bib/bbx008>
-
-<https://rdrr.io/bioc/edgeR/src/R/calcNormFactors.R>
-
-<https://github.com/broadinstitute/pyqtl/blob/master/qtl/norm.py>
-
-<https://davetang.github.io/muse/edger.html#TMM_normalisation>
-
-video
-
-<https://ltla.github.io/ChIPSeqThoughts/lowcount_norm/lowcount_norm.html>

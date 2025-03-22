@@ -1,6 +1,7 @@
 ---
 title: "Trimmed Mean of M-values"
-description: ""
+description: |
+  Explanation of the RNA composition bias in RNA-seq data, its impact on differential gene expression analysis, and its correction using the TMM method.
 author:
   - name: Daianna Gonzalez-Padilla
 date: 2024-12-12

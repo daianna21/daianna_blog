@@ -23,7 +23,7 @@ bibliography: references.bib
 
 Normalization is a critical processing step in RNA-seq data analysis. By normalizing raw read counts generated through transcriptomics assays, we reduce the systematic effects that technical within- and between-samples differences have on the data, making the expression measurements more comparable across genes and samples, and enabling the study of transcriptome dynamics.
 
-Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample **library size** (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression levels across samples but is not the only factor at play, specially when samples are expected to have very variable **transcriptome sizes** across experimental conditions.
+Varying sequencing depth among the samples is usually accounted for in normalization methods, where gene counts are scaled by sample **library size** (i.e. total sum of read counts per sample). This consideration is necessary when comparing expression levels between samples but is not the only factor at play, specially when samples are expected to have very variable **transcriptome sizes** across experimental conditions.
 
 In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. Robinson and Alicia Oshlack introduced the issue of the [**RNA composition bias**]{style="background-color: #FFF68F"} in RNA-seq data, and developed the [**Trimmed Mean of M-values (TMM)**]{style="color: #008B8B; background-color: #FAFAD2"} method to adjust for it. As a widely-implemented normalization scheme, it is important to understand why sample RNA population differences are a concern for normalization and how TMM accounts for it.
 
@@ -41,7 +41,7 @@ In a [pioneer paper of 2010](https://doi.org/10.1186/gb-2010-11-3-r25), Mark D. 
 
 ## Hypothetical scenarios
 
-Imagine we have 15 samples across 3 experimental conditions ([**A**]{style="color: #EE7AE9"}, [**B**]{style="color: #90EE90"}, and [**C**]{style="color: #00B2EE"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This fictional scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true expression[\*]{style="color: #EE4000"}.
+Imagine we have 15 samples across 3 experimental conditions ([**A**]{style="color: #EE7AE9"}, [**B**]{style="color: #90EE90"}, and [**C**]{style="color: #00B2EE"}), each containing all the transcripts expressed from 30 genes with the same length. Suppose all transcripts in each sample are sequenced, without restricting the number of sequenced molecules per library. This fictional scenario would result in sequencing reads for all transcripts per gene, thus serving as estimates of true total expression[\*]{style="color: #EE4000"}.
 
 Then, think of the following three cases:
 
@@ -448,7 +448,7 @@ t_test_expr <- function(expr_counts){
                     show.legend = F) +
       theme_bw() + 
       labs(title = paste("Case", case), 
-           x = "", y = "True change in expression", fill = "Comparison") + 
+           x = "", y = "Change in expression", fill = "Comparison") + 
       scale_fill_manual(values = c("A_vs_B" = "#8DB6CD", 
                                    "A_vs_C" = "#FF82AB", 
                                    "B_vs_C" = "#A2CD5A"), 
@@ -475,9 +475,9 @@ t_test_expr(expr_counts = "expr")
 
 ```
 
-Not surprisingly, highly-expressed and unique genes in condition [**A**]{style="color: #FF83FA"} have significantly higher expression when compared to the other two conditions, and except for a few false positives, the rest of genes don't present significant expression changes.
+Not surprisingly, highly-expressed and unique genes in condition [**A**]{style="color: #EE7AE9"} have significantly higher expression when compared to the other two conditions, and except for a few false positives, the rest of genes don't present significant expression changes.
 
-Now, as you may be suspecting, the decrease in counts for genes in condition [**A**]{style="color: #FF83FA"} after sampling results in false discoveries of negative differential expression.
+Now, as you may be suspecting, the decrease in counts for genes in condition [**A**]{style="color: #EE7AE9"} after sampling results in false discoveries of negative differential expression.
 
 ```{r t_tests_RNAseq_data, fig.width=6.5, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -490,11 +490,11 @@ Let's denote the true and unknown total library size of each sample $i$ by $S_i$
 
 Then, the number of reads after sampling for $g$ in samples $k$ and $r$ are given by $y_{gk} = \frac{z_{gk}}{S_k}N_k$ and $y_{gr} = \frac{z_{gr}}{S_r}N_r$, respectively. These correspond to the RNA-seq counts to which we have access.
 
-If gene $g$ is a **true non-DEG** between these two samples, then $z_{gk} = z_{gr}$ and we expect the counts for these gene to be equal in our RNA-seq count data, i.e., $y_{gk} = y_{gr}$. But we know that's not met since $y_{gk} = \frac{z_{gk}}{S_k}N_k = \frac{z_{gr}}{\alpha S_r}N_k$ and given that we fixed the number of selected reads, $N_k = N_r$ and $y_{gk} = \frac{z_{gr}}{\alpha S_r}N_r ≠ \frac{z_{gr}}{S_r}N_r = y_{gr}$. We have that $y_{gk} \alpha = y_{gr}$ and we aim to estimate such factor $\alpha = \frac{S_k}{S_r}$ to scale read counts in sample $k$ to equal them to those in $r$. With library size-normalized counts, we'd have $\frac{y_{gk}}{N_k} \alpha= \frac{y_{gr}}{N_r}$, which is the same as $\frac{y_{gk}}{N_k} \sqrt{\alpha^2} = \frac{y_{gr}}{N_r}$ and equals to $\frac{y_{gk}}{N_k} \sqrt{\alpha} = \frac{y_{gr}}{N_r \sqrt{\alpha}}$, which in turn is equivalent to divide library $N_k$ by $\sqrt{\alpha}$ and multiply library $N_r$ by $\sqrt{\alpha}$; that's what we refer to with the **scaling of sample library sizes**.
+If gene $g$ is a **true non-DEG** between these two samples, then $z_{gk} = z_{gr}$ and we expect the counts for this gene to be equal in our RNA-seq count data, i.e., $y_{gk} = y_{gr}$. But we know that's not met since $y_{gk} = \frac{z_{gk}}{S_k}N_k = \frac{z_{gr}}{\alpha S_r}N_k$ and given that we fixed the number of selected reads, $N_k = N_r$ and $y_{gk} = \frac{z_{gr}}{\alpha S_r}N_r ≠ \frac{z_{gr}}{S_r}N_r = y_{gr}$. We have that $y_{gk} \alpha = y_{gr}$ and we aim to estimate such factor $\alpha = \frac{S_k}{S_r}$ to scale read counts in sample $k$ to equal them to those in $r$. With library size-normalized counts, we'd have $\frac{y_{gk}}{N_k} \alpha= \frac{y_{gr}}{N_r}$, which is the same as $\frac{y_{gk}}{N_k} \sqrt{\alpha^2} = \frac{y_{gr}}{N_r}$ and equals to $\frac{y_{gk}}{N_k} \sqrt{\alpha} = \frac{y_{gr}}{N_r \sqrt{\alpha}}$, which in turn is equivalent to divide library $N_k$ by $\sqrt{\alpha}$ and multiply library $N_r$ by $\sqrt{\alpha}$; that's what we refer to with the **scaling of sample library sizes**.
 
 Now, the fold change in the expression of a non-DEG $g$ in sample $k$ vs sample $r$, *after sampling*, is given by $\frac{y_{gk}}{y_{gr}} = \alpha ^{-1} = \frac{S_r}{S_k}$. So we are basically aiming to scale library sizes by the inverse of the expression fold change of a non-DEG. This applies to all true non-DEGs.
 
-We cannot estimate $S_k$ and $S_r$ but we can take advantage of the inverse relationship between $\frac{S_k}{S_r}$ and the fold changes of non-DEGs, to approximate it by computing a [**global mean expression fold change across all (assumed) non-DEGs**]{style="background-color: #FFF68F"} for sample $k$ vs $r$.
+We cannot estimate $S_k$ and $S_r$ but we can take advantage of the inverse relationship between $\frac{S_k}{S_r}$ and the fold changes of non-DEGs, to approximate it by computing a [**global mean expression fold change across all (assumed) non-DEGs**]{style="background-color: #FFFFE0"} for sample $k$ vs $r$.
 
 ::: callout-tip
 A visual way to show why we need to estimate $\alpha$ is, instead of selecting a fixed number of reads in the sampling, we can think of selecting a fixed proportion of reads per sample $i$ ($p_i = \frac{N_i}{S_i}$), which would preserve the original true RNA composition of the samples and allow the direct comparison of gene counts between them.
@@ -506,9 +506,9 @@ By selecting the same proportion $p$ of reads from $S_k$ and $S_r$, on average w
 
 # TMM method for estimating scaling factors
 
-What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-values**]{style="background-color: #FFD700"} method, implemented in [*edgeR*](https://bioconductor.org/packages/release/bioc/html/edgeR.html) [@edgeR], is an empirical approach to approximate $\frac{S_r}{S_k}$, which can be summarized as follows:
+What Mark D. Robinson and Alicia Oshlack proposed with their [**Trimmed Mean of M-values**]{style="background-color: #FFFF00"} method is an empirical approach to approximate $\frac{S_r}{S_k}$, which can be summarized as follows:
 
-1.  Compute gene-wise log-normalized expression ratios between samples $k$ and $r$ (log-fold changes or logFCs):
+1.  Compute gene-wise log-normalized expression ratios between samples $k$ and $r$ (logFCs):
 
     $$
     M_{gk}^r = log_2(\frac{y_{gk}}{N_k} /\frac{y_{gr}}{N_r} )
@@ -725,9 +725,9 @@ What Mark D. Robinson and Alicia Oshlack proposed with their [**Trim Mean of M-v
 
     ```
 
-    Note that in case 2 and 3 the factors we compute manually don't match with the ones returned by `calcNormFactors()` because we transformed 0 counts into 1s, whereas this *edgeR* function removes genes with zero counts.
+    Note that in case 2 and 3 the factors we compute manually don't match with the ones returned by `calcNormFactors()` because we transformed 0 counts into 1s, whereas this *edgeR* [@edgeR-2] function removes genes with zero counts.
 
-4.  These factors are then used to scale the original RNA-seq sample library sizes and normalize counts. Look in the following plots the more homogeneous expression of true non-DEGs in samples 1 and 5 after normalizing counts by effective (scaled) library sizes, recapitulating the true expression patterns shown in the very first heat maps.
+4.  These factors are then used to scale the original RNA-seq sample library sizes and normalize counts. Look in the following plots the more homogeneous expression of true non-DEGs in samples 1 and 5 after normalizing counts by **effective (scaled) library sizes**, recapitulating the true expression patterns shown in the very first heat maps.
 
     ```{r plot_norm_expr, fig.height = 4, fig.width = 6, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -812,7 +812,7 @@ The key take-home message for you is that if DGE analysis results in globally-sh
 
 ::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
 | **📄 Original publication for TMM:**
-| Robinson, M.D., Oshlack, A. A scaling normalization method for differential expression analysis of RNA-seq data. *Genome Biol* 11, R25 (2010). [https://doi.org/10.1186/gb-2010-11-3-r25](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25)
+| Robinson, M.D. & Oshlack, A. (2010). A scaling normalization method for differential expression analysis of RNA-seq data. *Genome Biol* 11, R25. [https://doi.org/10.1186/gb-2010-11-3-r25](#0)
 :::
 
 ::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
@@ -821,5 +821,5 @@ The key take-home message for you is that if DGE analysis results in globally-sh
 
 ::: {style="background-color: #F8F8FF;  padding: 14px; margin-left: 0px; margin-bottom: 1px; font-size: 15px; line-height: 1.3; margin-bottom:15px"}
 | ![](https://em-content.zobj.net/content/2020/04/05/yt.png){width="17"}   **Video explaining TMM steps:**
-| Starmer, J. (2018). *StatQuest: edgeR, part 1, Library Normalization*\[Video\]. YouTube: <https://www.youtube.com/watch?v=Wdt6jdi-NQo>
+| Starmer, J. (2018). StatQuest: edgeR, part 1, Library Normalization\[Video\]. YouTube: <https://www.youtube.com/watch?v=Wdt6jdi-NQo>
 :::

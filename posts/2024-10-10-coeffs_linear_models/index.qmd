@@ -1,7 +1,6 @@
 ---
 title: "Understading coefficients in linear models fits for RNA-seq data"
-description: |
- . 
+description: ""
 author:
   - name: Daianna Gonzalez-Padilla
 date: 2024-10-10
